@@ -717,15 +717,22 @@ textarea.f-input{resize:none}
       <div class="adm-panel" id="tab-res-adm"><div id="res-adm-list"></div></div>
       <div class="adm-panel" id="tab-noticias-adm">
         <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Publicar noticia</div>
+        <label class="f-label">Imagen de portada</label>
+        <div id="nt-foto-preview" style="display:none;margin-bottom:10px;border-radius:var(--r);overflow:hidden;aspect-ratio:16/9;background:var(--bg)">
+          <img id="nt-foto-img" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <div style="border:2px dashed var(--border2);border-radius:var(--r);padding:16px;text-align:center;background:var(--bg);margin-bottom:8px;cursor:pointer" onclick="document.getElementById('nt-foto-input').click()">
+          <input type="file" id="nt-foto-input" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none" onchange="previewFotoNoticia(this)">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--muted2);margin-bottom:4px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div style="font-size:12px;color:var(--muted);font-weight:600">Subir imagen desde el dispositivo</div>
+          <div style="font-size:10px;color:var(--muted2);margin-top:2px">JPG, PNG · máx 3MB</div>
+        </div>
+        <div style="text-align:center;font-size:11px;color:var(--muted2);margin-bottom:8px">— o pegar URL —</div>
+        <input class="f-input" id="nt-img" type="url" placeholder="https://ejemplo.com/imagen.jpg" style="margin-bottom:14px">
         <label class="f-label">Título</label>
         <input class="f-input" id="nt-titulo" type="text" placeholder="Título de la noticia">
         <label class="f-label">Contenido</label>
         <textarea class="f-input" id="nt-desc" rows="4" placeholder="Cuerpo de la noticia"></textarea>
-        <label class="f-label">URL de imagen (Google Drive u otro)</label>
-        <input class="f-input" id="nt-img" type="url" placeholder="https://drive.google.com/...">
-        <div style="background:var(--primary-light);border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--primary);margin-bottom:14px">
-          💡 Para Google Drive: click derecho en la imagen → "Obtener enlace" → "Cualquier persona con el enlace"
-        </div>
         <div style="margin-bottom:14px">
           <button type="button" onclick="toggleNtExtra()" style="font-size:11px;font-weight:700;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline">+ Agregar enlace externo</button>
           <div id="nt-extra" style="display:none;margin-top:10px">
@@ -798,6 +805,8 @@ textarea.f-input{resize:none}
         <label class="f-label">RUT</label>
         <input class="f-input" id="jug-rut" type="text" placeholder="12345678-9" maxlength="10">
         <button class="btn-primary" id="btn-jugador">+ Agregar jugador</button>
+        <div class="adm-sec-label" style="margin-top:20px">Jugadores registrados</div>
+        <div id="jugadores-adm-list"></div>
       </div>
 
       <!-- TAB VALIDAR -->
@@ -1540,8 +1549,119 @@ function renderAdmin() {
   renderPartidosAdm();
   renderNoticiasAdm();
   renderSancionesAdm();
+  renderJugadoresAdm();
   if (activeAdmTab === 'tab-res-adm') renderResAdm();
 }
+
+function renderJugadoresAdm() {
+  const el = document.getElementById('jugadores-adm-list');
+  if (!el) return;
+  const personas = D.personas || [];
+  if (!personas.length) { el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin jugadores registrados.</div>'; return; }
+  const porLiga = {};
+  personas.forEach(p => {
+    const eq   = D.equipos.find(e => e.ID === p.id_equipo);
+    const liga = D.ligas.find(l => l.ID === p.id_liga) || (eq ? D.ligas.find(l => l.ID === eq.ID_Liga) : null);
+    const ligaKey = liga ? liga.ID : 'sin';
+    const ligaNom = liga ? liga.NombreFantasia : 'Sin liga';
+    const eqKey   = p.id_equipo || 'sin';
+    const eqNom   = eq ? eq.NombreEquipo : '?';
+    if (!porLiga[ligaKey]) porLiga[ligaKey] = { nombre: ligaNom, equipos: {} };
+    if (!porLiga[ligaKey].equipos[eqKey]) porLiga[ligaKey].equipos[eqKey] = { nombre: eqNom, personas: [] };
+    porLiga[ligaKey].equipos[eqKey].personas.push(p);
+  });
+  el.innerHTML = Object.entries(porLiga).map(([, liga]) =>
+    `<div style="margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:var(--primary);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">${liga.nombre}</div>
+      ${Object.entries(liga.equipos).map(([, club]) =>
+        `<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden">
+          <div style="padding:9px 14px;background:var(--bg);font-family:'Archivo Black',sans-serif;font-size:13px;border-bottom:1px solid var(--border)">
+            ${club.nombre} <span style="font-size:11px;color:var(--muted);font-weight:400">(${club.personas.length})</span>
+          </div>
+          ${club.personas.map(p => {
+            const anio = p.fecha_nacimiento ? new Date(p.fecha_nacimiento).getFullYear() : '—';
+            const rolLabel = p.rol==='jugador'?'Jugador':p.rol==='cuerpo_tecnico'?'C.Técnico':'Delegado';
+            return `<div class="adm-list-item">
+              <div>
+                <div class="adm-list-name">${p.nombre_completo}</div>
+                <div class="adm-list-sub">${rolLabel} · ${p.categoria} · ${anio}${p.rut?' · '+p.rut:''}</div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="edit-btn" onclick="openEditJugador('${p.id}')">Editar</button>
+                <button class="del-btn" onclick="delJugador('${p.id}','${p.nombre_completo.replace(/'/g,"\\'")}')">Eliminar</button>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>`
+      ).join('')}
+    </div>`
+  ).join('');
+}
+
+window.openEditJugador = function(id) {
+  const p = (D.personas||[]).find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('modal-title').textContent = 'Editar jugador';
+  document.getElementById('modal-body').innerHTML = `
+    <label class="f-label">Nombre completo</label>
+    <input class="f-input" id="ej-nombre" type="text" value="${p.nombre_completo}">
+    <label class="f-label">RUT</label>
+    <input class="f-input" id="ej-rut" type="text" value="${p.rut||''}" placeholder="12345678-9">
+    <label class="f-label">Fecha de nacimiento</label>
+    <input class="f-input" id="ej-fnac" type="date" value="${p.fecha_nacimiento||''}">
+    <div class="f-row">
+      <div>
+        <label class="f-label">Categoría</label>
+        <select class="f-select" id="ej-cat" style="margin-bottom:0">
+          <option${p.categoria==='Varones'?' selected':''}>Varones</option>
+          <option${p.categoria==='Damas'?' selected':''}>Damas</option>
+          <option${p.categoria==='Mixto'?' selected':''}>Mixto</option>
+        </select>
+      </div>
+      <div>
+        <label class="f-label">Federativo</label>
+        <select class="f-select" id="ej-fed" style="margin-bottom:0">
+          <option value="true"${p.federado?' selected':''}>Federado</option>
+          <option value="false"${!p.federado?' selected':''}>No federado</option>
+        </select>
+      </div>
+    </div>`;
+  document.getElementById('modal-overlay').classList.add('open');
+  modalSaveCb = () => {
+    const rut = document.getElementById('ej-rut').value.trim();
+    if (rut && !rut.match(/^\d{7,8}-[\dkK]$/)) { toast('RUT inválido','err'); return; }
+    showConfirmV3('¿Guardar cambios?','', async() => {
+      const res = await fetch(NETLIFY_FN, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          action:'updatePersona', adminPassword: adminPass, personaId: id,
+          nombreCompleto: document.getElementById('ej-nombre').value.trim(),
+          rut, fechaNacimiento: document.getElementById('ej-fnac').value||null,
+          categoria: document.getElementById('ej-cat').value,
+          federado: document.getElementById('ej-fed').value==='true', rol: p.rol,
+        }),
+      });
+      const json = JSON.parse(await res.text());
+      closeConfirmV3();
+      document.getElementById('modal-overlay').classList.remove('open');
+      if (json?.success) { toast('✓ Actualizado','ok'); await refreshData(); renderAll(); renderAdmin(); }
+      else toast(json?.message||'Error','err');
+    },'ok');
+  };
+};
+
+window.delJugador = function(id, nombre) {
+  showConfirmV3(`¿Eliminar a ${nombre}?`,'Esta acción no se puede deshacer.', async() => {
+    const res = await fetch(NETLIFY_FN, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'deletePersona', adminPassword: adminPass, personaId: id }),
+    });
+    const json = JSON.parse(await res.text());
+    closeConfirmV3();
+    if (json?.success) { toast('✓ Eliminado','ok'); await refreshData(); renderAll(); renderAdmin(); }
+    else toast(json?.message||'Error','err');
+  },'danger');
+};
 
 function renderLigasAdm() {
   document.getElementById('ligas-adm-list').innerHTML = D.ligas.length
@@ -2055,52 +2175,70 @@ function renderAll() {
 }
 
 function renderJugadores() {
-  const el = document.getElementById('jugadores-list');
+  const el    = document.getElementById('jugadores-list');
   const badge = document.getElementById('badge-jug');
   if (!el) return;
-  const personas = D.personas || [];
-  const oficiales = personas.filter(p => p.estado === 'oficial');
-  if (badge) badge.textContent = oficiales.length + ' oficiales';
-  if (!oficiales.length) { el.innerHTML = empty('🏀','Sin jugadores registrados'); return; }
-  // Agrupar por equipo
-  const porEquipo = {};
-  oficiales.forEach(p => {
-    const eq = D.equipos.find(e => e.ID === p.id_equipo);
-    const key = p.id_equipo;
-    if (!porEquipo[key]) porEquipo[key] = { nombre: eq ? eq.NombreEquipo : '?', personas: [] };
-    porEquipo[key].personas.push(p);
+  const personas = (D.personas || []).filter(p => p.estado === 'oficial');
+  if (badge) badge.textContent = personas.length + ' oficiales';
+  if (!personas.length) { el.innerHTML = empty('🏀','Sin jugadores registrados'); return; }
+
+  // Agrupar por liga → equipo → categoría
+  const porLiga = {};
+  personas.forEach(p => {
+    const eq   = D.equipos.find(e => e.ID === p.id_equipo);
+    const liga = D.ligas.find(l => l.ID === p.id_liga) || (eq ? D.ligas.find(l => l.ID === eq.ID_Liga) : null);
+    const ligaKey = liga ? liga.ID : 'sin-liga';
+    const ligaNom = liga ? liga.NombreFantasia : 'Sin liga';
+    const eqKey   = p.id_equipo || 'sin-equipo';
+    const eqNom   = eq ? eq.NombreEquipo : 'Sin equipo';
+    if (!porLiga[ligaKey]) porLiga[ligaKey] = { nombre: ligaNom, equipos: {} };
+    if (!porLiga[ligaKey].equipos[eqKey]) porLiga[ligaKey].equipos[eqKey] = { nombre: eqNom, personas: [] };
+    porLiga[ligaKey].equipos[eqKey].personas.push(p);
   });
-  el.innerHTML = Object.entries(porEquipo).map(([eqId, club]) => {
-    const cats = {};
-    club.personas.forEach(p => {
-      const cat = p.rol === 'jugador' ? (p.categoria || 'Varones') : (p.rol === 'cuerpo_tecnico' ? 'Cuerpo técnico' : 'Delegados');
-      if (!cats[cat]) cats[cat] = [];
-      cats[cat].push(p);
-    });
-    const bodyHtml = Object.entries(cats).map(([cat, ps]) => `
-      <div class="cat-label-jug">${cat}</div>
-      ${ps.map(p => {
-        const initials = p.nombre_completo.split(',').map(s=>s.trim()[0]||'').join('').toUpperCase().substring(0,2);
-        const fedBadge = p.federado ? '<span style="font-size:9px;color:var(--green);font-weight:700">• Fed.</span>' : '';
-        return `<div class="jug-row">
-          <div class="jug-av">${p.foto_rostro_url ? `<img src="${p.foto_rostro_url}" alt="${p.nombre_completo}">` : initials}</div>
-          <div style="flex:1;min-width:0">
-            <div class="jug-nombre">${p.nombre_completo}</div>
-            <div class="jug-sub">${p.rol==='jugador'?'Jugador':p.rol==='cuerpo_tecnico'?'C. Técnico':'Delegado'} ${fedBadge}</div>
+
+  el.innerHTML = Object.entries(porLiga).map(([ligaId, liga]) => {
+    const equiposHtml = Object.entries(liga.equipos).map(([eqId, club]) => {
+      // Agrupar por categoría dentro del club
+      const porCat = {};
+      club.personas.forEach(p => {
+        const cat = p.rol === 'jugador' ? (p.categoria || 'Varones') :
+                    p.rol === 'cuerpo_tecnico' ? 'Cuerpo técnico' : 'Delegados';
+        if (!porCat[cat]) porCat[cat] = [];
+        porCat[cat].push(p);
+      });
+      const bodyHtml = Object.entries(porCat).map(([cat, ps]) => `
+        <div class="cat-label-jug">${cat}</div>
+        ${ps.map(p => {
+          const initials = p.nombre_completo.split(',').map(s=>s.trim()[0]||'').join('').toUpperCase().substring(0,2);
+          const anio = p.fecha_nacimiento ? new Date(p.fecha_nacimiento).getFullYear() : '';
+          const fedBadge = p.federado ? '<span style="font-size:9px;color:var(--green);font-weight:700;margin-left:4px">• Fed</span>' : '';
+          return `<div class="jug-row">
+            <div class="jug-av">${initials}</div>
+            <div style="flex:1;min-width:0">
+              <div class="jug-nombre">${p.nombre_completo}</div>
+              <div class="jug-sub">${p.rol==='jugador'?'Jugador':p.rol==='cuerpo_tecnico'?'C.Técnico':'Delegado'}${anio?' · '+anio:''}${p.rut?' · '+p.rut:''}${fedBadge}</div>
+            </div>
+            <span class="badge-oficial">✓ Oficial</span>
+          </div>`;
+        }).join('')}
+      `).join('');
+      return `<div class="club-acc">
+        <div class="club-acc-header" onclick="toggleClubAcc(this)">
+          <div>
+            <div class="club-acc-name">${club.nombre}</div>
+            <div class="club-acc-meta">${club.personas.length} miembros</div>
           </div>
-          <span class="badge-oficial">✓ Oficial</span>
-        </div>`;
-      }).join('')}
-    `).join('');
-    return `<div class="club-acc">
-      <div class="club-acc-header" onclick="toggleClubAcc(this)">
-        <div>
-          <div class="club-acc-name">${club.nombre}</div>
-          <div class="club-acc-meta">${club.personas.length} miembros</div>
+          <div class="club-acc-chv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
         </div>
-        <div class="club-acc-chv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="club-acc-body">${bodyHtml}</div>
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:18px">
+      <div style="font-family:'Archivo Black',sans-serif;font-size:13px;color:var(--primary);letter-spacing:-.3px;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        ${liga.nombre}
+        <span style="width:100%;height:1px;background:var(--border);display:block"></span>
       </div>
-      <div class="club-acc-body">${bodyHtml}</div>
+      ${equiposHtml}
     </div>`;
   }).join('');
 }
@@ -2272,25 +2410,44 @@ async function renderValidarAdm() {
   }
 }
 
-// ─── NOTICIA con URL de imagen ────────────────────────────────────────────────
+// ─── NOTICIA con upload + URL fallback ───────────────────────────────────────
+function previewFotoNoticia(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { toast('La imagen supera 3MB','err'); input.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('nt-foto-img').src = e.target.result;
+    document.getElementById('nt-foto-preview').style.display = 'block';
+    document.getElementById('nt-img').value = ''; // limpiar URL si hay archivo
+  };
+  reader.readAsDataURL(file);
+}
+
 window.createNoticia = async function() {
   const titulo = document.getElementById('nt-titulo').value.trim();
   if (!titulo) return toast('El título es obligatorio','err');
   showConfirmV3('¿Publicar esta noticia?','Será visible en la app inmediatamente.', async() => {
     closeConfirmV3();
-    const imgUrl = (document.getElementById('nt-img')?.value || '').trim();
-    // Convertir URL de Google Drive a URL directa si es necesario
-    const fotoUrl = convertirUrlDrive(imgUrl);
+    let fotoUrl = '';
+    const fotoInput = document.getElementById('nt-foto-input');
+    const urlInput  = (document.getElementById('nt-img')?.value || '').trim();
+    // Primero intentar upload de archivo
+    if (fotoInput && fotoInput.files[0]) {
+      toast('Subiendo imagen...','ok');
+      try { fotoUrl = await uploadImagen(fotoInput.files[0], 'noticias') || ''; }
+      catch(e) { toast('⚠ Error subiendo imagen','err'); }
+    }
+    // Si no hay upload, usar URL
+    if (!fotoUrl && urlInput) fotoUrl = urlInput;
     const res = await fetch(NETLIFY_FN, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action: 'createNews',
-        adminPassword: adminPass,
+        action: 'createNews', adminPassword: adminPass,
         titulo,
         descripcion: document.getElementById('nt-desc').value.trim(),
-        fotoUrl,
-        imagenUrl: fotoUrl,
+        fotoUrl, imagenUrl: fotoUrl,
         enlace: document.getElementById('nt-link')?.value.trim() || '',
       }),
     });
@@ -2299,21 +2456,13 @@ window.createNoticia = async function() {
       toast('✓ Noticia publicada','ok');
       document.getElementById('nt-titulo').value = '';
       document.getElementById('nt-desc').value   = '';
+      if (fotoInput) fotoInput.value = '';
       if (document.getElementById('nt-img')) document.getElementById('nt-img').value = '';
+      document.getElementById('nt-foto-preview').style.display = 'none';
       await refreshData(); renderAll(); if (adminPass) renderAdmin();
-    } else {
-      toast(json?.message || 'Error al publicar','err');
-    }
+    } else { toast(json?.message || 'Error al publicar','err'); }
   },'ok');
 };
-
-function convertirUrlDrive(url) {
-  if (!url) return '';
-  // Convertir Google Drive share URL a thumbnail directa
-  const match = url.match(/\/file\/d\/([^\/]+)/) || url.match(/id=([^&]+)/);
-  if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1280`;
-  return url;
-}
 
 // ─── JUGADOR con RUT y límite automático ─────────────────────────────────────
 async function createJugador() {
