@@ -29,7 +29,21 @@ exports.handler = async (event) => {
     // Acciones públicas (sin contraseña)
     const PUBLIC_ACTIONS = ['checkPassword', 'likeNoticia', 'checkLogin'];
 
-    if (!PUBLIC_ACTIONS.includes(action) && adminPassword !== ADMIN_PWD) {
+    // Acciones que cualquier usuario autenticado puede hacer (admin O delegado)
+    const AUTH_ACTIONS = ['createPersona', 'getPersonasPendientes'];
+
+    // Verificar si es admin
+    const isAdmin = adminPassword === ADMIN_PWD;
+
+    // Verificar si es delegado (buscar en BD)
+    let isDelegado = false;
+    if (!isAdmin && AUTH_ACTIONS.includes(action) && adminPassword) {
+      const { data: usr } = await db.from('usuarios')
+        .select('id,rol').eq('password_hash', adminPassword).eq('activo', true).maybeSingle();
+      isDelegado = !!(usr && usr.id);
+    }
+
+    if (!PUBLIC_ACTIONS.includes(action) && !isAdmin && !isDelegado) {
       return ok({ success: false, message: 'Contraseña incorrecta' });
     }
 
