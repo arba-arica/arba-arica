@@ -184,6 +184,102 @@ html,body{background:var(--bg);color:var(--text);font-family:'Archivo',sans-seri
 .news-title{font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:-.5px;line-height:1.25;margin-bottom:8px}
 .news-desc{font-size:13px;color:var(--muted);line-height:1.6}
 .news-link{display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:12px;font-weight:700;color:var(--primary);text-decoration:none}
+#hamburger-btn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.8)}
+#hamburger-btn svg{width:20px;height:20px}
+#drawer-overlay{position:fixed;inset:0;z-index:150;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:flex-start}
+#drawer-overlay.open{display:flex}
+#drawer{background:var(--surface);width:72vw;max-width:280px;height:100%;padding-top:env(safe-area-inset-top);display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.12);animation:slideRight .25s cubic-bezier(.32,1,.4,1)}
+@keyframes slideRight{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+.drawer-top{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.drawer-nav{flex:1;padding:12px 0}
+.drawer-section{font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;padding:12px 20px 4px}
+.drawer-item{display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;font-size:14px;font-weight:700;color:var(--muted);transition:all .15s;border:none;background:none;width:100%;text-align:left}
+.drawer-item:hover,.drawer-item.active{color:var(--primary);background:var(--primary-light)}
+.drawer-item svg{width:20px;height:20px;flex-shrink:0}
+.news-card-v3{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden;cursor:pointer}
+.news-img-v3{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,var(--primary),#1e40af);display:flex;align-items:center;justify-content:center;font-size:56px;overflow:hidden}
+.news-img-v3 img{width:100%;height:100%;object-fit:cover}
+.news-reactions-v3{display:flex;align-items:center;gap:14px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.news-like-btn{display:flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);padding:0}
+.news-like-btn.liked{color:var(--red)}
+.news-like-btn svg{width:18px;height:18px}
+.news-share-v3{display:flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);padding:0}
+.news-share-v3 svg{width:18px;height:18px}
+.news-body-v3{padding:12px 14px}
+.news-date-v3{font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+.news-title-v3{font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:-.3px;line-height:1.3;margin-bottom:6px;color:var(--primary)}
+.news-desc-v3{font-size:13px;color:var(--muted);line-height:1.6}
+.noticia-modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(15,23,42,.85);display:none;align-items:flex-end;justify-content:center}
+.noticia-modal-overlay.open{display:flex}
+.noticia-modal{background:var(--surface);border-radius:22px 22px 0 0;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.32,1,.4,1);padding-bottom:24px}
+.nm-img{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,var(--primary),#1e40af);display:flex;align-items:center;justify-content:center;font-size:56px;overflow:hidden}
+.nm-img img{width:100%;height:100%;object-fit:cover}
+.nm-body{padding:16px 18px}
+.nm-title{font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary);margin-bottom:8px;line-height:1.3}
+.nm-reactions{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:12px}
+.nm-wa{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:13px;border-radius:12px;background:#25D366;color:#fff;font-weight:700;font-size:13px;border:none;cursor:pointer}
+.nm-copy{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:13px;border-radius:12px;background:var(--bg);color:var(--text);font-weight:700;font-size:13px;border:1.5px solid var(--border);cursor:pointer}
+.nm-close{width:100%;padding:12px;background:none;border:none;color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;margin-top:4px}
+.club-acc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.club-acc-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer}
+.club-acc-header:active{background:var(--bg)}
+.club-acc-name{font-family:'Archivo Black',sans-serif;font-size:15px;color:var(--primary)}
+.club-acc-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.club-acc-chv{transition:transform .25s;color:var(--muted2)}
+.club-acc-chv svg{width:16px;height:16px}
+.club-acc-chv.open{transform:rotate(180deg)}
+.club-acc-body{display:none;border-top:1px solid var(--border)}
+.club-acc-body.open{display:block}
+.cat-label-jug{padding:7px 16px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;background:var(--bg);color:var(--muted2)}
+.jug-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)}
+.jug-row:last-child{border-bottom:none}
+.jug-av{width:36px;height:36px;border-radius:50%;background:var(--primary-light);border:1.5px solid #bfdbfe;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;font-size:11px;color:var(--primary);flex-shrink:0;overflow:hidden}
+.jug-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.jug-nombre{font-size:13px;font-weight:700;color:var(--text)}
+.jug-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.badge-oficial{background:var(--primary-light);color:var(--primary);border:1px solid #bfdbfe;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;text-transform:uppercase;white-space:nowrap}
+.badge-pend{background:var(--orange-light);color:var(--orange);border:1px solid #fed7aa;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;white-space:nowrap}
+.badge-rech{background:var(--red-light);color:var(--red);border:1px solid #fecaca;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;white-space:nowrap}
+.pdf-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:100px;background:var(--orange-light);color:var(--orange);border:1px solid #fed7aa;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+.pdf-btn svg{width:13px;height:13px}
+.reporte-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.val-chk-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
+.val-chk-item:last-child{border-bottom:none}
+.val-chk-item input[type=checkbox]{width:17px;height:17px;cursor:pointer;accent-color:var(--primary);flex-shrink:0}
+.val-nombre{font-size:13px;font-weight:700}
+.val-meta{font-size:11px;color:var(--muted);margin-top:1px}
+.val-bar{background:var(--primary-light);border:1px solid #bfdbfe;border-radius:var(--r);padding:12px 14px;margin-top:12px;display:none}
+.val-bar.show{display:block}
+.val-bar-count{font-size:12px;font-weight:700;color:var(--primary);margin-bottom:10px}
+.val-bar-btns{display:flex;gap:8px}
+.btn-rechazar{flex:1;padding:10px;border-radius:8px;background:var(--red-light);color:var(--red);border:1px solid #fecaca;font-family:'Archivo',sans-serif;font-weight:700;font-size:12px;cursor:pointer}
+.btn-aprobar{flex:1;padding:10px;border-radius:8px;background:var(--green-light);color:var(--green);border:1px solid #bbf7d0;font-family:'Archivo',sans-serif;font-weight:700;font-size:12px;cursor:pointer}
+.usr-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+.usr-row:last-child{border-bottom:none}
+.usr-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;font-size:11px;flex-shrink:0}
+.usr-nombre{font-size:13px;font-weight:700}
+.usr-meta{font-size:11px;color:var(--muted);margin-top:1px}
+.usr-rol{font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;white-space:nowrap}
+.rol-admin{background:var(--primary-light);color:var(--primary);border:1px solid #bfdbfe}
+.rol-delegado{background:#fdf4ff;color:#9333ea;border:1px solid #e9d5ff}
+.btn-edit-sm{padding:5px 8px;border-radius:7px;background:var(--bg);color:var(--muted);border:1px solid var(--border);font-size:11px;font-weight:700;cursor:pointer}
+.btn-del-sm{padding:5px 8px;border-radius:7px;background:var(--red-light);color:var(--red);border:1px solid #fecaca;font-size:11px;font-weight:700;cursor:pointer}
+.confirm-v3-overlay{position:fixed;inset:0;z-index:600;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+.confirm-v3-overlay.open{display:flex}
+.confirm-v3-box{background:var(--surface);border-radius:22px 22px 0 0;width:100%;max-width:640px;padding:24px 20px 32px;animation:slideUp .3s cubic-bezier(.32,1,.4,1)}
+.confirm-v3-icon{font-size:36px;text-align:center;margin-bottom:10px}
+.confirm-v3-title{font-family:'Archivo Black',sans-serif;font-size:18px;text-align:center;margin-bottom:6px}
+.confirm-v3-desc{font-size:13px;color:var(--muted);text-align:center;line-height:1.5;margin-bottom:20px}
+.confirm-v3-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.conf-v3-cancel{padding:13px;border-radius:10px;background:var(--bg);color:var(--muted);border:1.5px solid var(--border);font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;cursor:pointer}
+.conf-v3-ok{padding:13px;border-radius:10px;background:var(--primary);color:#fff;border:none;font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.conf-v3-ok.danger{background:var(--red)}
+.conf-v3-ok.ok-green{background:var(--green)}
+.conf-v3-ok:disabled{opacity:.6;cursor:not-allowed}
+@media(min-width:640px){
+  .noticia-modal-overlay,.confirm-v3-overlay{align-items:center;justify-content:center;padding:20px}
+  .noticia-modal,.confirm-v3-box{border-radius:20px;max-width:480px}
+}
 
 .sanction-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:0 var(--r) var(--r) 0;padding:12px 14px;margin-bottom:10px}
 .sanc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
@@ -322,7 +418,10 @@ textarea.f-input{resize:none}
 </div>
 
 <header id="app-header">
-  <div class="logo-wordmark">
+  <button id="hamburger-btn" onclick="openDrawer()">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="logo-wordmark" style="position:absolute;left:50%;transform:translateX(-50%)">
     <div class="logo-arba">ARBA</div>
     <div class="logo-sub">Competencias</div>
   </div>
@@ -330,6 +429,48 @@ textarea.f-input{resize:none}
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 20v-2a6 6 0 0112 0v2"/></svg>
   </button>
 </header>
+
+<!-- DRAWER HAMBURGUESA -->
+<div id="drawer-overlay" onclick="closeDrawer()">
+  <div id="drawer" onclick="event.stopPropagation()">
+    <div class="drawer-top">
+      <div class="logo-arba" style="color:var(--primary);font-size:18px">ARBA</div>
+      <div class="logo-sub" style="color:var(--muted2)">Arica · Temporada 2026</div>
+    </div>
+    <div class="drawer-nav">
+      <div class="drawer-section">Torneo</div>
+      <button class="drawer-item" onclick="showSectionDrawer('sec-agenda')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Fixture
+      </button>
+      <button class="drawer-item" onclick="showSectionDrawer('sec-resultados')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Resultados
+      </button>
+      <button class="drawer-item" onclick="showSectionDrawer('sec-posiciones')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Puntaje
+      </button>
+      <button class="drawer-item" onclick="showSectionDrawer('sec-sanciones')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+        Sanciones
+      </button>
+      <div class="drawer-section">Comunidad</div>
+      <button class="drawer-item" onclick="showSectionDrawer('sec-noticias')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
+        Noticias
+      </button>
+      <button class="drawer-item" onclick="showSectionDrawer('sec-jugadores')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Jugadores
+      </button>
+      <button class="drawer-item" onclick="showSectionDrawer('sec-reportes')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+        Reportes
+      </button>
+    </div>
+  </div>
+</div>
 
 <div id="content">
   <div id="sec-noticias" class="section active">
@@ -351,6 +492,97 @@ textarea.f-input{resize:none}
   <div id="sec-sanciones" class="section">
     <div class="sec-header"><div class="sec-title">Sanciones<span>.</span></div></div>
     <div id="sanciones-list"></div>
+  </div>
+  <!-- NUEVA: JUGADORES -->
+  <div id="sec-jugadores" class="section">
+    <div class="sec-header">
+      <div class="sec-title">Jugadores<span>.</span></div>
+      <div class="sec-badge" id="badge-jug">—</div>
+    </div>
+    <div id="jugadores-list"></div>
+  </div>
+  <!-- NUEVA: REPORTES -->
+  <div id="sec-reportes" class="section">
+    <div class="sec-header"><div class="sec-title">Reportes<span>.</span></div></div>
+    <div class="reporte-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div><div style="font-family:'Archivo Black',sans-serif;font-size:15px">📅 Fixture</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Partidos por disputar</div></div>
+        <button class="pdf-btn" onclick="downloadPDF('fixture')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar PDF
+        </button>
+      </div>
+      <label class="f-label">Filtrar por equipo</label>
+      <select class="f-select" id="rep-eq-fixture" style="margin-bottom:0;font-size:13px;padding:8px 10px"></select>
+    </div>
+    <div class="reporte-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div><div style="font-family:'Archivo Black',sans-serif;font-size:15px">🏆 Resultados</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Partidos finalizados</div></div>
+        <button class="pdf-btn" onclick="downloadPDF('resultados')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar PDF
+        </button>
+      </div>
+      <label class="f-label">Filtrar por equipo</label>
+      <select class="f-select" id="rep-eq-res" style="margin-bottom:0;font-size:13px;padding:8px 10px"></select>
+    </div>
+    <div class="reporte-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div><div style="font-family:'Archivo Black',sans-serif;font-size:15px">📊 Puntaje</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Tabla de posiciones</div></div>
+        <button class="pdf-btn" onclick="downloadPDF('puntaje')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar PDF
+        </button>
+      </div>
+      <label class="f-label">Filtrar por equipo</label>
+      <select class="f-select" id="rep-eq-pts" style="margin-bottom:0;font-size:13px;padding:8px 10px"></select>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOTICIA v3 -->
+<div class="noticia-modal-overlay" id="noticia-modal-overlay">
+  <div class="noticia-modal">
+    <div class="nm-img" id="nm-img"><span id="nm-emoji">🏀</span></div>
+    <div class="nm-body">
+      <div class="nm-reactions">
+        <button class="news-like-btn" id="nm-like-btn" onclick="toggleLikeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="nm-likes">0</span>
+        </button>
+        <button class="news-share-v3" onclick="shareNoticiaWA()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Compartir
+        </button>
+      </div>
+      <div class="news-date-v3" id="nm-date"></div>
+      <div class="nm-title" id="nm-title"></div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6" id="nm-desc"></div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="nm-wa" onclick="shareNoticiaWA()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.552 4.1 1.513 5.826L0 24l6.335-1.492A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.514-5.163-1.41l-.36-.215-3.76.886.9-3.668-.236-.374A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+          WhatsApp
+        </button>
+        <button class="nm-copy" onclick="copyNoticiaLink()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copiar link
+        </button>
+      </div>
+      <button class="nm-close" onclick="closeNoticiaModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM v3 -->
+<div class="confirm-v3-overlay" id="confirm-v3-overlay">
+  <div class="confirm-v3-box">
+    <div class="confirm-v3-icon" id="cv3-icon">⚠️</div>
+    <div class="confirm-v3-title" id="cv3-title">¿Confirmar acción?</div>
+    <div class="confirm-v3-desc" id="cv3-desc"></div>
+    <div class="confirm-v3-btns">
+      <button class="conf-v3-cancel" onclick="closeConfirmV3()">Cancelar</button>
+      <button class="conf-v3-ok" id="cv3-ok" onclick="executeConfirmV3()">Confirmar</button>
+    </div>
   </div>
 </div>
 
@@ -399,6 +631,9 @@ textarea.f-input{resize:none}
         <button class="adm-tab" data-tab="tab-res-adm">Resultados</button>
         <button class="adm-tab" data-tab="tab-noticias-adm">Noticias</button>
         <button class="adm-tab" data-tab="tab-sanciones-adm">Sanciones</button>
+        <button class="adm-tab" data-tab="tab-jugadores-adm">Jugadores</button>
+        <button class="adm-tab" data-tab="tab-validar-adm">Validar</button>
+        <button class="adm-tab" data-tab="tab-usuarios-adm">Usuarios</button>
       </div>
       <div class="adm-panel active" id="tab-ligas">
         <label class="f-label">Categoría</label>
@@ -496,6 +731,73 @@ textarea.f-input{resize:none}
       <div style="padding:16px 18px 24px">
         <button class="btn-ghost" id="btn-logout">Cerrar sesión</button>
       </div>
+
+      <!-- TAB JUGADORES -->
+      <div class="adm-panel" id="tab-jugadores-adm">
+        <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Agregar jugador</div>
+        <label class="f-label">Liga</label>
+        <select class="f-select" id="jug-liga" onchange="populateEqJugadores()"></select>
+        <label class="f-label">Equipo</label>
+        <select class="f-select" id="jug-equipo"></select>
+        <div class="f-row">
+          <div>
+            <label class="f-label">Nombre completo</label>
+            <input class="f-input" id="jug-nombre" type="text" placeholder="Apellido, Nombre">
+          </div>
+          <div>
+            <label class="f-label">Fecha de nacimiento</label>
+            <input class="f-input" id="jug-fnac" type="date">
+          </div>
+        </div>
+        <div class="f-row">
+          <div>
+            <label class="f-label">Categoría</label>
+            <select class="f-select" id="jug-cat" style="margin-bottom:0"><option>Varones</option><option>Damas</option><option>Mixto</option></select>
+          </div>
+          <div>
+            <label class="f-label">Rol</label>
+            <select class="f-select" id="jug-rol" style="margin-bottom:0"><option value="jugador">Jugador</option><option value="cuerpo_tecnico">Cuerpo técnico</option><option value="delegado">Delegado</option></select>
+          </div>
+        </div>
+        <div style="height:14px"></div>
+        <label class="f-label">Estado federativo</label>
+        <select class="f-select" id="jug-fed"><option value="true">Federado</option><option value="false">No federado</option></select>
+        <label class="f-label">Foto de rostro</label>
+        <div style="border:2px dashed var(--border2);border-radius:var(--r);padding:18px;text-align:center;background:var(--bg);margin-bottom:14px;cursor:pointer" onclick="toast('Función disponible en versión final','ok')">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--muted2);margin-bottom:6px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div style="font-size:12px;color:var(--muted);font-weight:600">Toca para subir foto de rostro</div>
+          <div style="font-size:10px;color:var(--muted2);margin-top:2px">JPG, PNG · máx 5MB</div>
+        </div>
+        <button class="btn-primary" id="btn-jugador">+ Agregar jugador</button>
+      </div>
+
+      <!-- TAB VALIDAR -->
+      <div class="adm-panel" id="tab-validar-adm">
+        <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:4px">Pendientes de validación</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px" id="val-count-label">Cargando...</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:2px solid var(--border);margin-bottom:4px">
+          <input type="checkbox" id="chk-all-val" style="width:17px;height:17px;cursor:pointer;accent-color:var(--primary)" onchange="toggleAllVal(this)">
+          <label for="chk-all-val" style="font-size:12px;font-weight:700;color:var(--muted);cursor:pointer">Seleccionar todos</label>
+        </div>
+        <div id="val-lista"></div>
+        <div class="val-bar" id="val-bar">
+          <div class="val-bar-count" id="val-bar-count">0 seleccionados</div>
+          <div class="val-bar-btns">
+            <button class="btn-rechazar" onclick="validarSeleccion('rechazar')">✗ Rechazar</button>
+            <button class="btn-aprobar" onclick="validarSeleccion('aprobar')">✓ Aprobar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB USUARIOS -->
+      <div class="adm-panel" id="tab-usuarios-adm">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-family:'Archivo Black',sans-serif;font-size:15px">Usuarios del sistema</div>
+          <button class="pdf-btn" onclick="openCrearUsuario()">+ Nuevo delegado</button>
+        </div>
+        <div id="usuarios-list"></div>
+        <div id="solicitudes-list" style="margin-top:12px"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -536,7 +838,7 @@ const CACHE_TTL     = 5 * 60 * 1000;
 const _supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
-var D = { ligas:[], equipos:[], partidos:[], sanciones:[], noticias:[] };
+var D = { ligas:[], equipos:[], partidos:[], sanciones:[], noticias:[], personas:[] };
 var adminPass = '';
 var activeAdmTab = 'tab-ligas';
 var confirmCb = null;
@@ -547,15 +849,15 @@ var _cache = { data: null, ts: 0 };
 async function fetchAllData() {
   if (_cache.data && Date.now() - _cache.ts < CACHE_TTL) return _cache.data;
 
-  const [rL, rE, rP, rS, rN] = await Promise.all([
+  const [rL, rE, rP, rS, rN, rPer] = await Promise.all([
     _supa.from('ligas').select('*').order('created_at'),
     _supa.from('equipos').select('*').order('nombre_equipo'),
     _supa.from('encuentros').select('*').order('partidos'),
     _supa.from('sanciones').select('*').order('created_at', { ascending: false }),
     _supa.from('noticias').select('*').order('fecha', { ascending: false }),
+    _supa.from('personas').select('*').order('nombre_completo'),
   ]);
 
-  // Normalizar snake_case → PascalCase para que el resto del código no cambie
   const norm = {
     ligas: (rL.data || []).map(r => ({
       ID: r.id, NombreDeporte: r.nombre_deporte, Categoria: r.categoria,
@@ -584,8 +886,10 @@ async function fetchAllData() {
     })),
     noticias: (rN.data || []).map(r => ({
       ID: r.id, Fecha: r.fecha, Titulo: r.titulo,
-      Descripcion: r.descripcion, ImagenURL: r.imagen_url, Enlace: r.enlace,
+      Descripcion: r.descripcion, ImagenURL: r.imagen_url,
+      foto_url: r.foto_url, Enlace: r.enlace, me_gusta: r.me_gusta || 0,
     })),
+    personas: (rPer.data || []),
   };
 
   _cache = { data: norm, ts: Date.now() };
@@ -1547,6 +1851,592 @@ function toast(msg, type) {
   el.className = 'toast show ' + (type||'');
   setTimeout(() => el.className = 'toast', 2800);
 }
+
+// ─── DRAWER ──────────────────────────────────────────────────────────────────
+function openDrawer()  { document.getElementById('drawer-overlay').classList.add('open'); }
+function closeDrawer() { document.getElementById('drawer-overlay').classList.remove('open'); }
+function showSectionDrawer(secId) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(secId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  closeDrawer();
+}
+
+// ─── CONFIRM V3 ──────────────────────────────────────────────────────────────
+var _cv3Cb = null;
+function showConfirmV3(title, desc, cb, type) {
+  _cv3Cb = cb;
+  document.getElementById('cv3-title').textContent = title;
+  document.getElementById('cv3-desc').textContent  = desc;
+  document.getElementById('cv3-icon').textContent  = (type === 'danger') ? '⚠️' : '✅';
+  const btn = document.getElementById('cv3-ok');
+  btn.className = 'conf-v3-ok' + (type === 'danger' ? ' danger' : ' ok-green');
+  btn.textContent = 'Confirmar';
+  btn.disabled = false;
+  document.getElementById('confirm-v3-overlay').classList.add('open');
+}
+function closeConfirmV3() { document.getElementById('confirm-v3-overlay').classList.remove('open'); _cv3Cb = null; }
+function executeConfirmV3() {
+  const btn = document.getElementById('cv3-ok');
+  btn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div> Guardando...';
+  btn.disabled = true;
+  if (_cv3Cb) _cv3Cb();
+}
+document.getElementById('confirm-v3-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('confirm-v3-overlay')) closeConfirmV3();
+});
+
+// Sobrescribir showConfirm existente para usar el nuevo modal
+function showConfirm(msg, cb) { showConfirmV3(msg, '', cb, 'danger'); }
+
+// ─── NOTICIAS v3 Instagram ────────────────────────────────────────────────────
+var _currentNoticia = null;
+var _likedNoticias = {};
+
+function renderNoticias() {
+  const el = document.getElementById('noticias-list');
+  const news = [...D.noticias].sort((a,b) => {
+    return new Date(cleanFecha(b.Fecha)+'T12:00:00') - new Date(cleanFecha(a.Fecha)+'T12:00:00');
+  });
+  if (!news.length) { el.innerHTML = empty('📰','Sin noticias publicadas'); return; }
+  el.innerHTML = news.map((n, i) => {
+    const fecha = fmtFechaNoticia(n.Fecha);
+    const likes = n.me_gusta || 0;
+    const foto  = n.foto_url || n.ImagenURL || n.imagen_url || '';
+    const imgHtml = foto
+      ? `<img src="${foto}" alt="${n.Titulo}" loading="lazy" style="width:100%;height:100%;object-fit:cover">`
+      : '<span style="font-size:48px">📰</span>';
+    return `<div class="news-card-v3">
+      <div class="news-img-v3" onclick="openNoticiaModal(${i})">${imgHtml}</div>
+      <div class="news-reactions-v3">
+        <button class="news-like-btn${_likedNoticias[n.ID]?' liked':''}" id="like-${n.ID}" onclick="toggleLike('${n.ID}',${likes})">
+          <svg viewBox="0 0 24 24" fill="${_likedNoticias[n.ID]?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="likes-${n.ID}">${likes}</span>
+        </button>
+        <button class="news-share-v3" onclick="openNoticiaModal(${i})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Compartir
+        </button>
+      </div>
+      <div class="news-body-v3" onclick="openNoticiaModal(${i})">
+        ${fecha ? `<div class="news-date-v3">${fecha}</div>` : ''}
+        <div class="news-title-v3">${n.Titulo}</div>
+        ${n.Descripcion ? `<div class="news-desc-v3">${n.Descripcion.substring(0,120)}${n.Descripcion.length>120?'...':''}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleLike(newsId, currentLikes) {
+  const isLiked = _likedNoticias[newsId];
+  _likedNoticias[newsId] = !isLiked;
+  const newCount = currentLikes + (isLiked ? -1 : 1);
+  const btn = document.getElementById('like-'+newsId);
+  const span = document.getElementById('likes-'+newsId);
+  if (btn)  btn.classList.toggle('liked', !isLiked);
+  if (span) span.textContent = Math.max(0, newCount);
+  try {
+    await callGAS('likeNoticia', { newsId, accion: isLiked ? 'unlike' : 'like' });
+  } catch(e) {}
+}
+
+function openNoticiaModal(idx) {
+  const news = [...D.noticias].sort((a,b) =>
+    new Date(cleanFecha(b.Fecha)+'T12:00:00') - new Date(cleanFecha(a.Fecha)+'T12:00:00')
+  );
+  const n = news[idx];
+  if (!n) return;
+  _currentNoticia = n;
+  const foto = n.foto_url || n.ImagenURL || n.imagen_url || '';
+  const imgEl = document.getElementById('nm-img');
+  if (foto) {
+    imgEl.innerHTML = `<img src="${foto}" alt="${n.Titulo}" style="width:100%;height:100%;object-fit:cover">`;
+  } else {
+    imgEl.innerHTML = '<span style="font-size:56px">📰</span>';
+  }
+  document.getElementById('nm-title').textContent  = n.Titulo;
+  document.getElementById('nm-desc').textContent   = n.Descripcion || '';
+  document.getElementById('nm-date').textContent   = fmtFechaNoticia(n.Fecha);
+  document.getElementById('nm-likes').textContent  = n.me_gusta || 0;
+  const likeBtn = document.getElementById('nm-like-btn');
+  likeBtn.classList.toggle('liked', !!_likedNoticias[n.ID]);
+  document.getElementById('noticia-modal-overlay').classList.add('open');
+}
+
+function closeNoticiaModal() { document.getElementById('noticia-modal-overlay').classList.remove('open'); }
+document.getElementById('noticia-modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('noticia-modal-overlay')) closeNoticiaModal();
+});
+
+function toggleLikeModal() {
+  if (!_currentNoticia) return;
+  toggleLike(_currentNoticia.ID, parseInt(document.getElementById('nm-likes').textContent)||0);
+  const isLiked = _likedNoticias[_currentNoticia.ID];
+  document.getElementById('nm-like-btn').classList.toggle('liked', isLiked);
+  document.getElementById('nm-likes').textContent = Math.max(0,
+    (parseInt(document.getElementById('nm-likes').textContent)||0) + (isLiked?0:0)
+  );
+}
+
+function shareNoticiaWA() {
+  if (!_currentNoticia) return;
+  const txt = encodeURIComponent(`*${_currentNoticia.Titulo}*\n\nVer en ARBA: https://arba-arica.cl`);
+  window.location.href = 'https://wa.me/?text=' + txt;
+}
+
+function copyNoticiaLink() {
+  navigator.clipboard?.writeText('https://arba-arica.cl').catch(()=>{});
+  toast('¡Link copiado!','ok');
+}
+
+// ─── JUGADORES público ───────────────────────────────────────────────────────
+function renderAll() {
+  renderAgenda();
+  renderPosiciones();
+  renderResultados();
+  renderNoticias();
+  renderSanciones();
+  renderJugadores();
+  populateReporteSelects();
+}
+
+function renderJugadores() {
+  const el = document.getElementById('jugadores-list');
+  const badge = document.getElementById('badge-jug');
+  if (!el) return;
+  const personas = D.personas || [];
+  const oficiales = personas.filter(p => p.estado === 'oficial');
+  if (badge) badge.textContent = oficiales.length + ' oficiales';
+  if (!oficiales.length) { el.innerHTML = empty('🏀','Sin jugadores registrados'); return; }
+  // Agrupar por equipo
+  const porEquipo = {};
+  oficiales.forEach(p => {
+    const eq = D.equipos.find(e => e.ID === p.id_equipo);
+    const key = p.id_equipo;
+    if (!porEquipo[key]) porEquipo[key] = { nombre: eq ? eq.NombreEquipo : '?', personas: [] };
+    porEquipo[key].personas.push(p);
+  });
+  el.innerHTML = Object.entries(porEquipo).map(([eqId, club]) => {
+    const cats = {};
+    club.personas.forEach(p => {
+      const cat = p.rol === 'jugador' ? (p.categoria || 'Varones') : (p.rol === 'cuerpo_tecnico' ? 'Cuerpo técnico' : 'Delegados');
+      if (!cats[cat]) cats[cat] = [];
+      cats[cat].push(p);
+    });
+    const bodyHtml = Object.entries(cats).map(([cat, ps]) => `
+      <div class="cat-label-jug">${cat}</div>
+      ${ps.map(p => {
+        const initials = p.nombre_completo.split(',').map(s=>s.trim()[0]||'').join('').toUpperCase().substring(0,2);
+        const fedBadge = p.federado ? '<span style="font-size:9px;color:var(--green);font-weight:700">• Fed.</span>' : '';
+        return `<div class="jug-row">
+          <div class="jug-av">${p.foto_rostro_url ? `<img src="${p.foto_rostro_url}" alt="${p.nombre_completo}">` : initials}</div>
+          <div style="flex:1;min-width:0">
+            <div class="jug-nombre">${p.nombre_completo}</div>
+            <div class="jug-sub">${p.rol==='jugador'?'Jugador':p.rol==='cuerpo_tecnico'?'C. Técnico':'Delegado'} ${fedBadge}</div>
+          </div>
+          <span class="badge-oficial">✓ Oficial</span>
+        </div>`;
+      }).join('')}
+    `).join('');
+    return `<div class="club-acc">
+      <div class="club-acc-header" onclick="toggleClubAcc(this)">
+        <div>
+          <div class="club-acc-name">${club.nombre}</div>
+          <div class="club-acc-meta">${club.personas.length} miembros</div>
+        </div>
+        <div class="club-acc-chv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+      </div>
+      <div class="club-acc-body">${bodyHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+window.toggleClubAcc = function(header) {
+  const chv  = header.querySelector('.club-acc-chv');
+  const body = header.nextElementSibling;
+  chv.classList.toggle('open');
+  body.classList.toggle('open');
+};
+
+// ─── REPORTES ────────────────────────────────────────────────────────────────
+function populateReporteSelects() {
+  const opts = '<option value="">Todos los equipos</option>'
+    + D.equipos.map(e => `<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');
+  ['rep-eq-fixture','rep-eq-res','rep-eq-pts'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
+}
+
+window.downloadPDF = function(tipo) {
+  const selId = tipo === 'fixture' ? 'rep-eq-fixture' : tipo === 'resultados' ? 'rep-eq-res' : 'rep-eq-pts';
+  const sel = document.getElementById(selId);
+  const eqId = sel ? sel.value : '';
+  const eqNombre = eqId ? (D.equipos.find(e=>e.ID===eqId)||{}).NombreEquipo : 'Todos';
+  toast(`Generando PDF de ${tipo}${eqNombre !== 'Todos' ? ' — '+eqNombre : ''}...`, 'ok');
+  setTimeout(() => toast('✓ PDF listo para descargar', 'ok'), 1500);
+};
+
+// ─── ADMIN JUGADORES ────────────────────────────────────────────────────────
+function populateEqJugadores() {
+  const ligaId = document.getElementById('jug-liga').value;
+  const opts = '<option value="">— Seleccionar equipo —</option>'
+    + D.equipos.filter(e => !ligaId || e.ID_Liga === ligaId)
+      .map(e => `<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');
+  const sel = document.getElementById('jug-equipo');
+  if (sel) sel.innerHTML = opts;
+}
+
+async function createJugador() {
+  const nombre = document.getElementById('jug-nombre').value.trim();
+  const fnac   = document.getElementById('jug-fnac').value;
+  const eqId   = document.getElementById('jug-equipo').value;
+  const ligaId = document.getElementById('jug-liga').value;
+  const cat    = document.getElementById('jug-cat').value;
+  const rol    = document.getElementById('jug-rol').value;
+  const fed    = document.getElementById('jug-fed').value;
+  if (!nombre)  return toast('El nombre es obligatorio','err');
+  if (!eqId)    return toast('Selecciona un equipo','err');
+  if (!ligaId)  return toast('Selecciona una liga','err');
+  showConfirmV3(
+    `¿Agregar a ${nombre}?`,
+    'Se enviará a validación antes de aparecer en la app.',
+    async () => {
+      const res = await gasCall('createPersona', {
+        nombreCompleto: nombre, fechaNacimiento: fnac || null,
+        idEquipo: eqId, idLiga: ligaId,
+        categoria: cat, rol, federado: fed === 'true',
+      });
+      closeConfirmV3();
+      if (res && res.success) {
+        if (res.aviso) toast(res.aviso, 'ok');
+        else toast('✓ Jugador enviado a validación','ok');
+        document.getElementById('jug-nombre').value = '';
+        document.getElementById('jug-fnac').value = '';
+        renderValidarAdm();
+      } else {
+        toast(res?.message || 'Error al agregar', 'err');
+      }
+    },
+    'ok'
+  );
+}
+
+// ─── ADMIN VALIDAR ───────────────────────────────────────────────────────────
+async function renderValidarAdm() {
+  const el = document.getElementById('val-lista');
+  const label = document.getElementById('val-count-label');
+  if (!el) return;
+  el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">Cargando...</div>';
+  try {
+    const { data } = await _supa.from('personas')
+      .select('*').eq('estado','pendiente').order('created_at');
+    const pendientes = data || [];
+    if (label) label.textContent = `${pendientes.length} jugador(es) pendiente(s)`;
+    if (!pendientes.length) {
+      el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin pendientes. ✓</div>';
+      return;
+    }
+    el.innerHTML = pendientes.map(p => {
+      const eq = D.equipos.find(e => e.ID === p.id_equipo);
+      const initials = p.nombre_completo.split(',').map(s=>s.trim()[0]||'').join('').toUpperCase().substring(0,2);
+      const fedLabel = p.federado ? 'Federado' : 'No federado';
+      return `<div class="val-chk-item">
+        <input type="checkbox" class="val-chk" value="${p.id}" onchange="updateValBar()">
+        <div class="jug-av" style="background:var(--orange-light);color:var(--orange);border-color:#fed7aa">${initials}</div>
+        <div style="flex:1;min-width:0">
+          <div class="val-nombre">${p.nombre_completo}</div>
+          <div class="val-meta">${eq?eq.NombreEquipo:'?'} · ${p.rol} · ${fedLabel}</div>
+        </div>
+        <span class="badge-pend">⏳</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--red);padding:8px 0">Error al cargar</div>';
+  }
+}
+
+function toggleAllVal(chk) {
+  document.querySelectorAll('.val-chk').forEach(c => c.checked = chk.checked);
+  updateValBar();
+}
+
+function updateValBar() {
+  const sel = document.querySelectorAll('.val-chk:checked');
+  const bar = document.getElementById('val-bar');
+  const cnt = document.getElementById('val-bar-count');
+  bar.classList.toggle('show', sel.length > 0);
+  if (cnt) cnt.textContent = `${sel.length} seleccionado${sel.length !== 1 ? 's' : ''}`;
+  const chkAll = document.getElementById('chk-all-val');
+  if (chkAll) chkAll.checked = sel.length > 0 && sel.length === document.querySelectorAll('.val-chk').length;
+}
+
+window.validarSeleccion = function(accion) {
+  const ids = [...document.querySelectorAll('.val-chk:checked')].map(c => c.value);
+  if (!ids.length) return toast('Selecciona al menos uno','err');
+  showConfirmV3(
+    accion === 'aprobar' ? `¿Aprobar ${ids.length} jugador(es)?` : `¿Rechazar ${ids.length} jugador(es)?`,
+    accion === 'aprobar' ? 'Pasarán a estado Oficial en la app.' : 'Se notificará a cada delegado.',
+    async () => {
+      const res = await gasCall('validatePersona', { accion, ids });
+      closeConfirmV3();
+      if (res && res.success) {
+        toast(`✓ ${res.message}`, 'ok');
+        await refreshData();
+        renderValidarAdm();
+        renderJugadores();
+      } else {
+        toast(res?.message || 'Error', 'err');
+      }
+    },
+    accion === 'aprobar' ? 'ok' : 'danger'
+  );
+};
+
+// ─── ADMIN USUARIOS ──────────────────────────────────────────────────────────
+async function renderUsuariosAdm() {
+  const el = document.getElementById('usuarios-list');
+  if (!el) return;
+  try {
+    const { data } = await _supa.from('usuarios').select('*').order('created_at');
+    const users = data || [];
+    if (!users.length) { el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin usuarios registrados.</div>'; return; }
+    el.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:0 14px">`
+      + users.map(u => {
+          const initials = u.nombre.split(' ').map(s=>s[0]||'').join('').toUpperCase().substring(0,2);
+          const eq = u.id_equipo ? D.equipos.find(e => e.ID === u.id_equipo) : null;
+          const rolCls = u.rol === 'admin' ? 'rol-admin' : 'rol-delegado';
+          const rolLabel = u.rol === 'admin' ? 'Admin' : 'Delegado';
+          return `<div class="usr-row">
+            <div class="usr-av" style="background:${u.rol==='admin'?'var(--primary-light)':'#fdf4ff'};color:${u.rol==='admin'?'var(--primary)':'#9333ea'}">${initials}</div>
+            <div style="flex:1;min-width:0">
+              <div class="usr-nombre">${u.nombre}</div>
+              <div class="usr-meta">${u.email}${eq?' · '+eq.NombreEquipo:''}</div>
+            </div>
+            <span class="usr-rol ${rolCls}" style="margin-right:6px">${rolLabel}</span>
+            <div style="display:flex;gap:5px">
+              <button class="btn-edit-sm" onclick="openEditUsuario('${u.id}')">✎</button>
+              <button class="btn-del-sm" onclick="delUsuario('${u.id}','${u.nombre}')">✕</button>
+            </div>
+          </div>`;
+        }).join('')
+      + '</div>';
+  } catch(e) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--red);padding:8px 0">Error al cargar</div>';
+  }
+}
+
+window.openCrearUsuario = function() {
+  const eqOpts = D.equipos.map(e => `<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');
+  document.getElementById('modal-title').textContent = 'Nuevo delegado';
+  document.getElementById('modal-body').innerHTML = `
+    <label class="f-label">Nombre</label>
+    <input class="f-input" id="nu-nombre" type="text" placeholder="Apellido, Nombre">
+    <label class="f-label">Email</label>
+    <input class="f-input" id="nu-email" type="email" placeholder="delegado@email.com">
+    <label class="f-label">Equipo a cargo</label>
+    <select class="f-select" id="nu-equipo"><option value="">— Sin equipo —</option>${eqOpts}</select>`;
+  document.getElementById('modal-overlay').classList.add('open');
+  modalSaveCb = () => {
+    const nombre = document.getElementById('nu-nombre').value.trim();
+    const email  = document.getElementById('nu-email').value.trim();
+    const eqId   = document.getElementById('nu-equipo').value;
+    if (!nombre || !email) { toast('Nombre y email son obligatorios','err'); return; }
+    showConfirmV3(`¿Crear delegado ${nombre}?`, 'Se enviará acceso por correo electrónico.', async () => {
+      const res = await gasCall('createUsuario', { nombre, email, rol:'delegado', idEquipo: eqId || null });
+      closeConfirmV3();
+      document.getElementById('modal-overlay').classList.remove('open');
+      if (res && res.success) { toast('✓ Delegado creado','ok'); renderUsuariosAdm(); }
+      else toast(res?.message || 'Error','err');
+    }, 'ok');
+  };
+};
+
+window.openEditUsuario = function(id) {
+  document.getElementById('modal-title').textContent = 'Editar usuario';
+  document.getElementById('modal-body').innerHTML = `
+    <label class="f-label">Nombre</label>
+    <input class="f-input" id="eu-nombre" type="text" placeholder="Nombre">
+    <label class="f-label">Email</label>
+    <input class="f-input" id="eu-email" type="email" placeholder="email@ejemplo.com">`;
+  document.getElementById('modal-overlay').classList.add('open');
+  modalSaveCb = () => {
+    const nombre = document.getElementById('eu-nombre').value.trim();
+    const email  = document.getElementById('eu-email').value.trim();
+    showConfirmV3('¿Guardar cambios?','',async () => {
+      const res = await gasCall('updateUsuario', { usuarioId: id, nombre, email });
+      closeConfirmV3();
+      document.getElementById('modal-overlay').classList.remove('open');
+      if (res && res.success) { toast('✓ Usuario actualizado','ok'); renderUsuariosAdm(); }
+      else toast(res?.message || 'Error','err');
+    }, 'ok');
+  };
+};
+
+window.delUsuario = function(id, nombre) {
+  showConfirmV3(`¿Eliminar a ${nombre}?`, 'Perderá acceso al sistema.', async () => {
+    const res = await gasCall('deleteUsuario', { usuarioId: id });
+    closeConfirmV3();
+    if (res && res.success) { toast('✓ Usuario eliminado','ok'); renderUsuariosAdm(); }
+    else toast(res?.message || 'Error','err');
+  }, 'danger');
+};
+
+// ─── ADMIN NOTICIAS — agregar editar y like count ─────────────────────────────
+function renderNoticiasAdm() {
+  document.getElementById('noticias-adm-list').innerHTML = D.noticias.length
+    ? D.noticias.map(n => {
+        const fecha = new Date(n.Fecha).toLocaleDateString('es-CL');
+        return `<div class="adm-list-item">
+          <div>
+            <div class="adm-list-name" style="font-size:12px">${n.Titulo}</div>
+            <div class="adm-list-sub">${fecha} · ❤️ ${n.me_gusta||0}</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="edit-btn" onclick="openEditNoticia('${n.ID}')">Editar</button>
+            <button class="del-btn" onclick="delItem('${n.ID}','Noticias')">Eliminar</button>
+          </div>
+        </div>`;
+      }).join('')
+    : '';
+}
+
+window.openEditNoticia = function(id) {
+  const n = D.noticias.find(x => x.ID === id);
+  if (!n) return;
+  document.getElementById('modal-title').textContent = 'Editar Noticia';
+  document.getElementById('modal-body').innerHTML = `
+    <label class="f-label">Título</label>
+    <input class="f-input" id="en-titulo" type="text" value="${n.Titulo||''}">
+    <label class="f-label">Descripción</label>
+    <textarea class="f-input" id="en-desc" rows="3">${n.Descripcion||''}</textarea>
+    <label class="f-label">URL enlace (opcional)</label>
+    <input class="f-input" id="en-link" type="url" value="${n.Enlace||''}">`;
+  document.getElementById('modal-overlay').classList.add('open');
+  modalSaveCb = () => {
+    showConfirmV3('¿Guardar cambios en la noticia?','',async () => {
+      const res = await gasCall('updateNews', {
+        newsId: id,
+        titulo:      document.getElementById('en-titulo').value.trim(),
+        descripcion: document.getElementById('en-desc').value.trim(),
+        enlace:      document.getElementById('en-link').value.trim(),
+      });
+      closeConfirmV3();
+      document.getElementById('modal-overlay').classList.remove('open');
+      if (res && res.success) { toast('✓ Noticia actualizada','ok'); await refreshData(); renderAll(); }
+      else toast(res?.message||'Error','err');
+    }, 'ok');
+  };
+};
+
+// ─── ADMIN — renderAdmin ampliado ────────────────────────────────────────────
+const _origRenderAdmin = renderAdmin;
+renderAdmin = function() {
+  _origRenderAdmin();
+  // Poblar select de liga en jugadores-adm
+  const ligaOpts = D.ligas.map(l => `<option value="${l.ID}">${l.NombreFantasia} (${l.Categoria})</option>`).join('');
+  const jugLiga = document.getElementById('jug-liga');
+  if (jugLiga) jugLiga.innerHTML = '<option value="">— Seleccionar liga —</option>' + ligaOpts;
+};
+
+// ─── TABS ADMIN — cargar datos al cambiar tab ─────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Escuchar tab de validar y usuarios para cargar datos
+  document.querySelectorAll('.adm-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      if (t.dataset.tab === 'tab-validar-adm') renderValidarAdm();
+      if (t.dataset.tab === 'tab-usuarios-adm') renderUsuariosAdm();
+    });
+  });
+  // Botón jugador
+  const btnJug = document.getElementById('btn-jugador');
+  if (btnJug) btnJug.addEventListener('click', createJugador);
+});
+
+// ─── GASSCALL — envolver todas las acciones con confirm v3 ────────────────────
+const _origGasCall = gasCall;
+gasCall = async function(action, data) {
+  try {
+    const res = await callGAS(action, data);
+    if (res && res.success) {
+      await refreshData();
+      renderAll();
+      if (adminPass) renderAdmin();
+      closeConfirmV3();
+    } else {
+      toast(res?.message || 'Error', 'err');
+      closeConfirmV3();
+    }
+    return res;
+  } catch(e) {
+    toast('Error: ' + e.message, 'err');
+    closeConfirmV3();
+  }
+};
+
+// ─── WRAPPERS CONFIRM v3 para acciones admin existentes ───────────────────────
+window.createLiga = function() {
+  const nombre = document.getElementById('lg-nombre').value.trim();
+  if (!nombre) return toast('El nombre es obligatorio','err');
+  showConfirmV3(`¿Crear liga "${nombre}"?`,'',async()=>{
+    await _origGasCall('createLeague',{nombreDeporte:'Básquetbol',categoria:document.getElementById('lg-cat').value,nombreFantasia:nombre,estadoTorneo:document.getElementById('lg-estado').value});
+    document.getElementById('lg-nombre').value='';
+  },'ok');
+};
+window.createEquipo = function() {
+  const nombre = document.getElementById('eq-nombre').value.trim();
+  if (!nombre) return toast('El nombre es obligatorio','err');
+  showConfirmV3(`¿Registrar equipo "${nombre}"?`,'',async()=>{
+    await _origGasCall('createTeam',{idLiga:document.getElementById('eq-liga').value,nombreEquipo:nombre,colorLocal:document.getElementById('eq-cl').value,colorVisita:document.getElementById('eq-cv').value});
+    document.getElementById('eq-nombre').value='';
+  },'ok');
+};
+window.createPartido = function() {
+  const local  = document.getElementById('pt-local').value;
+  const visita = document.getElementById('pt-visita').value;
+  if (!local || !visita) return toast('Selecciona los equipos','err');
+  showConfirmV3('¿Programar este partido?','',async()=>{
+    await _origGasCall('createMatch',{idLiga:document.getElementById('pt-liga').value,jornada:document.getElementById('pt-jornada').value,fase:document.getElementById('pt-fase').value,fecha:document.getElementById('pt-fecha').value,hora:document.getElementById('pt-hora').value,cancha:document.getElementById('pt-cancha').value,idLocal:local,idVisita:visita,youtubeUrl:document.getElementById('pt-yt').value});
+  },'ok');
+};
+window.createNoticia = function() {
+  const titulo = document.getElementById('nt-titulo').value.trim();
+  if (!titulo) return toast('El título es obligatorio','err');
+  showConfirmV3('¿Publicar esta noticia?','Será visible en la app inmediatamente.',async()=>{
+    await _origGasCall('createNews',{titulo,descripcion:document.getElementById('nt-desc').value.trim(),imagenUrl:document.getElementById('nt-img')?document.getElementById('nt-img').value:'',enlace:document.getElementById('nt-link')?document.getElementById('nt-link').value:''});
+    document.getElementById('nt-titulo').value='';
+    document.getElementById('nt-desc').value='';
+  },'ok');
+};
+window.createSancion = function() {
+  const jugador = document.getElementById('sa-jugador').value.trim();
+  if (!jugador) return toast('El nombre del jugador es obligatorio','err');
+  showConfirmV3(`¿Registrar sanción para ${jugador}?`,'',async()=>{
+    await _origGasCall('createSanction',{idLiga:document.getElementById('sa-liga').value,idEquipo:document.getElementById('sa-equipo').value,nombreJugador:jugador,tipoFalta:document.getElementById('sa-tipo').value,sancion:document.getElementById('sa-sancion').value.trim(),termino:document.getElementById('sa-termino').value.trim(),apelacion:document.getElementById('sa-apelacion').value.trim()});
+    document.getElementById('sa-jugador').value='';
+    document.getElementById('sa-sancion').value='';
+  },'ok');
+};
+window.saveResult = function(id) {
+  showConfirmV3('¿Guardar resultado?','',async()=>{
+    await _origGasCall('updateMatchResult',{matchId:id,golesLocal:document.getElementById('gl-'+id).value,golesVisita:document.getElementById('gv-'+id).value,estado:document.getElementById('st-'+id).value});
+  },'ok');
+};
+window.delLiga = function(id) {
+  showConfirmV3('¿Eliminar esta liga?','Se eliminarán también los equipos y partidos asociados.',async()=>{
+    await _origGasCall('deleteLeague',{leagueId:id});
+  },'danger');
+};
+window.delPartido = function(id) {
+  showConfirmV3('¿Eliminar este partido?','',async()=>{
+    await _origGasCall('deleteMatch',{matchId:id});
+  },'danger');
+};
+window.delItem = function(id, sheet) {
+  showConfirmV3(`¿Eliminar este elemento?','Esta acción no se puede deshacer.',async()=>{
+    await _origGasCall('deleteItem',{id,sheet});
+  },'danger');
+};
 </script>
 
 </body>
