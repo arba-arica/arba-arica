@@ -2297,11 +2297,9 @@ window.createNoticia = async function() {
 
 function convertirUrlDrive(url) {
   if (!url) return '';
-  // Convertir Google Drive share URL a URL directa de imagen
-  // https://drive.google.com/file/d/FILE_ID/view → https://drive.google.com/uc?export=view&id=FILE_ID
-  const match = url.match(/\/file\/d\/([^\/]+)/);
-  if (match) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-  // Si ya es URL directa, devolver tal cual
+  // Convertir Google Drive share URL a thumbnail directa
+  const match = url.match(/\/file\/d\/([^\/]+)/) || url.match(/id=([^&]+)/);
+  if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1280`;
   return url;
 }
 
