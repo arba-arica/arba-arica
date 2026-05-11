@@ -2426,20 +2426,18 @@ function previewFotoNoticia(input) {
 window.createNoticia = async function() {
   const titulo = document.getElementById('nt-titulo').value.trim();
   if (!titulo) return toast('El título es obligatorio','err');
-  // Guardar referencias ANTES de abrir el modal
-  const fotoInput = document.getElementById('nt-foto-input');
-  const archivoGuardado = (fotoInput && fotoInput.files[0]) ? fotoInput.files[0] : null;
-  const urlInput = (document.getElementById('nt-img')?.value || '').trim();
-  showConfirmV3('¿Publicar esta noticia?','Será visible en la app inmediatamente.', async() => {
-    closeConfirmV3();
+  const btn = document.getElementById('btn-noticia');
+  const btnTxt = btn.innerHTML;
+  btn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;margin-right:6px"></div> Publicando...';
+  btn.disabled = true;
+  try {
     let fotoUrl = '';
-    // Subir archivo si hay uno guardado
-    if (archivoGuardado) {
+    const fotoInput = document.getElementById('nt-foto-input');
+    const urlInput  = (document.getElementById('nt-img')?.value || '').trim();
+    if (fotoInput && fotoInput.files[0]) {
       toast('Subiendo imagen...','ok');
-      try { fotoUrl = await uploadImagen(archivoGuardado, 'noticias') || ''; }
-      catch(e) { toast('⚠ Error subiendo imagen','err'); }
+      fotoUrl = await uploadImagen(fotoInput.files[0], 'noticias') || '';
     }
-    // Si no hay upload, usar URL
     if (!fotoUrl && urlInput) fotoUrl = urlInput;
     const res = await fetch(NETLIFY_FN, {
       method: 'POST',
@@ -2462,7 +2460,12 @@ window.createNoticia = async function() {
       document.getElementById('nt-foto-preview').style.display = 'none';
       await refreshData(); renderAll(); if (adminPass) renderAdmin();
     } else { toast(json?.message || 'Error al publicar','err'); }
-  },'ok');
+  } catch(e) {
+    toast('Error: ' + e.message,'err');
+  } finally {
+    btn.innerHTML = btnTxt;
+    btn.disabled = false;
+  }
 };
 
 // ─── JUGADOR con RUT y límite automático ─────────────────────────────────────
