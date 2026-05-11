@@ -315,7 +315,7 @@ exports.handler = async (event) => {
           foto_rostro_url:  data.fotoRostroUrl     || '',
           email:            data.email             || '',
           telefono:         data.telefono          || '',
-          estado:           'pendiente',
+          estado:           'oficial',
         });
         if (error) { result = fail(error); break; }
         result = {
