@@ -2432,15 +2432,17 @@ function previewFotoNoticia(input) {
 window.createNoticia = async function() {
   const titulo = document.getElementById('nt-titulo').value.trim();
   if (!titulo) return toast('El título es obligatorio','err');
+  // Guardar referencias ANTES de abrir el modal
+  const fotoInput = document.getElementById('nt-foto-input');
+  const archivoGuardado = (fotoInput && fotoInput.files[0]) ? fotoInput.files[0] : null;
+  const urlInput = (document.getElementById('nt-img')?.value || '').trim();
   showConfirmV3('¿Publicar esta noticia?','Será visible en la app inmediatamente.', async() => {
     closeConfirmV3();
     let fotoUrl = '';
-    const fotoInput = document.getElementById('nt-foto-input');
-    const urlInput  = (document.getElementById('nt-img')?.value || '').trim();
-    // Primero intentar upload de archivo
-    if (fotoInput && fotoInput.files[0]) {
+    // Subir archivo si hay uno guardado
+    if (archivoGuardado) {
       toast('Subiendo imagen...','ok');
-      try { fotoUrl = await uploadImagen(fotoInput.files[0], 'noticias') || ''; }
+      try { fotoUrl = await uploadImagen(archivoGuardado, 'noticias') || ''; }
       catch(e) { toast('⚠ Error subiendo imagen','err'); }
     }
     // Si no hay upload, usar URL
