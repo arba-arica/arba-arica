@@ -2211,12 +2211,12 @@ function renderJugadores() {
         ${ps.map(p => {
           const initials = p.nombre_completo.split(',').map(s=>s.trim()[0]||'').join('').toUpperCase().substring(0,2);
           const anio = p.fecha_nacimiento ? new Date(p.fecha_nacimiento).getFullYear() : '';
-          const fedBadge = p.federado ? '<span style="font-size:9px;color:var(--green);font-weight:700;margin-left:4px">• Fed</span>' : '';
+          const fedBadge = p.federado ? '<span style="font-size:9px;color:var(--green);font-weight:700;margin-left:4px">• Federado</span>' : '';
           return `<div class="jug-row">
             <div class="jug-av">${initials}</div>
             <div style="flex:1;min-width:0">
               <div class="jug-nombre">${p.nombre_completo}</div>
-              <div class="jug-sub">${p.rol==='jugador'?'Jugador':p.rol==='cuerpo_tecnico'?'C.Técnico':'Delegado'}${anio?' · '+anio:''}${p.rut?' · '+p.rut:''}${fedBadge}</div>
+              <div class="jug-sub">${p.rol==='jugador'?'Jugador':p.rol==='cuerpo_tecnico'?'C.Técnico':'Delegado'}${anio?' · '+anio:''}${fedBadge}</div>
             </div>
             <span class="badge-oficial">✓ Oficial</span>
           </div>`;
@@ -2293,16 +2293,21 @@ function updateContadorJugadores() {
 async function uploadImagen(file, bucket) {
   if (!file) return null;
   if (file.size > 3 * 1024 * 1024) { toast('La imagen supera 3MB','err'); return null; }
-  // Comprimir JPEG al 85% en el browser
-  const comprimida = await comprimirImagen(file, 0.85);
-  const ext  = file.name.split('.').pop().toLowerCase() || 'jpg';
-  const nombre = `${Date.now()}-${Math.random().toString(36).substring(2,8)}.${ext}`;
-  const { data, error } = await _supa.storage.from(bucket).upload(nombre, comprimida, {
+  const ext    = file.name.split('.').pop().toLowerCase().replace(/jpeg/,'jpg') || 'jpg';
+  const nombre = `img-${Date.now()}.${ext}`;
+  toast('Subiendo imagen...', 'ok');
+  const { data, error } = await _supa.storage.from(bucket).upload(nombre, file, {
     contentType: file.type,
-    upsert: false,
+    upsert: true,
   });
-  if (error) { toast('Error al subir imagen: ' + error.message,'err'); return null; }
+  if (error) {
+    console.error('Storage error:', error);
+    toast('Error: ' + error.message, 'err');
+    return null;
+  }
   const { data: urlData } = _supa.storage.from(bucket).getPublicUrl(nombre);
+  console.log('URL pública:', urlData.publicUrl);
+  toast('✓ Imagen subida', 'ok');
   return urlData.publicUrl;
 }
 
