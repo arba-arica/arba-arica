@@ -661,7 +661,6 @@ textarea.f-input{resize:none}
         <button class="adm-tab" data-tab="tab-noticias-adm">Noticias</button>
         <button class="adm-tab" data-tab="tab-sanciones-adm">Sanciones</button>
         <button class="adm-tab" data-tab="tab-jugadores-adm">Jugadores</button>
-        <button class="adm-tab" data-tab="tab-validar-adm">Validar</button>
         <button class="adm-tab" data-tab="tab-usuarios-adm">Usuarios</button>
       </div>
       <div class="adm-panel active" id="tab-ligas">
@@ -771,7 +770,8 @@ textarea.f-input{resize:none}
         <label class="f-label">Liga</label>
         <select class="f-select" id="jug-liga" onchange="populateEqJugadores()"></select>
         <label class="f-label">Equipo</label>
-        <select class="f-select" id="jug-equipo"></select>
+        <select class="f-select" id="jug-equipo" onchange="updateContadorJugadores()"></select>
+        <div id="jug-contador" style="font-size:12px;color:var(--muted);margin-top:-10px;margin-bottom:14px"></div>
         <div class="f-row">
           <div>
             <label class="f-label">Nombre completo</label>
@@ -2139,6 +2139,18 @@ function populateEqJugadores() {
       .map(e => `<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');
   const sel = document.getElementById('jug-equipo');
   if (sel) sel.innerHTML = opts;
+  updateContadorJugadores();
+}
+
+function updateContadorJugadores() {
+  const eqId = document.getElementById('jug-equipo')?.value;
+  const el   = document.getElementById('jug-contador');
+  if (!el) return;
+  if (!eqId) { el.textContent = ''; return; }
+  const jugadores = (D.personas||[]).filter(p => p.id_equipo === eqId && p.rol === 'jugador');
+  const restantes = 15 - jugadores.length;
+  el.textContent = `${jugadores.length}/15 jugadores · ${restantes > 0 ? restantes + ' cupos disponibles' : '⚠ Cupo completo'}`;
+  el.style.color = restantes <= 0 ? 'var(--red)' : restantes <= 3 ? 'var(--orange)' : 'var(--muted)';
 }
 async function uploadImagen(file, bucket) {
   if (!file) return null;
@@ -2303,7 +2315,7 @@ function convertirUrlDrive(url) {
   return url;
 }
 
-// ─── JUGADOR con RUT ──────────────────────────────────────────────────────────
+// ─── JUGADOR con RUT y límite automático ─────────────────────────────────────
 async function createJugador() {
   const nombre = document.getElementById('jug-nombre').value.trim();
   const fnac   = document.getElementById('jug-fnac').value;
@@ -2316,11 +2328,17 @@ async function createJugador() {
   if (!nombre) return toast('El nombre es obligatorio','err');
   if (!eqId)   return toast('Selecciona un equipo','err');
   if (!ligaId) return toast('Selecciona una liga','err');
-  // Validar formato RUT si fue ingresado
   if (rut && !rut.match(/^\d{7,8}-[\dkK]$/)) {
     return toast('RUT inválido. Formato: 12345678-9','err');
   }
-  showConfirmV3(`¿Agregar a ${nombre}?`,'Se enviará a validación antes de aparecer en la app.',async() => {
+  // Verificar límite de 15 jugadores por equipo
+  const jugadoresEquipo = (D.personas||[]).filter(p =>
+    p.id_equipo === eqId && p.rol === 'jugador'
+  );
+  if (rol === 'jugador' && jugadoresEquipo.length >= 15) {
+    return toast('El equipo ya tiene 15 jugadores (límite máximo)','err');
+  }
+  showConfirmV3(`¿Agregar a ${nombre}?`, `Equipo: ${jugadoresEquipo.length}/15 jugadores`, async() => {
     closeConfirmV3();
     const res = await fetch(NETLIFY_FN, {
       method: 'POST',
@@ -2338,12 +2356,12 @@ async function createJugador() {
     });
     const json = JSON.parse(await res.text());
     if (json && json.success) {
-      if (json.aviso) toast(json.aviso,'ok');
-      else toast('✓ Jugador enviado a validación','ok');
+      toast(`✓ ${nombre} agregado al equipo`,'ok');
       document.getElementById('jug-nombre').value = '';
       document.getElementById('jug-fnac').value   = '';
       document.getElementById('jug-rut').value    = '';
-      renderValidarAdm();
+      await refreshData();
+      renderJugadores();
     } else {
       toast(json?.message || 'Error al agregar','err');
     }
