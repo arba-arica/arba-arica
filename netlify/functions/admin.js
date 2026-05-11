@@ -1,9 +1,8 @@
 /**
- * netlify/functions/admin.js
- * Reemplaza code.gs — mismas acciones, mismo adminPassword
+ * netlify/functions/admin.js — v3.0
  * Variables de entorno en Netlify:
  *   SUPABASE_URL        = https://lwsyntjhbcdfuhfjdjqf.supabase.co
- *   SUPABASE_SERVICE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO...
+ *   SUPABASE_SERVICE_KEY = eyJ...service_role...
  *   ADMIN_PASSWORD      = Arba26*XXL
  */
 const { createClient } = require('@supabase/supabase-js');
@@ -27,7 +26,10 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || '{}');
     const { action, adminPassword, ...data } = body;
 
-    if (action !== 'checkPassword' && adminPassword !== ADMIN_PWD) {
+    // Acciones públicas (sin contraseña)
+    const PUBLIC_ACTIONS = ['checkPassword', 'likeNoticia'];
+
+    if (!PUBLIC_ACTIONS.includes(action) && adminPassword !== ADMIN_PWD) {
       return ok({ success: false, message: 'Contraseña incorrecta' });
     }
 
@@ -35,6 +37,7 @@ exports.handler = async (event) => {
 
     switch (action) {
 
+      // ─── AUTH ────────────────────────────────────────────────
       case 'checkPassword':
         result = adminPassword === ADMIN_PWD
           ? { success: true }
@@ -46,11 +49,11 @@ exports.handler = async (event) => {
         const dep = data.nombreDeporte || 'Básquetbol';
         const pts = isBasket(dep) ? { v:2, e:0, d:1 } : { v:3, e:1, d:0 };
         const { error } = await db.from('ligas').insert({
-          nombre_deporte:  dep,
-          categoria:       ['Varones','Damas','Mixto'].includes(data.categoria) ? data.categoria : 'Varones',
-          nombre_fantasia: data.nombreFantasia || '',
-          puntos_victoria: pts.v, puntos_empate: pts.e, puntos_derrota: pts.d,
-          estado_torneo:   data.estadoTorneo === 'Finalizado' ? 'Finalizado' : 'Activo',
+          nombre_deporte:   dep,
+          categoria:        ['Varones','Damas','Mixto'].includes(data.categoria) ? data.categoria : 'Varones',
+          nombre_fantasia:  data.nombreFantasia || '',
+          puntos_victoria:  pts.v, puntos_empate: pts.e, puntos_derrota: pts.d,
+          estado_torneo:    data.estadoTorneo === 'Finalizado' ? 'Finalizado' : 'Activo',
         });
         result = error ? fail(error) : { success:true, message:'Liga creada' };
         break;
@@ -59,17 +62,16 @@ exports.handler = async (event) => {
         const dep = data.nombreDeporte || 'Básquetbol';
         const pts = isBasket(dep) ? { v:2, e:0, d:1 } : { v:3, e:1, d:0 };
         const { error } = await db.from('ligas').update({
-          nombre_deporte:  dep,
-          categoria:       data.categoria,
-          nombre_fantasia: data.nombreFantasia,
-          puntos_victoria: pts.v, puntos_empate: pts.e, puntos_derrota: pts.d,
-          estado_torneo:   data.estadoTorneo === 'Finalizado' ? 'Finalizado' : 'Activo',
+          nombre_deporte:   dep,
+          categoria:        data.categoria,
+          nombre_fantasia:  data.nombreFantasia,
+          puntos_victoria:  pts.v, puntos_empate: pts.e, puntos_derrota: pts.d,
+          estado_torneo:    data.estadoTorneo === 'Finalizado' ? 'Finalizado' : 'Activo',
         }).eq('id', data.leagueId);
         result = error ? fail(error) : { success:true, message:'Liga actualizada' };
         break;
       }
       case 'deleteLeague': {
-        // cascade borra equipos + encuentros automáticamente
         const { error } = await db.from('ligas').delete().eq('id', data.leagueId);
         result = error ? fail(error) : { success:true, message:'Liga eliminada' };
         break;
@@ -79,11 +81,41 @@ exports.handler = async (event) => {
       case 'createTeam': {
         const { error } = await db.from('equipos').insert({
           id_liga:               data.idLiga,
-          nombre_equipo:         data.nombreEquipo       || '',
-          color_uniforme_local:  data.colorLocal         || '',
-          color_uniforme_visita: data.colorVisita        || '',
+          nombre_equipo:         data.nombreEquipo      || '',
+          color_uniforme_local:  data.colorLocal        || '',
+          color_uniforme_visita: data.colorVisita       || '',
+          logo_url:              data.logoUrl           || '',
+          delegado_nombre:       data.delegadoNombre    || '',
+          delegado_email:        data.delegadoEmail     || '',
+          delegado_telefono:     data.delegadoTelefono  || '',
+          limite_jugadores:      parseInt(data.limiteJugadores) || 15,
+          estado_validacion:     'pendiente',
         });
         result = error ? fail(error) : { success:true, message:'Equipo registrado' };
+        break;
+      }
+      case 'updateTeam': {
+        const { error } = await db.from('equipos').update({
+          nombre_equipo:         data.nombreEquipo      || '',
+          color_uniforme_local:  data.colorLocal        || '',
+          color_uniforme_visita: data.colorVisita       || '',
+          logo_url:              data.logoUrl           || '',
+          delegado_nombre:       data.delegadoNombre    || '',
+          delegado_email:        data.delegadoEmail     || '',
+          delegado_telefono:     data.delegadoTelefono  || '',
+          limite_jugadores:      parseInt(data.limiteJugadores) || 15,
+          updated_at:            new Date().toISOString(),
+        }).eq('id', data.teamId);
+        result = error ? fail(error) : { success:true, message:'Equipo actualizado' };
+        break;
+      }
+      case 'validateTeam': {
+        // data.accion: 'aprobar' | 'rechazar'
+        const update = data.accion === 'aprobar'
+          ? { estado_validacion: 'validado', motivo_rechazo: null, updated_at: new Date().toISOString() }
+          : { estado_validacion: 'rechazado', motivo_rechazo: data.motivo || '', updated_at: new Date().toISOString() };
+        const { error } = await db.from('equipos').update(update).eq('id', data.teamId);
+        result = error ? fail(error) : { success:true, message: data.accion === 'aprobar' ? 'Equipo aprobado' : 'Equipo rechazado' };
         break;
       }
 
@@ -141,9 +173,33 @@ exports.handler = async (event) => {
           titulo:      data.titulo      || '',
           descripcion: data.descripcion || '',
           imagen_url:  data.imagenUrl   || '',
+          foto_url:    data.fotoUrl     || '',
           enlace:      data.enlace      || '',
+          me_gusta:    0,
         });
         result = error ? fail(error) : { success:true, message:'Noticia publicada' };
+        break;
+      }
+      case 'updateNews': {
+        const { error } = await db.from('noticias').update({
+          titulo:      data.titulo      || '',
+          descripcion: data.descripcion || '',
+          imagen_url:  data.imagenUrl   || '',
+          foto_url:    data.fotoUrl     || '',
+          enlace:      data.enlace      || '',
+        }).eq('id', data.newsId);
+        result = error ? fail(error) : { success:true, message:'Noticia actualizada' };
+        break;
+      }
+      case 'likeNoticia': {
+        // Acción pública — suma 1 like
+        const { data: noticia, error: errGet } = await db
+          .from('noticias').select('me_gusta').eq('id', data.newsId).single();
+        if (errGet) { result = fail(errGet); break; }
+        const nuevoTotal = (noticia.me_gusta || 0) + (data.accion === 'unlike' ? -1 : 1);
+        const { error } = await db.from('noticias')
+          .update({ me_gusta: Math.max(0, nuevoTotal) }).eq('id', data.newsId);
+        result = error ? fail(error) : { success:true, me_gusta: Math.max(0, nuevoTotal) };
         break;
       }
 
@@ -175,10 +231,140 @@ exports.handler = async (event) => {
         break;
       }
 
+      // ─── PERSONAS (jugadores, técnicos, delegados) ────────────
+      case 'createPersona': {
+        // Validar edad mínima 11 años
+        if (data.fechaNacimiento) {
+          const edad = calcularEdad(data.fechaNacimiento);
+          if (edad < 11) {
+            result = { success:false, message:`Edad mínima 11 años. Este jugador tiene ${edad} años.` };
+            break;
+          }
+        }
+        // Verificar si ya existe en otro equipo (mismo nombre + fecha)
+        const { data: existe } = await db.from('personas')
+          .select('id, id_equipo')
+          .eq('nombre_completo', data.nombreCompleto)
+          .eq('fecha_nacimiento', data.fechaNacimiento)
+          .neq('id_equipo', data.idEquipo)
+          .maybeSingle();
+        const yaExiste = existe && existe.id;
+        const { error } = await db.from('personas').insert({
+          id_equipo:        data.idEquipo,
+          id_liga:          data.idLiga,
+          nombre_completo:  data.nombreCompleto    || '',
+          fecha_nacimiento: data.fechaNacimiento   || null,
+          rol:              ['jugador','cuerpo_tecnico','delegado'].includes(data.rol) ? data.rol : 'jugador',
+          categoria:        ['Varones','Damas','Mixto'].includes(data.categoria) ? data.categoria : 'Varones',
+          federado:         data.federado === true || data.federado === 'true',
+          foto_rostro_url:  data.fotoRostroUrl     || '',
+          email:            data.email             || '',
+          telefono:         data.telefono          || '',
+          estado:           'pendiente',
+        });
+        if (error) { result = fail(error); break; }
+        result = {
+          success: true,
+          message: 'Jugador agregado y enviado a validación',
+          aviso: yaExiste ? '⚠ Este jugador ya está registrado en otro equipo' : null,
+        };
+        break;
+      }
+      case 'updatePersona': {
+        const { error } = await db.from('personas').update({
+          nombre_completo:  data.nombreCompleto  || '',
+          fecha_nacimiento: data.fechaNacimiento || null,
+          rol:              data.rol             || 'jugador',
+          categoria:        data.categoria       || 'Varones',
+          federado:         data.federado === true || data.federado === 'true',
+          foto_rostro_url:  data.fotoRostroUrl   || '',
+          email:            data.email           || '',
+          telefono:         data.telefono        || '',
+          updated_at:       new Date().toISOString(),
+        }).eq('id', data.personaId);
+        result = error ? fail(error) : { success:true, message:'Jugador actualizado' };
+        break;
+      }
+      case 'validatePersona': {
+        // data.accion: 'aprobar' | 'rechazar'
+        // data.ids: array de IDs para acción masiva, o data.personaId para individual
+        const ids = data.ids || (data.personaId ? [data.personaId] : []);
+        if (!ids.length) { result = { success:false, message:'No hay jugadores seleccionados' }; break; }
+        const update = data.accion === 'aprobar'
+          ? { estado: 'oficial', motivo_rechazo: null, validado_at: new Date().toISOString() }
+          : { estado: 'rechazado', motivo_rechazo: data.motivo || 'Rechazado por admin', validado_at: new Date().toISOString() };
+        const { error } = await db.from('personas').update(update).in('id', ids);
+        result = error ? fail(error) : {
+          success: true,
+          message: data.accion === 'aprobar'
+            ? `${ids.length} jugador(es) aprobado(s)`
+            : `${ids.length} jugador(es) rechazado(s)`,
+        };
+        break;
+      }
+      case 'deletePersona': {
+        const { error } = await db.from('personas').delete().eq('id', data.personaId);
+        result = error ? fail(error) : { success:true, message:'Jugador eliminado' };
+        break;
+      }
+
+      // ─── ESTADÍSTICAS (1P, 2P, 3P) ───────────────────────────
+      case 'updateStats': {
+        // Upsert stats de carrera por jugador + liga
+        const { error } = await db.from('stats_carrera').upsert({
+          id_jugador: data.idJugador,
+          id_liga:    data.idLiga,
+          partidos:   parseInt(data.partidos) || 0,
+          pts_1p:     parseInt(data.pts1p)    || 0,
+          pts_2p:     parseInt(data.pts2p)    || 0,
+          pts_3p:     parseInt(data.pts3p)    || 0,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'id_jugador,id_liga' });
+        result = error ? fail(error) : { success:true, message:'Estadísticas actualizadas' };
+        break;
+      }
+
+      // ─── USUARIOS (Admin crea cuentas de delegados) ───────────
+      case 'createUsuario': {
+        const { error } = await db.from('usuarios').insert({
+          nombre:    data.nombre    || '',
+          email:     data.email     || '',
+          rol:       ['admin','delegado','publico'].includes(data.rol) ? data.rol : 'delegado',
+          id_equipo: data.idEquipo  || null,
+          activo:    true,
+        });
+        result = error ? fail(error) : { success:true, message:'Usuario creado. Se enviará acceso por correo.' };
+        break;
+      }
+      case 'updateUsuario': {
+        const { error } = await db.from('usuarios').update({
+          nombre:    data.nombre    || '',
+          email:     data.email     || '',
+          rol:       data.rol       || 'delegado',
+          id_equipo: data.idEquipo  || null,
+          activo:    data.activo !== false,
+        }).eq('id', data.usuarioId);
+        result = error ? fail(error) : { success:true, message:'Usuario actualizado' };
+        break;
+      }
+      case 'deleteUsuario': {
+        const { error } = await db.from('usuarios').delete().eq('id', data.usuarioId);
+        result = error ? fail(error) : { success:true, message:'Usuario eliminado' };
+        break;
+      }
+      case 'aprobarSolicitudEdicion': {
+        // Admin aprueba/rechaza solicitud de edición de delegado
+        result = { success:true, message: data.accion === 'aprobar' ? 'Solicitud aprobada' : 'Solicitud rechazada' };
+        break;
+      }
+
       // ─── DELETE GENÉRICO ─────────────────────────────────────
       case 'deleteItem': {
-        const map = { Ligas:'ligas', Equipos:'equipos', Encuentros:'encuentros',
-                      Sanciones:'sanciones', Noticias:'noticias' };
+        const map = {
+          Ligas:'ligas', Equipos:'equipos', Encuentros:'encuentros',
+          Sanciones:'sanciones', Noticias:'noticias',
+          Personas:'personas', Usuarios:'usuarios',
+        };
         const tabla = map[data.sheet];
         if (!tabla) { result = { success:false, message:'Tabla no permitida' }; break; }
         const { error } = await db.from(tabla).delete().eq('id', data.id);
@@ -197,7 +383,16 @@ exports.handler = async (event) => {
   }
 };
 
-// ─── Helpers ─────────────────────────────────────────────────
-const ok   = body => ({ statusCode:200, headers:HEADERS, body: JSON.stringify(body) });
-const fail = err  => ({ success:false, message: err.message || err.details || 'Error BD' });
-const isBasket = d => /básquet|basket|volei/i.test(d);
+// ─── HELPERS ──────────────────────────────────────────────────
+const ok      = body => ({ statusCode:200, headers:HEADERS, body: JSON.stringify(body) });
+const fail    = err  => ({ success:false, message: err.message || err.details || 'Error BD' });
+const isBasket = d  => /básquet|basket|volei/i.test(d);
+
+function calcularEdad(fechaNacimiento) {
+  const hoy  = new Date();
+  const nac  = new Date(fechaNacimiento);
+  let edad   = hoy.getFullYear() - nac.getFullYear();
+  const m    = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad;
+}
