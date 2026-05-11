@@ -44,6 +44,46 @@ exports.handler = async (event) => {
           : { success: false, message: 'Contraseña incorrecta' };
         break;
 
+      // ─── LOGIN CON EMAIL + CONTRASEÑA ────────────────────────
+      case 'checkLogin': {
+        // Admin fijo
+        if (data.email === 'arba.arica@gmail.com' && data.password === ADMIN_PWD) {
+          result = { success: true, usuario: { nombre: 'Admin ARBA', email: data.email, rol: 'admin' } };
+          break;
+        }
+        // Buscar delegado en tabla usuarios
+        const { data: usuario, error: errU } = await db
+          .from('usuarios')
+          .select('*')
+          .eq('email', data.email.toLowerCase())
+          .eq('activo', true)
+          .maybeSingle();
+        if (errU || !usuario) {
+          result = { success: false, message: 'Email o contraseña incorrectos' };
+          break;
+        }
+        // Comparar contraseña (plain text por ahora — mejorar con bcrypt en v3.1)
+        if (usuario.password_hash !== data.password) {
+          result = { success: false, message: 'Email o contraseña incorrectos' };
+          break;
+        }
+        // Actualizar last_login
+        await db.from('usuarios').update({ last_login: new Date().toISOString() }).eq('id', usuario.id);
+        result = { success: true, usuario: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, id_equipo: usuario.id_equipo } };
+        break;
+      }
+
+      // ─── PERSONAS PENDIENTES (para panel validar) ─────────────
+      case 'getPersonasPendientes': {
+        const { data: pendientes, error: errP } = await db
+          .from('personas')
+          .select('*')
+          .eq('estado', 'pendiente')
+          .order('created_at');
+        result = errP ? fail(errP) : { success: true, data: pendientes || [] };
+        break;
+      }
+
       // ─── LIGAS ───────────────────────────────────────────────
       case 'createLeague': {
         const dep = data.nombreDeporte || 'Básquetbol';
@@ -327,11 +367,12 @@ exports.handler = async (event) => {
       // ─── USUARIOS (Admin crea cuentas de delegados) ───────────
       case 'createUsuario': {
         const { error } = await db.from('usuarios').insert({
-          nombre:    data.nombre    || '',
-          email:     data.email     || '',
-          rol:       ['admin','delegado','publico'].includes(data.rol) ? data.rol : 'delegado',
-          id_equipo: data.idEquipo  || null,
-          activo:    true,
+          nombre:        data.nombre    || '',
+          email:         (data.email || '').toLowerCase(),
+          password_hash: data.password  || '',
+          rol:           ['admin','delegado','publico'].includes(data.rol) ? data.rol : 'delegado',
+          id_equipo:     data.idEquipo  || null,
+          activo:        true,
         });
         result = error ? fail(error) : { success:true, message:'Usuario creado. Se enviará acceso por correo.' };
         break;
