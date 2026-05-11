@@ -10,6 +10,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// Disponible inmediatamente para el splash screen
+function enterApp() {
+  const splash = document.getElementById('splash-screen');
+  splash.style.transition = 'opacity .5s';
+  splash.style.opacity = '0';
+  setTimeout(() => splash.style.display = 'none', 500);
+}
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -1700,9 +1709,6 @@ function createSancion() {
 }
 
 window.saveResult = id => gasCall('updateMatchResult', { matchId:id, golesLocal:document.getElementById('gl-'+id).value, golesVisita:document.getElementById('gv-'+id).value, estado:document.getElementById('st-'+id).value });
-window.delItem = (id, sheet) => showConfirm('¿Eliminar permanentemente?', () => gasCall('deleteItem', { id, sheet }));
-window.delPartido = id => showConfirm('¿Eliminar este partido?', () => gasCall('deleteMatch', { matchId:id }));
-window.delLiga = id => showConfirm('¿Eliminar la liga y todos sus datos? Esta acción es irreversible.', () => gasCall('deleteLeague', { leagueId:id }));
 
 window.openEditLiga = function(id) {
   const l = D.ligas.find(x => x.ID === id);
@@ -2433,7 +2439,7 @@ window.delPartido = function(id) {
   },'danger');
 };
 window.delItem = function(id, sheet) {
-  showConfirmV3(`¿Eliminar este elemento?','Esta acción no se puede deshacer.',async()=>{
+  showConfirmV3('¿Eliminar este elemento?','Esta acción no se puede deshacer.',async()=>{
     await _origGasCall('deleteItem',{id,sheet});
   },'danger');
 };
