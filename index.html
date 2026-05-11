@@ -11,12 +11,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-// Disponible inmediatamente para el splash screen
+// Disponible inmediatamente para el splash screen y drawer
 function enterApp() {
   const splash = document.getElementById('splash-screen');
   splash.style.transition = 'opacity .5s';
   splash.style.opacity = '0';
   setTimeout(() => splash.style.display = 'none', 500);
+}
+function openDrawer()  { document.getElementById('drawer-overlay').classList.add('open'); }
+function closeDrawer() { document.getElementById('drawer-overlay').classList.remove('open'); }
+function showSectionDrawer(secId) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(secId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  closeDrawer();
 }
 </script>
 <style>
@@ -2319,48 +2327,6 @@ async function createJugador() {
       toast(res?.message || 'Error al agregar','err');
     }
   },'ok');
-}
-  const ligaId = document.getElementById('jug-liga').value;
-  const opts = '<option value="">— Seleccionar equipo —</option>'
-    + D.equipos.filter(e => !ligaId || e.ID_Liga === ligaId)
-      .map(e => `<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');
-  const sel = document.getElementById('jug-equipo');
-  if (sel) sel.innerHTML = opts;
-}
-
-async function createJugador() {
-  const nombre = document.getElementById('jug-nombre').value.trim();
-  const fnac   = document.getElementById('jug-fnac').value;
-  const eqId   = document.getElementById('jug-equipo').value;
-  const ligaId = document.getElementById('jug-liga').value;
-  const cat    = document.getElementById('jug-cat').value;
-  const rol    = document.getElementById('jug-rol').value;
-  const fed    = document.getElementById('jug-fed').value;
-  if (!nombre)  return toast('El nombre es obligatorio','err');
-  if (!eqId)    return toast('Selecciona un equipo','err');
-  if (!ligaId)  return toast('Selecciona una liga','err');
-  showConfirmV3(
-    `¿Agregar a ${nombre}?`,
-    'Se enviará a validación antes de aparecer en la app.',
-    async () => {
-      const res = await gasCall('createPersona', {
-        nombreCompleto: nombre, fechaNacimiento: fnac || null,
-        idEquipo: eqId, idLiga: ligaId,
-        categoria: cat, rol, federado: fed === 'true',
-      });
-      closeConfirmV3();
-      if (res && res.success) {
-        if (res.aviso) toast(res.aviso, 'ok');
-        else toast('✓ Jugador enviado a validación','ok');
-        document.getElementById('jug-nombre').value = '';
-        document.getElementById('jug-fnac').value = '';
-        renderValidarAdm();
-      } else {
-        toast(res?.message || 'Error al agregar', 'err');
-      }
-    },
-    'ok'
-  );
 }
 
 // ─── ADMIN VALIDAR ───────────────────────────────────────────────────────────
