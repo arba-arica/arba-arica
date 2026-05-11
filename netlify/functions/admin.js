@@ -294,6 +294,7 @@ exports.handler = async (event) => {
           id_liga:          data.idLiga,
           nombre_completo:  data.nombreCompleto    || '',
           fecha_nacimiento: data.fechaNacimiento   || null,
+          rut:              data.rut               || '',
           rol:              ['jugador','cuerpo_tecnico','delegado'].includes(data.rol) ? data.rol : 'jugador',
           categoria:        ['Varones','Damas','Mixto'].includes(data.categoria) ? data.categoria : 'Varones',
           federado:         data.federado === true || data.federado === 'true',
