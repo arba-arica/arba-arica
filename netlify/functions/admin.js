@@ -27,7 +27,7 @@ exports.handler = async (event) => {
     const { action, adminPassword, ...data } = body;
 
     // Acciones públicas (sin contraseña)
-    const PUBLIC_ACTIONS = ['checkPassword', 'likeNoticia'];
+    const PUBLIC_ACTIONS = ['checkPassword', 'likeNoticia', 'checkLogin'];
 
     if (!PUBLIC_ACTIONS.includes(action) && adminPassword !== ADMIN_PWD) {
       return ok({ success: false, message: 'Contraseña incorrecta' });
