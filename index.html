@@ -1859,12 +1859,6 @@ function createPartido() {
   ['pt-jornada','pt-fecha','pt-hora','pt-cancha','pt-yt'].forEach(id => document.getElementById(id).value = '');
 }
 
-function createNoticia() {
-  const titulo = document.getElementById('nt-titulo').value.trim();
-  if (!titulo) { toast('Ingresa el título','err'); return; }
-  gasCall('createNews', { titulo, descripcion:document.getElementById('nt-desc').value.trim(), imagenUrl:document.getElementById('nt-img').value.trim(), enlace:document.getElementById('nt-link').value.trim() });
-  ['nt-titulo','nt-desc','nt-img','nt-link'].forEach(id => document.getElementById(id).value = '');
-}
 
 function createSancion() {
   const jugador = document.getElementById('sa-jugador').value.trim();
@@ -2815,15 +2809,6 @@ window.createPartido = function() {
   if (!local || !visita) return toast('Selecciona los equipos','err');
   showConfirmV3('¿Programar este partido?','',async()=>{
     await _origGasCall('createMatch',{idLiga:document.getElementById('pt-liga').value,jornada:document.getElementById('pt-jornada').value,fase:document.getElementById('pt-fase').value,fecha:document.getElementById('pt-fecha').value,hora:document.getElementById('pt-hora').value,cancha:document.getElementById('pt-cancha').value,idLocal:local,idVisita:visita,youtubeUrl:document.getElementById('pt-yt').value});
-  },'ok');
-};
-window.createNoticia = function() {
-  const titulo = document.getElementById('nt-titulo').value.trim();
-  if (!titulo) return toast('El título es obligatorio','err');
-  showConfirmV3('¿Publicar esta noticia?','Será visible en la app inmediatamente.',async()=>{
-    await _origGasCall('createNews',{titulo,descripcion:document.getElementById('nt-desc').value.trim(),imagenUrl:document.getElementById('nt-img')?document.getElementById('nt-img').value:'',enlace:document.getElementById('nt-link')?document.getElementById('nt-link').value:''});
-    document.getElementById('nt-titulo').value='';
-    document.getElementById('nt-desc').value='';
   },'ok');
 };
 window.createSancion = function() {
