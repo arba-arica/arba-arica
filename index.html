@@ -30,6 +30,21 @@ function abrirReglamento() {
   closeDrawer();
   window.open('https://lwsyntjhbcdfuhfjdjqf.supabase.co/storage/v1/object/public/documentos/Bases_Torneo_Apertura_ARBA_2026_v3.pdf','_blank');
 }
+function forceRefresh() {
+  const icon = document.getElementById('refresh-icon');
+  icon.style.animation = 'spin .7s linear infinite';
+  invalidateCache();
+  fetchAllData().then(data => {
+    Object.assign(D, data);
+    renderAll();
+    if (typeof adminPass !== 'undefined' && adminPass) renderAdmin();
+    icon.style.animation = '';
+    toast('✓ Datos actualizados','ok');
+  }).catch(() => {
+    icon.style.animation = '';
+    toast('Error al actualizar','err');
+  });
+}
 </script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -446,9 +461,14 @@ textarea.f-input{resize:none}
     <div class="logo-arba">ARBA</div>
     <div class="logo-sub">Competencias</div>
   </div>
-  <button id="admin-btn">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 20v-2a6 6 0 0112 0v2"/></svg>
-  </button>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button id="refresh-btn" onclick="forceRefresh()" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.8)">
+      <svg id="refresh-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </button>
+    <button id="admin-btn">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 20v-2a6 6 0 0112 0v2"/></svg>
+    </button>
+  </div>
 </header>
 
 <!-- DRAWER HAMBURGUESA -->
@@ -879,7 +899,7 @@ textarea.f-input{resize:none}
 const SUPABASE_URL  = 'https://lwsyntjhbcdfuhfjdjqf.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3c3ludGpoYmNkZnVoZmpkanFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMTE3NjYsImV4cCI6MjA5MzY4Nzc2Nn0.32ihjXlVZbepHLac7J83Gaiawqg7as8DAyG224i2U2Y';
 const NETLIFY_FN    = '/.netlify/functions/admin';
-const CACHE_TTL     = 5 * 60 * 1000;
+const CACHE_TTL     = 2 * 60 * 1000; // 2 minutos
 
 // ─── CLIENTE SUPABASE ────────────────────────────────────────────────────────
 const _supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -1508,18 +1528,222 @@ async function doLogin() {
 var _currentUser = null;
 
 function applyRoleTabs(rol) {
-  // Delegado solo ve: Jugadores, Validar
-  // Admin ve todo
   if (rol === 'delegado') {
-    document.querySelectorAll('.adm-tab').forEach(t => {
-      const show = ['tab-jugadores-adm','tab-validar-adm'].includes(t.dataset.tab);
-      t.style.display = show ? '' : 'none';
-    });
-    // Activar primera tab visible
+    // Ocultar todas las tabs excepto la del delegado
+    document.querySelectorAll('.adm-tab').forEach(t => t.style.display = 'none');
     document.querySelectorAll('.adm-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('active'));
-    const firstTab = document.querySelector('.adm-tab[data-tab="tab-jugadores-adm"]');
-    if (firstTab) { firstTab.classList.add('active'); document.getElementById('tab-jugadores-adm').classList.add('active'); }
+    // Mostrar panel exclusivo de delegado
+    renderPanelDelegado();
+  }
+}
+
+function renderPanelDelegado() {
+  if (!_currentUser || _currentUser.rol !== 'delegado') return;
+  const idEquipo = _currentUser.id_equipo;
+  const equipo   = D.equipos.find(e => e.ID === idEquipo);
+  if (!equipo) {
+    document.getElementById('admin-content').innerHTML = `
+      <div style="padding:24px 18px;text-align:center">
+        <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:16px;margin-bottom:8px">Sin equipo asignado</div>
+        <div style="font-size:13px;color:var(--muted)">Contacta al administrador para que te asigne un equipo.</div>
+      </div>`;
+    return;
+  }
+  // Calcular nómina por categoría
+  const personas = D.personas.filter(p => p.id_equipo === idEquipo);
+  const cats = ['Varones','Damas','Mixto'];
+  const contadores = {};
+  cats.forEach(c => {
+    contadores[c] = personas.filter(p => p.rol === 'jugador' && p.categoria === c).length;
+  });
+  const tecnicos  = personas.filter(p => p.rol === 'cuerpo_tecnico').length;
+  const delegados = personas.filter(p => p.rol === 'delegado').length;
+
+  document.getElementById('admin-content').innerHTML = `
+    <!-- HEADER DELEGADO -->
+    <div style="padding:16px 18px;border-bottom:1px solid var(--border)">
+      <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary)">${equipo.NombreEquipo}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">Panel de delegado</div>
+    </div>
+
+    <!-- CONTADORES -->
+    <div style="padding:14px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      ${cats.map(c => `
+        <div style="background:var(--bg);border-radius:var(--r);padding:10px;text-align:center;border:1px solid var(--border)">
+          <div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:${contadores[c]>=15?'var(--red)':contadores[c]>=12?'var(--orange)':'var(--primary)'}">
+            ${contadores[c]}<span style="font-size:12px;color:var(--muted)">/15</span>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.5px;margin-top:2px">${c}</div>
+        </div>`).join('')}
+    </div>
+
+    <!-- FORMULARIO AGREGAR JUGADOR -->
+    <div style="padding:0 18px 16px">
+      <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Agregar jugador</div>
+
+      <label class="f-label">Categoría</label>
+      <select class="f-select" id="del-cat" onchange="updateDelCupo()">
+        <option value="Varones">Varones</option>
+        <option value="Damas">Damas</option>
+        <option value="Mixto">Mixto</option>
+      </select>
+      <div id="del-cupo" style="font-size:12px;color:var(--muted);margin-top:-10px;margin-bottom:14px"></div>
+
+      <div class="f-row">
+        <div>
+          <label class="f-label">Nombre completo</label>
+          <input class="f-input" id="del-nombre" type="text" placeholder="Apellido, Nombre">
+        </div>
+        <div>
+          <label class="f-label">Fecha de nacimiento</label>
+          <input class="f-input" id="del-fnac" type="date">
+        </div>
+      </div>
+
+      <div class="f-row">
+        <div>
+          <label class="f-label">RUT</label>
+          <input class="f-input" id="del-rut" type="text" placeholder="12345678-9" maxlength="10">
+        </div>
+        <div>
+          <label class="f-label">Rol</label>
+          <select class="f-select" id="del-rol" style="margin-bottom:0">
+            <option value="jugador">Jugador</option>
+            <option value="cuerpo_tecnico">Cuerpo técnico</option>
+          </select>
+        </div>
+      </div>
+      <div style="height:14px"></div>
+
+      <label class="f-label">Estado federativo</label>
+      <select class="f-select" id="del-fed">
+        <option value="true">Federado</option>
+        <option value="false">No federado</option>
+      </select>
+
+      <button class="btn-primary" id="btn-del-jugador">+ Agregar jugador</button>
+    </div>
+
+    <!-- NÓMINA DEL EQUIPO -->
+    <div style="padding:0 18px 80px">
+      <div class="adm-sec-label" style="margin-bottom:10px">Nómina registrada</div>
+      <div id="del-nomina-list"></div>
+    </div>
+
+    <!-- CERRAR SESIÓN -->
+    <div style="padding:0 18px 16px">
+      <button class="btn-ghost" onclick="doLogout()">Cerrar sesión</button>
+    </div>`;
+
+  // Poblar nómina
+  renderNominaDelList(idEquipo);
+  updateDelCupo();
+
+  // Listener botón
+  document.getElementById('btn-del-jugador').addEventListener('click', createJugadorDelegado);
+}
+
+function updateDelCupo() {
+  const cat     = document.getElementById('del-cat')?.value;
+  const eqId    = _currentUser?.id_equipo;
+  const el      = document.getElementById('del-cupo');
+  if (!el || !cat || !eqId) return;
+  const count   = D.personas.filter(p => p.id_equipo === eqId && p.rol === 'jugador' && p.categoria === cat).length;
+  const restantes = 15 - count;
+  el.textContent = `${count}/15 jugadores · ${restantes > 0 ? restantes + ' cupos disponibles' : '⚠ Cupo completo'}`;
+  el.style.color = restantes <= 0 ? 'var(--red)' : restantes <= 3 ? 'var(--orange)' : 'var(--muted)';
+}
+
+function renderNominaDelList(eqId) {
+  const el = document.getElementById('del-nomina-list');
+  if (!el) return;
+  const personas = D.personas.filter(p => p.id_equipo === eqId);
+  if (!personas.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin jugadores registrados aún.</div>';
+    return;
+  }
+  // Agrupar por categoría
+  const cats = {};
+  personas.forEach(p => {
+    const cat = p.rol === 'jugador' ? p.categoria : p.rol === 'cuerpo_tecnico' ? 'Cuerpo técnico' : 'Delegados';
+    if (!cats[cat]) cats[cat] = [];
+    cats[cat].push(p);
+  });
+  el.innerHTML = Object.entries(cats).map(([cat, ps]) => `
+    <div style="margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.8px;text-transform:uppercase;padding:6px 0">${cat}</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+        ${ps.map(p => {
+          const anio = p.fecha_nacimiento ? new Date(p.fecha_nacimiento).getFullYear() : '—';
+          const fed  = p.federado ? '<span style="font-size:9px;color:var(--green);font-weight:700;margin-left:4px">• Federado</span>' : '';
+          return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:700">${p.nombre_completo}</div>
+              <div style="font-size:11px;color:var(--muted)">${anio}${p.rut?' · '+p.rut:''}${fed}</div>
+            </div>
+            <button class="del-btn" onclick="delJugador('${p.id}','${p.nombre_completo.replace(/'/g,"\\'")}')">✕</button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+
+async function createJugadorDelegado() {
+  const nombre = document.getElementById('del-nombre').value.trim();
+  const fnac   = document.getElementById('del-fnac').value;
+  const rut    = document.getElementById('del-rut').value.trim();
+  const cat    = document.getElementById('del-cat').value;
+  const rol    = document.getElementById('del-rol').value;
+  const fed    = document.getElementById('del-fed').value;
+  const eqId   = _currentUser?.id_equipo;
+  const eq     = D.equipos.find(e => e.ID === eqId);
+  // Buscar liga del equipo
+  const ligaId = eq?.ID_Liga;
+  if (!nombre) return toast('El nombre es obligatorio','err');
+  if (!eqId || !ligaId) return toast('Error: equipo sin liga asignada','err');
+  if (rut && !rut.match(/^\d{7,8}-[\dkK]$/)) return toast('RUT inválido. Formato: 12345678-9','err');
+  // Verificar límite
+  if (rol === 'jugador') {
+    const count = D.personas.filter(p => p.id_equipo === eqId && p.rol === 'jugador' && p.categoria === cat).length;
+    if (count >= 15) return toast(`Cupo completo en ${cat} (15/15)`,'err');
+  }
+  const btn = document.getElementById('btn-del-jugador');
+  btn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;margin-right:6px"></div> Guardando...';
+  btn.disabled = true;
+  try {
+    const res = await fetch(NETLIFY_FN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'createPersona',
+        adminPassword: adminPass,
+        nombreCompleto: nombre,
+        fechaNacimiento: fnac || null,
+        rut: rut || '',
+        idEquipo: eqId,
+        idLiga: ligaId,
+        categoria: cat,
+        rol,
+        federado: fed === 'true',
+      }),
+    });
+    const json = JSON.parse(await res.text());
+    if (json?.success) {
+      toast(`✓ ${nombre} agregado al equipo`,'ok');
+      document.getElementById('del-nombre').value = '';
+      document.getElementById('del-fnac').value   = '';
+      document.getElementById('del-rut').value    = '';
+      await refreshData();
+      renderPanelDelegado();
+    } else {
+      toast(json?.message || 'Error al agregar','err');
+    }
+  } catch(e) {
+    toast('Error: ' + e.message,'err');
+  } finally {
+    const b = document.getElementById('btn-del-jugador');
+    if (b) { b.innerHTML = '+ Agregar jugador'; b.disabled = false; }
   }
 }
 
