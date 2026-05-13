@@ -10,6 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 // Disponible inmediatamente para el splash screen y drawer
 function enterApp() {
@@ -589,6 +591,19 @@ textarea.f-input{resize:none}
       <label class="f-label">Filtrar por equipo</label>
       <select class="f-select" id="rep-eq-pts" style="margin-bottom:0;font-size:13px;padding:8px 10px"></select>
     </div>
+    <div class="reporte-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div><div style="font-family:'Archivo Black',sans-serif;font-size:15px">📋 Nómina</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Jugadores por equipo</div></div>
+        <button class="pdf-btn" onclick="downloadPDF('nomina')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar PDF
+        </button>
+      </div>
+      <label class="f-label">Filtrar por liga</label>
+      <select class="f-select" id="rep-liga-nomina" style="margin-bottom:8px;font-size:13px;padding:8px 10px" onchange="updateRepEquipos('nomina')"></select>
+      <label class="f-label">Filtrar por equipo</label>
+      <select class="f-select" id="rep-eq-nomina" style="margin-bottom:0;font-size:13px;padding:8px 10px"></select>
+    </div>
   </div>
 </div>
 
@@ -690,6 +705,7 @@ textarea.f-input{resize:none}
         <button class="adm-tab" data-tab="tab-noticias-adm">Noticias</button>
         <button class="adm-tab" data-tab="tab-sanciones-adm">Sanciones</button>
         <button class="adm-tab" data-tab="tab-jugadores-adm">Jugadores</button>
+        <button class="adm-tab" data-tab="tab-stats-adm">Estadísticas</button>
         <button class="adm-tab" data-tab="tab-usuarios-adm">Usuarios</button>
       </div>
       <div class="adm-panel active" id="tab-ligas">
@@ -856,6 +872,43 @@ textarea.f-input{resize:none}
         </div>
       </div>
 
+      <!-- TAB ESTADÍSTICAS -->
+      <div class="adm-panel" id="tab-stats-adm">
+        <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Cargar estadísticas</div>
+        <label class="f-label">Liga</label>
+        <select class="f-select" id="st-liga" onchange="populateStEquipos()"></select>
+        <label class="f-label">Equipo</label>
+        <select class="f-select" id="st-equipo" onchange="populateStJugadores()"></select>
+        <label class="f-label">Jugador</label>
+        <select class="f-select" id="st-jugador"></select>
+        <div class="f-row">
+          <div>
+            <label class="f-label">1P (tiros libres)</label>
+            <input class="f-input" id="st-1p" type="number" min="0" placeholder="0">
+          </div>
+          <div>
+            <label class="f-label">2P (canastas)</label>
+            <input class="f-input" id="st-2p" type="number" min="0" placeholder="0">
+          </div>
+        </div>
+        <div class="f-row">
+          <div>
+            <label class="f-label">3P (triples)</label>
+            <input class="f-input" id="st-3p" type="number" min="0" placeholder="0">
+          </div>
+          <div>
+            <label class="f-label">Partidos jugados</label>
+            <input class="f-input" id="st-pj" type="number" min="0" placeholder="0">
+          </div>
+        </div>
+        <div style="background:var(--primary-light);border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--primary);margin-bottom:14px">
+          💡 Total automático: 1P×1 + 2P×2 + 3P×3 = puntos
+        </div>
+        <button class="btn-primary" id="btn-stats">📊 Guardar estadísticas</button>
+        <div class="adm-sec-label" style="margin-top:16px">Ranking top anotadores</div>
+        <div id="stats-ranking-list"></div>
+      </div>
+
       <!-- TAB USUARIOS -->
       <div class="adm-panel" id="tab-usuarios-adm">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -905,7 +958,7 @@ const CACHE_TTL     = 2 * 60 * 1000; // 2 minutos
 const _supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
-var D = { ligas:[], equipos:[], partidos:[], sanciones:[], noticias:[], personas:[] };
+var D = { ligas:[], equipos:[], partidos:[], sanciones:[], noticias:[], personas:[], stats:[] };
 var adminPass = '';
 var activeAdmTab = 'tab-ligas';
 var confirmCb = null;
@@ -916,13 +969,14 @@ var _cache = { data: null, ts: 0 };
 async function fetchAllData() {
   if (_cache.data && Date.now() - _cache.ts < CACHE_TTL) return _cache.data;
 
-  const [rL, rE, rP, rS, rN, rPer] = await Promise.all([
+  const [rL, rE, rP, rS, rN, rPer, rSt] = await Promise.all([
     _supa.from('ligas').select('*').order('created_at'),
     _supa.from('equipos').select('*').order('nombre_equipo'),
     _supa.from('encuentros').select('*').order('partidos'),
     _supa.from('sanciones').select('*').order('created_at', { ascending: false }),
     _supa.from('noticias').select('*').order('fecha', { ascending: false }),
     _supa.from('personas').select('*').order('nombre_completo'),
+    _supa.from('stats_carrera').select('*'),
   ]);
 
   const norm = {
@@ -957,6 +1011,7 @@ async function fetchAllData() {
       foto_url: r.foto_url, Enlace: r.enlace, me_gusta: r.me_gusta || 0,
     })),
     personas: (rPer.data || []),
+    stats:    (rSt.data  || []),
   };
 
   _cache = { data: norm, ts: Date.now() };
@@ -997,14 +1052,6 @@ async function loadData() {
 async function refreshData() {
   invalidateCache();
   await loadData();
-}
-
-function renderAll() {
-  renderAgenda();
-  renderPosiciones();
-  renderResultados();
-  renderNoticias();
-  renderSanciones();
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -1371,57 +1418,6 @@ function fmtFechaNoticia(raw) {
   return d.toLocaleDateString('es-CL', { day:'numeric', month:'long', year:'numeric' });
 }
 
-function renderNoticias() {
-  const el = document.getElementById('noticias-list');
-  const news = [...D.noticias].sort((a,b) => {
-    const fa = new Date(cleanFecha(a.Fecha)+'T12:00:00');
-    const fb = new Date(cleanFecha(b.Fecha)+'T12:00:00');
-    return fb - fa;
-  });
-  if (!news.length) { el.innerHTML = empty('📰','Sin noticias publicadas'); return; }
-
-  const appUrl = 'https://arba-arica.netlify.app';
-
-  el.innerHTML = news.map((n, i) => {
-    const fecha = fmtFechaNoticia(n.Fecha);
-    const waText = encodeURIComponent(`*${n.Titulo}*
-
-Ver en ARBA Competencias: ${appUrl}`);
-    const waUrl = `https://wa.me/?text=${waText}`;
-    return `<div class="news-item">
-      <div class="news-item-header" onclick="toggleNews(${i})">
-        <div class="news-item-left">
-          ${fecha ? `<div class="news-item-date">${fecha}</div>` : ''}
-          <div class="news-item-title">${n.Titulo}</div>
-        </div>
-        <div class="news-item-chevron" id="news-chv-${i}">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
-        </div>
-      </div>
-      <div class="news-item-body" id="news-body-${i}">
-        <div class="news-item-text">${n.Descripcion||''}</div>
-        <div class="news-item-actions">
-          <a class="news-wa-btn" href="${waUrl}" target="_blank">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.554 4.122 1.521 5.855L.057 23.882l6.174-1.438A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.372l-.36-.213-3.664.854.883-3.564-.233-.374A9.793 9.793 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182c5.43 0 9.818 4.388 9.818 9.818 0 5.43-4.388 9.818-9.818 9.818z"/></svg>
-            Compartir
-          </a>
-          ${n.Enlace ? `<a href="${n.Enlace}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--primary);text-decoration:none;padding:7px 14px;border-radius:100px;background:var(--primary-light);border:1px solid #bfdbfe">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
-            Ver enlace
-          </a>` : ''}
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-window.toggleNews = function(i) {
-  const body = document.getElementById('news-body-' + i);
-  const chv  = document.getElementById('news-chv-'  + i);
-  body.classList.toggle('open');
-  chv.classList.toggle('open');
-};
-
 // ─── SANCIONES ───────────────────────────────────────────────────────────────
 function renderSanciones() {
   const el = document.getElementById('sanciones-list');
@@ -1442,21 +1438,6 @@ function renderSanciones() {
     </div>`;
   }).join('');
 }
-
-// ─── CONFIRM ─────────────────────────────────────────────────────────────────
-function showConfirm(msg, cb) {
-  document.getElementById('confirm-msg').textContent = msg;
-  document.getElementById('confirm-overlay').classList.add('open');
-  confirmCb = cb;
-}
-document.getElementById('conf-ok').addEventListener('click', () => {
-  document.getElementById('confirm-overlay').classList.remove('open');
-  if (confirmCb) { confirmCb(); confirmCb = null; }
-});
-document.getElementById('conf-cancel').addEventListener('click', () => {
-  document.getElementById('confirm-overlay').classList.remove('open');
-  confirmCb = null;
-});
 
 // ─── ADMIN ───────────────────────────────────────────────────────────────────
 function setupAdmin() {
@@ -1541,15 +1522,24 @@ function renderPanelDelegado() {
   if (!_currentUser || _currentUser.rol !== 'delegado') return;
   const idEquipo = _currentUser.id_equipo;
   const equipo   = D.equipos.find(e => e.ID === idEquipo);
+  const admContent = document.getElementById('admin-content');
+  if (!admContent) return;
+
   if (!equipo) {
-    document.getElementById('admin-content').innerHTML = `
+    admContent.innerHTML = `
       <div style="padding:24px 18px;text-align:center">
         <div style="font-size:32px;margin-bottom:12px">⚠️</div>
         <div style="font-family:'Archivo Black',sans-serif;font-size:16px;margin-bottom:8px">Sin equipo asignado</div>
         <div style="font-size:13px;color:var(--muted)">Contacta al administrador para que te asigne un equipo.</div>
+        <button class="btn-ghost" style="margin-top:20px" onclick="doLogout()">Cerrar sesión</button>
       </div>`;
     return;
   }
+
+  // Buscar liga del equipo
+  const liga = D.ligas.find(l => l.ID === equipo.ID_Liga);
+  const ligaNombre = liga ? liga.NombreFantasia : '—';
+
   // Calcular nómina por categoría
   const personas = D.personas.filter(p => p.id_equipo === idEquipo);
   const cats = ['Varones','Damas','Mixto'];
@@ -1557,14 +1547,12 @@ function renderPanelDelegado() {
   cats.forEach(c => {
     contadores[c] = personas.filter(p => p.rol === 'jugador' && p.categoria === c).length;
   });
-  const tecnicos  = personas.filter(p => p.rol === 'cuerpo_tecnico').length;
-  const delegados = personas.filter(p => p.rol === 'delegado').length;
 
-  document.getElementById('admin-content').innerHTML = `
+  admContent.innerHTML = `
     <!-- HEADER DELEGADO -->
     <div style="padding:16px 18px;border-bottom:1px solid var(--border)">
       <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary)">${equipo.NombreEquipo}</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px">Panel de delegado</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">${ligaNombre} · Panel de delegado</div>
     </div>
 
     <!-- CONTADORES -->
@@ -1626,22 +1614,23 @@ function renderPanelDelegado() {
     </div>
 
     <!-- NÓMINA DEL EQUIPO -->
-    <div style="padding:0 18px 80px">
+    <div style="padding:0 18px 16px">
       <div class="adm-sec-label" style="margin-bottom:10px">Nómina registrada</div>
       <div id="del-nomina-list"></div>
     </div>
 
     <!-- CERRAR SESIÓN -->
-    <div style="padding:0 18px 16px">
+    <div style="padding:0 18px 24px">
       <button class="btn-ghost" onclick="doLogout()">Cerrar sesión</button>
     </div>`;
 
-  // Poblar nómina
-  renderNominaDelList(idEquipo);
-  updateDelCupo();
-
-  // Listener botón
-  document.getElementById('btn-del-jugador').addEventListener('click', createJugadorDelegado);
+  // Poblar nómina y cupo DESPUÉS de que el HTML esté en el DOM
+  setTimeout(() => {
+    renderNominaDelList(idEquipo);
+    updateDelCupo();
+    const btn = document.getElementById('btn-del-jugador');
+    if (btn) btn.addEventListener('click', createJugadorDelegado);
+  }, 0);
 }
 
 function updateDelCupo() {
@@ -1788,7 +1777,7 @@ function renderAdmin() {
 
 function renderJugadoresAdm() {
   const el = document.getElementById('jugadores-adm-list');
-  if (!el) return;
+  if (!el) return; // Tab no visible aún
   const personas = D.personas || [];
   if (!personas.length) { el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin jugadores registrados.</div>'; return; }
   const porLiga = {};
@@ -1937,15 +1926,6 @@ function renderEquiposAdm() {
     : '<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay equipos registrados.</div>';
 }
 
-function renderNoticiasAdm() {
-  document.getElementById('noticias-adm-list').innerHTML = D.noticias.length
-    ? D.noticias.map(n => `<div class="adm-list-item">
-        <div><div class="adm-list-name" style="font-size:12px">${n.Titulo}</div>
-        <div class="adm-list-sub">${new Date(n.Fecha).toLocaleDateString('es-CL')}</div></div>
-        <button class="del-btn" onclick="delItem('${n.ID}','Noticias')">Eliminar</button>
-      </div>`).join('') : '';
-}
-
 function renderSancionesAdm() {
   document.getElementById('sanciones-adm-list').innerHTML = D.sanciones.length
     ? D.sanciones.map(s => {
@@ -2063,47 +2043,6 @@ async function gasCall(action, data) {
     }
   } catch(e) { toast(e.message, 'err'); }
 }
-
-function createLiga() {
-  const nombre = document.getElementById('lg-nombre').value.trim();
-  if (!nombre) { toast('Ingresa el nombre de la liga','err'); return; }
-  gasCall('createLeague', { nombreDeporte:'Básquetbol', categoria:document.getElementById('lg-cat').value, nombreFantasia:nombre, estadoTorneo:document.getElementById('lg-estado').value });
-  document.getElementById('lg-nombre').value = '';
-}
-
-function createEquipo() {
-  const nombre = document.getElementById('eq-nombre').value.trim();
-  const liga = document.getElementById('eq-liga').value;
-  if (!nombre || !liga) { toast('Completá nombre y liga','err'); return; }
-  gasCall('createTeam', { idLiga:liga, nombreEquipo:nombre, colorLocal:document.getElementById('eq-cl').value.trim(), colorVisita:document.getElementById('eq-cv').value.trim() });
-  ['eq-nombre','eq-cl','eq-cv'].forEach(id => document.getElementById(id).value = '');
-  // Lista se refresca automáticamente via renderAdmin() en gasCall
-}
-
-function createPartido() {
-  const local = document.getElementById('pt-local').value;
-  const visita = document.getElementById('pt-visita').value;
-  const fecha = document.getElementById('pt-fecha').value;
-  const hora = document.getElementById('pt-hora').value;
-  if (!local || !visita) { toast('Seleccioná los equipos','err'); return; }
-  if (local === visita) { toast('Los equipos no pueden ser iguales','err'); return; }
-  if (!fecha || !hora) { toast('Completá fecha y hora','err'); return; }
-  gasCall('createMatch', { idLiga:document.getElementById('pt-liga').value, jornada:document.getElementById('pt-jornada').value, fase:document.getElementById('pt-fase').value, fecha, hora, cancha:document.getElementById('pt-cancha').value.trim(), idLocal:local, idVisita:visita, youtubeUrl:document.getElementById('pt-yt').value.trim() });
-  ['pt-jornada','pt-fecha','pt-hora','pt-cancha','pt-yt'].forEach(id => document.getElementById(id).value = '');
-}
-
-
-function createSancion() {
-  const jugador = document.getElementById('sa-jugador').value.trim();
-  const sancion = document.getElementById('sa-sancion').value.trim();
-  if (!jugador || !sancion) { toast('Completa jugador y sanción','err'); return; }
-  const apelacion = document.getElementById('sa-apelacion') ? document.getElementById('sa-apelacion').value.trim() : '';
-  const terminoFull = document.getElementById('sa-termino').value.trim() + (apelacion ? ' | Apelación: ' + apelacion : '');
-  gasCall('createSanction', { idLiga:document.getElementById('sa-liga').value, idEquipo:document.getElementById('sa-equipo').value, nombreJugador:jugador, tipoFalta:document.getElementById('sa-tipo').value, sancion, termino:terminoFull });
-  ['sa-jugador','sa-sancion','sa-termino','sa-apelacion'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-}
-
-window.saveResult = id => gasCall('updateMatchResult', { matchId:id, golesLocal:document.getElementById('gl-'+id).value, golesVisita:document.getElementById('gv-'+id).value, estado:document.getElementById('st-'+id).value });
 
 window.openEditLiga = function(id) {
   const l = D.ligas.find(x => x.ID === id);
@@ -2276,12 +2215,23 @@ function showConfirmV3(title, desc, cb, type) {
   btn.disabled = false;
   document.getElementById('confirm-v3-overlay').classList.add('open');
 }
-function closeConfirmV3() { document.getElementById('confirm-v3-overlay').classList.remove('open'); _cv3Cb = null; }
-function executeConfirmV3() {
+function closeConfirmV3() {
+  document.getElementById('confirm-v3-overlay').classList.remove('open');
+  _cv3Cb = null;
   const btn = document.getElementById('cv3-ok');
-  btn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div> Guardando...';
+  if (btn) { btn.textContent = 'Confirmar'; btn.disabled = false; }
+}
+async function executeConfirmV3() {
+  const btn = document.getElementById('cv3-ok');
+  btn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block"></div> Guardando...';
   btn.disabled = true;
-  if (_cv3Cb) _cv3Cb();
+  try {
+    if (_cv3Cb) await _cv3Cb();
+  } catch(e) {
+    toast('Error: ' + e.message, 'err');
+  } finally {
+    closeConfirmV3();
+  }
 }
 document.getElementById('confirm-v3-overlay').addEventListener('click', e => {
   if (e.target === document.getElementById('confirm-v3-overlay')) closeConfirmV3();
@@ -2439,13 +2389,54 @@ function renderJugadores() {
           const initials = p.nombre_completo.split(',').map(s=>s.trim()[0]||'').join('').toUpperCase().substring(0,2);
           const anio = p.fecha_nacimiento ? new Date(p.fecha_nacimiento).getFullYear() : '';
           const fedBadge = p.federado ? '<span style="font-size:9px;color:var(--green);font-weight:700;margin-left:4px">• Federado</span>' : '';
-          return `<div class="jug-row">
-            <div class="jug-av">${initials}</div>
-            <div style="flex:1;min-width:0">
-              <div class="jug-nombre">${p.nombre_completo}</div>
-              <div class="jug-sub">${p.rol==='jugador'?'Jugador':p.rol==='cuerpo_tecnico'?'C.Técnico':'Delegado'}${anio?' · '+anio:''}${fedBadge}</div>
+          // Buscar stats del jugador
+          const st = (D.stats||[]).find(s => s.id_jugador === p.id);
+          const tl   = st?.pts_1p  || 0;
+          const dos  = st?.pts_2p  || 0;
+          const tres = st?.pts_3p  || 0;
+          const pj   = st?.partidos || 0;
+          const total = tl + (dos*2) + (tres*3);
+          const prom  = pj > 0 ? (total/pj).toFixed(1) : '—';
+          const hasStats = st && (tl||dos||tres||pj);
+          return `<div class="jug-row" style="flex-direction:column;align-items:stretch;cursor:pointer" onclick="toggleJugStats(this)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="jug-av">${initials}</div>
+              <div style="flex:1;min-width:0">
+                <div class="jug-nombre">${p.nombre_completo}</div>
+                <div class="jug-sub">${p.rol==='jugador'?'Jugador':p.rol==='cuerpo_tecnico'?'C.Técnico':'Delegado'}${anio?' · '+anio:''}${fedBadge}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                ${hasStats ? `<span style="font-family:'Archivo Black',sans-serif;font-size:13px;color:var(--primary)">${total} pts</span>` : ''}
+                <span class="badge-oficial">✓</span>
+              </div>
             </div>
-            <span class="badge-oficial">✓ Oficial</span>
+            ${hasStats ? `<div class="jug-stats-detail" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+              <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center">
+                <div style="background:var(--bg);border-radius:8px;padding:7px 4px">
+                  <div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--primary)">${pj}</div>
+                  <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">PJ</div>
+                </div>
+                <div style="background:var(--bg);border-radius:8px;padding:7px 4px">
+                  <div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--muted)">${tl}</div>
+                  <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">TL</div>
+                </div>
+                <div style="background:var(--bg);border-radius:8px;padding:7px 4px">
+                  <div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--muted)">${dos}</div>
+                  <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">2P</div>
+                </div>
+                <div style="background:var(--bg);border-radius:8px;padding:7px 4px">
+                  <div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--muted)">${tres}</div>
+                  <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">3P</div>
+                </div>
+                <div style="background:var(--primary-light);border-radius:8px;padding:7px 4px;border:1px solid #bfdbfe">
+                  <div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--primary)">${prom}</div>
+                  <div style="font-size:9px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">Prom</div>
+                </div>
+              </div>
+              <div style="text-align:right;margin-top:8px;font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary)">
+                ${total} <span style="font-size:11px;font-weight:400;color:var(--muted)">pts totales</span>
+              </div>
+            </div>` : ''}
           </div>`;
         }).join('')}
       `).join('');
@@ -2477,23 +2468,10 @@ window.toggleClubAcc = function(header) {
   body.classList.toggle('open');
 };
 
-// ─── REPORTES ────────────────────────────────────────────────────────────────
-function populateReporteSelects() {
-  const opts = '<option value="">Todos los equipos</option>'
-    + D.equipos.map(e => `<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');
-  ['rep-eq-fixture','rep-eq-res','rep-eq-pts'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = opts;
-  });
-}
-
-window.downloadPDF = function(tipo) {
-  const selId = tipo === 'fixture' ? 'rep-eq-fixture' : tipo === 'resultados' ? 'rep-eq-res' : 'rep-eq-pts';
-  const sel = document.getElementById(selId);
-  const eqId = sel ? sel.value : '';
-  const eqNombre = eqId ? (D.equipos.find(e=>e.ID===eqId)||{}).NombreEquipo : 'Todos';
-  toast(`Generando PDF de ${tipo}${eqNombre !== 'Todos' ? ' — '+eqNombre : ''}...`, 'ok');
-  setTimeout(() => toast('✓ PDF listo para descargar', 'ok'), 1500);
+window.toggleJugStats = function(row) {
+  const detail = row.querySelector('.jug-stats-detail');
+  if (!detail) return;
+  detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
 };
 
 // ─── ADMIN JUGADORES ────────────────────────────────────────────────────────
@@ -2571,77 +2549,178 @@ function previewFoto(input, imgId, previewId) {
   reader.readAsDataURL(file);
 }
 
-// ─── REPORTES — fix filtro por liga → equipo ─────────────────────────────────
+// ─── PDF REAL con jsPDF ───────────────────────────────────────────────────────
+function pdfHeader(doc, titulo, subtitulo) {
+  doc.setFillColor(30, 58, 138);
+  doc.rect(0, 0, 210, 22, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text('ARBA ARICA', 14, 10);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text('Asociación Regional de Básquetbol', 14, 15);
+  doc.setFontSize(12); doc.setFont('helvetica','bold');
+  doc.text(titulo, 105, 10, {align:'center'});
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text(subtitulo, 105, 16, {align:'center'});
+  const fecha = new Date().toLocaleDateString('es-CL');
+  doc.text('Generado: ' + fecha, 196, 10, {align:'right'});
+  doc.setTextColor(30, 58, 138);
+}
+
+window.downloadPDF = function(tipo) {
+  const ligaSuffix = tipo === 'fixture' ? 'fixture' : tipo === 'resultados' ? 'res' : 'pts';
+  const ligaEl = document.getElementById('rep-liga-' + ligaSuffix);
+  const eqEl   = document.getElementById('rep-eq-'   + ligaSuffix);
+  const ligaId  = ligaEl?.value  || '';
+  const eqId    = eqEl?.value    || '';
+  const liga    = ligaId ? D.ligas.find(l => l.ID === ligaId) : null;
+  const equipo  = eqId   ? D.equipos.find(e => e.ID === eqId) : null;
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+  const subtitulo = [liga?.NombreFantasia, equipo?.NombreEquipo].filter(Boolean).join(' · ') || 'Todas las categorías';
+
+  if (tipo === 'fixture') {
+    pdfHeader(doc, 'FIXTURE — PARTIDOS POR DISPUTAR', subtitulo);
+    let partidos = D.partidos.filter(p => p.Estado === 'Programado');
+    if (ligaId) partidos = partidos.filter(p => p.ID_Liga === ligaId);
+    if (eqId)   partidos = partidos.filter(p => p.ID_EquipoLocal === eqId || p.ID_EquipoVisita === eqId);
+    const rows = partidos.map(p => [
+      fmtDate(p.Fecha),
+      p.Hora || '—',
+      teamName(p.ID_EquipoLocal),
+      'vs',
+      teamName(p.ID_EquipoVisita),
+      p.Cancha || '—',
+      p.Fase || '—',
+    ]);
+    doc.autoTable({
+      startY: 26,
+      head: [['Fecha','Hora','Local','','Visita','Cancha','Fase']],
+      body: rows.length ? rows : [['Sin partidos programados','','','','','','']],
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [30,58,138], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [239,246,255] },
+      columnStyles: { 3: { halign:'center', fontStyle:'bold' } },
+    });
+  }
+
+  else if (tipo === 'resultados') {
+    pdfHeader(doc, 'RESULTADOS', subtitulo);
+    let partidos = D.partidos.filter(p => p.Estado === 'Finalizado');
+    if (ligaId) partidos = partidos.filter(p => p.ID_Liga === ligaId);
+    if (eqId)   partidos = partidos.filter(p => p.ID_EquipoLocal === eqId || p.ID_EquipoVisita === eqId);
+    const rows = partidos.map(p => [
+      fmtDate(p.Fecha),
+      teamName(p.ID_EquipoLocal),
+      String(p.GolesLocal ?? '—'),
+      '-',
+      String(p.GolesVisita ?? '—'),
+      teamName(p.ID_EquipoVisita),
+      p.Fase || '—',
+    ]);
+    doc.autoTable({
+      startY: 26,
+      head: [['Fecha','Local','','','','Visita','Fase']],
+      body: rows.length ? rows : [['Sin resultados','','','','','','']],
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [30,58,138], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [239,246,255] },
+      columnStyles: { 2:{halign:'right',fontStyle:'bold'}, 3:{halign:'center'}, 4:{halign:'left',fontStyle:'bold'} },
+    });
+  }
+
+  else if (tipo === 'puntaje') {
+    pdfHeader(doc, 'TABLA DE POSICIONES', subtitulo);
+    const ligas = ligaId ? D.ligas.filter(l => l.ID === ligaId) : D.ligas;
+    let startY = 26;
+    ligas.forEach(l => {
+      const standings = calcStandings(l.ID);
+      if (!standings.length) return;
+      doc.setFontSize(10); doc.setFont('helvetica','bold');
+      doc.setTextColor(30,58,138);
+      doc.text(l.NombreFantasia + ' — ' + l.Categoria, 14, startY + 4);
+      doc.autoTable({
+        startY: startY + 7,
+        head: [['Pos','Equipo','PJ','G','P','Pts','PF','PC','Dif']],
+        body: standings.map((s,i) => [
+          i+1, s.nombre, s.pj, s.g, s.p, s.pts,
+          s.pf, s.pc, (s.pf-s.pc > 0?'+':'') + (s.pf-s.pc)
+        ]),
+        styles: { fontSize: 9, cellPadding: 2.5 },
+        headStyles: { fillColor: [30,58,138], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [239,246,255] },
+        columnStyles: { 0:{halign:'center'}, 2:{halign:'center'}, 3:{halign:'center'}, 4:{halign:'center'}, 5:{halign:'center',fontStyle:'bold'}, 6:{halign:'center'}, 7:{halign:'center'}, 8:{halign:'center'} },
+      });
+      startY = doc.lastAutoTable.finalY + 8;
+    });
+  }
+
+  else if (tipo === 'nomina') {
+    // PDF nómina por equipo/liga
+    pdfHeader(doc, 'NÓMINA DE JUGADORES', subtitulo);
+    const equipos = eqId ? D.equipos.filter(e => e.ID === eqId)
+      : ligaId ? D.equipos.filter(e => e.ID_Liga === ligaId)
+      : D.equipos;
+    let startY = 26;
+    equipos.forEach(eq => {
+      const personas = D.personas.filter(p => p.id_equipo === eq.ID);
+      if (!personas.length) return;
+      const ligaEq = D.ligas.find(l => l.ID === eq.ID_Liga);
+      doc.setFontSize(10); doc.setFont('helvetica','bold');
+      doc.setTextColor(30,58,138);
+      doc.text(`${eq.NombreEquipo} — ${ligaEq?.NombreFantasia||''}`, 14, startY + 4);
+      const rows = personas.map((p,i) => [
+        i+1,
+        p.nombre_completo,
+        p.rol === 'jugador' ? 'Jugador' : p.rol === 'cuerpo_tecnico' ? 'C. Técnico' : 'Delegado',
+        p.categoria || '—',
+        p.fecha_nacimiento ? new Date(p.fecha_nacimiento).getFullYear() : '—',
+        p.rut || '—',
+        p.federado ? 'Sí' : 'No',
+      ]);
+      doc.autoTable({
+        startY: startY + 7,
+        head: [['N°','Nombre','Rol','Categoría','Año nac.','RUT','Federado']],
+        body: rows,
+        styles: { fontSize: 8.5, cellPadding: 2.5 },
+        headStyles: { fillColor: [30,58,138], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [239,246,255] },
+        columnStyles: { 0:{halign:'center',cellWidth:10}, 4:{halign:'center'}, 6:{halign:'center'} },
+      });
+      startY = doc.lastAutoTable.finalY + 8;
+      if (startY > 180) { doc.addPage(); startY = 14; }
+    });
+  }
+
+  const nombres = { fixture:'Fixture', resultados:'Resultados', puntaje:'Posiciones', nomina:'Nomina' };
+  doc.save(`ARBA_${nombres[tipo]}_${new Date().toISOString().split('T')[0]}.pdf`);
+  toast('✓ PDF descargado','ok');
+};
 function populateReporteSelects() {
   const ligaOpts = '<option value="">Todas las ligas</option>'
     + D.ligas.map(l => `<option value="${l.ID}">${l.NombreFantasia}</option>`).join('');
-  ['rep-liga-fixture','rep-liga-res','rep-liga-pts'].forEach(id => {
+  ['rep-liga-fixture','rep-liga-res','rep-liga-pts','rep-liga-nomina'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = ligaOpts;
   });
-  ['rep-eq-fixture','rep-eq-res','rep-eq-pts'].forEach(id => {
+  ['rep-eq-fixture','rep-eq-res','rep-eq-pts','rep-eq-nomina'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = '<option value="">Todos los equipos</option>';
   });
 }
 
 window.updateRepEquipos = function(tipo) {
-  const ligaId = document.getElementById(`rep-liga-${tipo}`).value;
-  const opts = '<option value="">Todos los equipos</option>'
+  const ligaEl = document.getElementById(`rep-liga-${tipo}`);
+  const eqEl   = document.getElementById(`rep-eq-${tipo}`);
+  if (!ligaEl || !eqEl) return;
+  const ligaId = ligaEl.value;
+  eqEl.innerHTML = '<option value="">Todos los equipos</option>'
     + D.equipos.filter(e => !ligaId || e.ID_Liga === ligaId)
       .map(e => `<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');
-  const sel = document.getElementById(`rep-eq-${tipo}`);
-  if (sel) sel.innerHTML = opts;
-};
-
-window.downloadPDF = function(tipo) {
-  const ligaSel = document.getElementById(`rep-liga-${tipo === 'fixture' ? 'fixture' : tipo === 'resultados' ? 'res' : 'pts'}`);
-  const eqSel   = document.getElementById(`rep-eq-${tipo === 'fixture' ? 'fixture' : tipo === 'resultados' ? 'res' : 'pts'}`);
-  const ligaNombre = ligaSel?.value ? (D.ligas.find(l=>l.ID===ligaSel.value)||{}).NombreFantasia : 'Todas';
-  const eqNombre   = eqSel?.value  ? (D.equipos.find(e=>e.ID===eqSel.value)||{}).NombreEquipo  : '';
-  const label = [ligaNombre, eqNombre].filter(Boolean).join(' — ');
-  toast(`Generando PDF ${tipo} — ${label}...`, 'ok');
-  setTimeout(() => toast('✓ PDF listo para descargar','ok'), 1500);
 };
 
 // ─── VALIDAR — cargar desde Netlify Function (evita RLS) ─────────────────────
-async function renderValidarAdm() {
-  const el    = document.getElementById('val-lista');
-  const label = document.getElementById('val-count-label');
-  if (!el) return;
-  el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">Cargando...</div>';
-  try {
-    const res = await fetch(NETLIFY_FN, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'getPersonasPendientes', adminPassword: adminPass }),
-    });
-    const json = JSON.parse(await res.text());
-    const pendientes = json.data || [];
-    if (label) label.textContent = `${pendientes.length} jugador(es) pendiente(s)`;
-    if (!pendientes.length) {
-      el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin pendientes ✓</div>';
-      return;
-    }
-    el.innerHTML = pendientes.map(p => {
-      const eq = D.equipos.find(e => e.ID === p.id_equipo);
-      const initials = p.nombre_completo.split(',').map(s=>s.trim()[0]||'').join('').toUpperCase().substring(0,2);
-      const fedLabel = p.federado ? 'Federado' : 'No federado';
-      return `<div class="val-chk-item">
-        <input type="checkbox" class="val-chk" value="${p.id}" onchange="updateValBar()">
-        <div class="jug-av" style="background:var(--orange-light);color:var(--orange);border-color:#fed7aa">${initials}</div>
-        <div style="flex:1;min-width:0">
-          <div class="val-nombre">${p.nombre_completo}</div>
-          <div class="val-meta">${eq?eq.NombreEquipo:'?'} · ${p.rol==='jugador'?'Jugador':p.rol==='cuerpo_tecnico'?'C.Técnico':'Delegado'} · ${fedLabel}${p.rut?' · '+p.rut:''}</div>
-        </div>
-        <span class="badge-pend">⏳</span>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    el.innerHTML = '<div style="font-size:13px;color:var(--red);padding:8px 0">Error: ' + e.message + '</div>';
-  }
-}
-
 // ─── NOTICIA con upload + URL fallback ───────────────────────────────────────
 function previewFotoNoticia(input) {
   const file = input.files[0];
@@ -2977,7 +3056,74 @@ window.openEditNoticia = function(id) {
   };
 };
 
-// ─── ADMIN — renderAdmin ampliado ────────────────────────────────────────────
+// ─── ESTADÍSTICAS ────────────────────────────────────────────────────────────
+function populateStEquipos() {
+  const ligaId = document.getElementById('st-liga')?.value;
+  const sel = document.getElementById('st-equipo');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Seleccionar equipo —</option>'
+    + D.equipos.filter(e => !ligaId || e.ID_Liga === ligaId)
+      .map(e => `<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');
+  populateStJugadores();
+}
+
+function populateStJugadores() {
+  const eqId = document.getElementById('st-equipo')?.value;
+  const sel  = document.getElementById('st-jugador');
+  if (!sel) return;
+  const jugadores = D.personas.filter(p => p.id_equipo === eqId && p.rol === 'jugador');
+  sel.innerHTML = '<option value="">— Seleccionar jugador —</option>'
+    + jugadores.map(p => `<option value="${p.id}">${p.nombre_completo}</option>`).join('');
+  renderStatsRanking();
+}
+
+function renderStatsRanking() {
+  const el = document.getElementById('stats-ranking-list');
+  if (!el) return;
+  const ligaId = document.getElementById('st-liga')?.value;
+  // Para ranking necesitaríamos la tabla stats_carrera
+  // Por ahora mostrar placeholder
+  el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">Selecciona una liga para ver el ranking.</div>';
+}
+
+async function guardarStats() {
+  const jugadorId = document.getElementById('st-jugador')?.value;
+  const ligaId    = document.getElementById('st-liga')?.value;
+  if (!jugadorId) return toast('Selecciona un jugador','err');
+  if (!ligaId)    return toast('Selecciona una liga','err');
+  const pts1p = parseInt(document.getElementById('st-1p')?.value) || 0;
+  const pts2p = parseInt(document.getElementById('st-2p')?.value) || 0;
+  const pts3p = parseInt(document.getElementById('st-3p')?.value) || 0;
+  const pj    = parseInt(document.getElementById('st-pj')?.value) || 0;
+  const total = pts1p + (pts2p*2) + (pts3p*3);
+  showConfirmV3(
+    `¿Guardar estadísticas?`,
+    `${pts1p}×1P + ${pts2p}×2P + ${pts3p}×3P = ${total} PTS · ${pj} partidos`,
+    async () => {
+      const res = await fetch(NETLIFY_FN, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          action: 'updateStats', adminPassword: adminPass,
+          idJugador: jugadorId, idLiga: ligaId,
+          pts1p, pts2p, pts3p, partidos: pj,
+        }),
+      });
+      const json = JSON.parse(await res.text());
+      if (json?.success) { toast('✓ Estadísticas guardadas','ok'); }
+      else toast(json?.message||'Error','err');
+    }, 'ok'
+  );
+}
+
+function setupStatsAdmin() {
+  const btn = document.getElementById('btn-stats');
+  if (btn) btn.addEventListener('click', guardarStats);
+  const ligaSel = document.getElementById('st-liga');
+  if (ligaSel) {
+    const ligaOpts = D.ligas.map(l=>`<option value="${l.ID}">${l.NombreFantasia}</option>`).join('');
+    ligaSel.innerHTML = '<option value="">— Seleccionar liga —</option>' + ligaOpts;
+  }
+}
 const _origRenderAdmin = renderAdmin;
 renderAdmin = function() {
   _origRenderAdmin();
@@ -2994,6 +3140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     t.addEventListener('click', () => {
       if (t.dataset.tab === 'tab-validar-adm') renderValidarAdm();
       if (t.dataset.tab === 'tab-usuarios-adm') renderUsuariosAdm();
+      if (t.dataset.tab === 'tab-stats-adm') setupStatsAdmin();
     });
   });
   // Botón jugador
