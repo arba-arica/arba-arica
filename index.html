@@ -1523,13 +1523,11 @@ function renderPanelDelegado() {
   const admContent = document.getElementById('admin-content');
   if (!admContent) return;
 
-  // Buscar equipos del club — por nombre_club O por id_equipo
   const nombreClub = _currentUser.nombre_club || '';
   const idEquipo   = _currentUser.id_equipo   || '';
   let equiposClub  = [];
 
   if (nombreClub) {
-    // Buscar todos los equipos que coincidan con el nombre del club (sin importar liga)
     equiposClub = D.equipos.filter(e =>
       e.NombreEquipo.toLowerCase().includes(nombreClub.toLowerCase()) ||
       nombreClub.toLowerCase().includes(e.NombreEquipo.toLowerCase())
@@ -1549,7 +1547,7 @@ function renderPanelDelegado() {
     return;
   }
 
-  // Calcular contadores totales por equipo+categoría
+  const clubLabel = nombreClub || equiposClub[0].NombreEquipo;
   const resumen = equiposClub.map(eq => {
     const liga = D.ligas.find(l => l.ID === eq.ID_Liga);
     const personas = D.personas.filter(p => p.id_equipo === eq.ID);
@@ -1559,53 +1557,38 @@ function renderPanelDelegado() {
     return { eq, liga, personas, contadores };
   });
 
-  // Header
-  const clubLabel = nombreClub || equiposClub[0].NombreEquipo;
-  const ligasLabel = [...new Set(resumen.map(r => r.liga?.NombreFantasia).filter(Boolean))].join(' · ');
-
   admContent.innerHTML = `
     <div style="padding:16px 18px;border-bottom:1px solid var(--border)">
       <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary)">${clubLabel}</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px">${ligasLabel} · Panel de delegado</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">${resumen.length} liga(s) · Panel de delegado</div>
     </div>
 
-    <!-- SELECTOR DE EQUIPO si tiene más de uno -->
-    ${equiposClub.length > 1 ? `
     <div style="padding:14px 18px 0">
-      <label class="f-label">Seleccionar equipo para agregar jugador</label>
-      <select class="f-select" id="del-eq-sel" onchange="updateDelPanelEquipo()">
-        ${equiposClub.map(eq => {
-          const liga = D.ligas.find(l => l.ID === eq.ID_Liga);
-          return `<option value="${eq.ID}">${eq.NombreEquipo}${liga?' — '+liga.NombreFantasia:''}`;
-        }).join('')}
-      </select>
-    </div>` : ''}
-
-    <!-- RESUMEN CONTADORES POR EQUIPO -->
-    <div style="padding:14px 18px">
       ${resumen.map(r => `
-        <div style="margin-bottom:12px">
-          <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
-            ${r.eq.NombreEquipo}${r.liga?' — '+r.liga.NombreFantasia:''}
+        <div style="margin-bottom:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+          <div style="padding:8px 14px;background:var(--primary-light);border-bottom:1px solid #bfdbfe">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:13px;color:var(--primary)">${r.liga ? r.liga.NombreFantasia : r.eq.NombreEquipo}</div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-            ${['Varones','Damas','Mixto'].map(c => `
-              <div style="background:var(--bg);border-radius:var(--r);padding:8px;text-align:center;border:1px solid var(--border)">
-                <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:${r.contadores[c]>=15?'var(--red)':r.contadores[c]>=12?'var(--orange)':'var(--primary)'}">
-                  ${r.contadores[c]}<span style="font-size:11px;color:var(--muted)">/15</span>
-                </div>
-                <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">${c}</div>
-              </div>`).join('')}
+          <div style="display:grid;grid-template-columns:repeat(3,1fr)">
+            ${['Varones','Damas','Mixto'].map(c => {
+              const cnt = r.contadores[c];
+              const color = cnt>=15?'var(--red)':cnt>=12?'var(--orange)':'var(--primary)';
+              return `<div style="padding:10px 8px;text-align:center;border-right:1px solid var(--border)">
+                <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:${color}">${cnt}<span style="font-size:10px;color:var(--muted)">/15</span></div>
+                <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px">${c}</div>
+              </div>`;
+            }).join('')}
           </div>
         </div>`).join('')}
     </div>
 
-    <!-- FORMULARIO AGREGAR JUGADOR -->
     <div style="padding:0 18px 16px">
       <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Agregar jugador</div>
 
-      ${equiposClub.length === 1 ? `
-        <input type="hidden" id="del-eq-sel" value="${equiposClub[0].ID}">` : ''}
+      <label class="f-label">Liga en que participa</label>
+      <select class="f-select" id="del-eq-sel" onchange="updateDelCupo()">
+        ${resumen.map(r => `<option value="${r.eq.ID}">${r.liga ? r.liga.NombreFantasia : r.eq.NombreEquipo}</option>`).join('')}
+      </select>
 
       <label class="f-label">Categoría</label>
       <select class="f-select" id="del-cat" onchange="updateDelCupo()">
@@ -1613,7 +1596,7 @@ function renderPanelDelegado() {
         <option value="Damas">Damas</option>
         <option value="Mixto">Mixto</option>
       </select>
-      <div id="del-cupo" style="font-size:12px;color:var(--muted);margin-top:-10px;margin-bottom:14px"></div>
+      <div id="del-cupo" style="font-size:12px;margin-top:-10px;margin-bottom:14px"></div>
 
       <div class="f-row">
         <div>
@@ -1647,13 +1630,12 @@ function renderPanelDelegado() {
       <button class="btn-primary" id="btn-del-jugador">+ Agregar jugador</button>
     </div>
 
-    <!-- NÓMINA POR EQUIPO -->
     <div style="padding:0 18px 16px">
       <div class="adm-sec-label" style="margin-bottom:10px">Nómina registrada</div>
       ${resumen.map(r => `
         <div style="margin-bottom:16px">
-          <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
-            ${r.eq.NombreEquipo}${r.liga?' — '+r.liga.NombreFantasia:''}
+          <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;padding:4px 0;margin-bottom:6px;border-bottom:1px solid var(--border)">
+            ${r.liga ? r.liga.NombreFantasia : r.eq.NombreEquipo}
           </div>
           <div id="del-nomina-${r.eq.ID}"></div>
         </div>`).join('')}
@@ -1663,7 +1645,6 @@ function renderPanelDelegado() {
       <button class="btn-ghost" onclick="doLogout()">Cerrar sesión</button>
     </div>`;
 
-  // Poblar nóminas y cupo
   setTimeout(() => {
     resumen.forEach(r => renderNominaDelList(r.eq.ID));
     updateDelCupo();
