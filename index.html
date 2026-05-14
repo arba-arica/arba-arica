@@ -1520,55 +1520,92 @@ function applyRoleTabs(rol) {
 
 function renderPanelDelegado() {
   if (!_currentUser || _currentUser.rol !== 'delegado') return;
-  const idEquipo = _currentUser.id_equipo;
-  const equipo   = D.equipos.find(e => e.ID === idEquipo);
   const admContent = document.getElementById('admin-content');
   if (!admContent) return;
 
-  if (!equipo) {
+  // Buscar equipos del club — por nombre_club O por id_equipo
+  const nombreClub = _currentUser.nombre_club || '';
+  const idEquipo   = _currentUser.id_equipo   || '';
+  let equiposClub  = [];
+
+  if (nombreClub) {
+    // Buscar todos los equipos que coincidan con el nombre del club (sin importar liga)
+    equiposClub = D.equipos.filter(e =>
+      e.NombreEquipo.toLowerCase().includes(nombreClub.toLowerCase()) ||
+      nombreClub.toLowerCase().includes(e.NombreEquipo.toLowerCase())
+    );
+  }
+  if (!equiposClub.length && idEquipo) {
+    equiposClub = D.equipos.filter(e => e.ID === idEquipo);
+  }
+  if (!equiposClub.length) {
     admContent.innerHTML = `
       <div style="padding:24px 18px;text-align:center">
         <div style="font-size:32px;margin-bottom:12px">⚠️</div>
         <div style="font-family:'Archivo Black',sans-serif;font-size:16px;margin-bottom:8px">Sin equipo asignado</div>
-        <div style="font-size:13px;color:var(--muted)">Contacta al administrador para que te asigne un equipo.</div>
+        <div style="font-size:13px;color:var(--muted)">Contacta al administrador para que te asigne un club.</div>
         <button class="btn-ghost" style="margin-top:20px" onclick="doLogout()">Cerrar sesión</button>
       </div>`;
     return;
   }
 
-  // Buscar liga del equipo
-  const liga = D.ligas.find(l => l.ID === equipo.ID_Liga);
-  const ligaNombre = liga ? liga.NombreFantasia : '—';
-
-  // Calcular nómina por categoría
-  const personas = D.personas.filter(p => p.id_equipo === idEquipo);
-  const cats = ['Varones','Damas','Mixto'];
-  const contadores = {};
-  cats.forEach(c => {
-    contadores[c] = personas.filter(p => p.rol === 'jugador' && p.categoria === c).length;
+  // Calcular contadores totales por equipo+categoría
+  const resumen = equiposClub.map(eq => {
+    const liga = D.ligas.find(l => l.ID === eq.ID_Liga);
+    const personas = D.personas.filter(p => p.id_equipo === eq.ID);
+    const cats = ['Varones','Damas','Mixto'];
+    const contadores = {};
+    cats.forEach(c => { contadores[c] = personas.filter(p => p.rol==='jugador' && p.categoria===c).length; });
+    return { eq, liga, personas, contadores };
   });
 
+  // Header
+  const clubLabel = nombreClub || equiposClub[0].NombreEquipo;
+  const ligasLabel = [...new Set(resumen.map(r => r.liga?.NombreFantasia).filter(Boolean))].join(' · ');
+
   admContent.innerHTML = `
-    <!-- HEADER DELEGADO -->
     <div style="padding:16px 18px;border-bottom:1px solid var(--border)">
-      <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary)">${equipo.NombreEquipo}</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px">${ligaNombre} · Panel de delegado</div>
+      <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary)">${clubLabel}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">${ligasLabel} · Panel de delegado</div>
     </div>
 
-    <!-- CONTADORES -->
-    <div style="padding:14px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-      ${cats.map(c => `
-        <div style="background:var(--bg);border-radius:var(--r);padding:10px;text-align:center;border:1px solid var(--border)">
-          <div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:${contadores[c]>=15?'var(--red)':contadores[c]>=12?'var(--orange)':'var(--primary)'}">
-            ${contadores[c]}<span style="font-size:12px;color:var(--muted)">/15</span>
+    <!-- SELECTOR DE EQUIPO si tiene más de uno -->
+    ${equiposClub.length > 1 ? `
+    <div style="padding:14px 18px 0">
+      <label class="f-label">Seleccionar equipo para agregar jugador</label>
+      <select class="f-select" id="del-eq-sel" onchange="updateDelPanelEquipo()">
+        ${equiposClub.map(eq => {
+          const liga = D.ligas.find(l => l.ID === eq.ID_Liga);
+          return `<option value="${eq.ID}">${eq.NombreEquipo}${liga?' — '+liga.NombreFantasia:''}`;
+        }).join('')}
+      </select>
+    </div>` : ''}
+
+    <!-- RESUMEN CONTADORES POR EQUIPO -->
+    <div style="padding:14px 18px">
+      ${resumen.map(r => `
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            ${r.eq.NombreEquipo}${r.liga?' — '+r.liga.NombreFantasia:''}
           </div>
-          <div style="font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.5px;margin-top:2px">${c}</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+            ${['Varones','Damas','Mixto'].map(c => `
+              <div style="background:var(--bg);border-radius:var(--r);padding:8px;text-align:center;border:1px solid var(--border)">
+                <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:${r.contadores[c]>=15?'var(--red)':r.contadores[c]>=12?'var(--orange)':'var(--primary)'}">
+                  ${r.contadores[c]}<span style="font-size:11px;color:var(--muted)">/15</span>
+                </div>
+                <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">${c}</div>
+              </div>`).join('')}
+          </div>
         </div>`).join('')}
     </div>
 
     <!-- FORMULARIO AGREGAR JUGADOR -->
     <div style="padding:0 18px 16px">
       <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Agregar jugador</div>
+
+      ${equiposClub.length === 1 ? `
+        <input type="hidden" id="del-eq-sel" value="${equiposClub[0].ID}">` : ''}
 
       <label class="f-label">Categoría</label>
       <select class="f-select" id="del-cat" onchange="updateDelCupo()">
@@ -1588,7 +1625,6 @@ function renderPanelDelegado() {
           <input class="f-input" id="del-fnac" type="date">
         </div>
       </div>
-
       <div class="f-row">
         <div>
           <label class="f-label">RUT</label>
@@ -1603,56 +1639,61 @@ function renderPanelDelegado() {
         </div>
       </div>
       <div style="height:14px"></div>
-
       <label class="f-label">Estado federativo</label>
       <select class="f-select" id="del-fed">
         <option value="true">Federado</option>
         <option value="false">No federado</option>
       </select>
-
       <button class="btn-primary" id="btn-del-jugador">+ Agregar jugador</button>
     </div>
 
-    <!-- NÓMINA DEL EQUIPO -->
+    <!-- NÓMINA POR EQUIPO -->
     <div style="padding:0 18px 16px">
       <div class="adm-sec-label" style="margin-bottom:10px">Nómina registrada</div>
-      <div id="del-nomina-list"></div>
+      ${resumen.map(r => `
+        <div style="margin-bottom:16px">
+          <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            ${r.eq.NombreEquipo}${r.liga?' — '+r.liga.NombreFantasia:''}
+          </div>
+          <div id="del-nomina-${r.eq.ID}"></div>
+        </div>`).join('')}
     </div>
 
-    <!-- CERRAR SESIÓN -->
     <div style="padding:0 18px 24px">
       <button class="btn-ghost" onclick="doLogout()">Cerrar sesión</button>
     </div>`;
 
-  // Poblar nómina y cupo DESPUÉS de que el HTML esté en el DOM
+  // Poblar nóminas y cupo
   setTimeout(() => {
-    renderNominaDelList(idEquipo);
+    resumen.forEach(r => renderNominaDelList(r.eq.ID));
     updateDelCupo();
     const btn = document.getElementById('btn-del-jugador');
     if (btn) btn.addEventListener('click', createJugadorDelegado);
   }, 0);
 }
 
+window.updateDelPanelEquipo = function() { updateDelCupo(); };
+
 function updateDelCupo() {
-  const cat     = document.getElementById('del-cat')?.value;
-  const eqId    = _currentUser?.id_equipo;
-  const el      = document.getElementById('del-cupo');
+  const eqId = document.getElementById('del-eq-sel')?.value;
+  const cat   = document.getElementById('del-cat')?.value;
+  const el    = document.getElementById('del-cupo');
   if (!el || !cat || !eqId) return;
   const count   = D.personas.filter(p => p.id_equipo === eqId && p.rol === 'jugador' && p.categoria === cat).length;
   const restantes = 15 - count;
-  el.textContent = `${count}/15 jugadores · ${restantes > 0 ? restantes + ' cupos disponibles' : '⚠ Cupo completo'}`;
+  const eqNom = D.equipos.find(e => e.ID === eqId)?.NombreEquipo || '';
+  el.textContent = `${eqNom} · ${count}/15 · ${restantes > 0 ? restantes + ' cupos disponibles' : '⚠ Cupo completo'}`;
   el.style.color = restantes <= 0 ? 'var(--red)' : restantes <= 3 ? 'var(--orange)' : 'var(--muted)';
 }
 
 function renderNominaDelList(eqId) {
-  const el = document.getElementById('del-nomina-list');
+  const el = document.getElementById('del-nomina-' + eqId) || document.getElementById('del-nomina-list');
   if (!el) return;
   const personas = D.personas.filter(p => p.id_equipo === eqId);
   if (!personas.length) {
-    el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin jugadores registrados aún.</div>';
+    el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:4px 0">Sin jugadores registrados.</div>';
     return;
   }
-  // Agrupar por categoría
   const cats = {};
   personas.forEach(p => {
     const cat = p.rol === 'jugador' ? p.categoria : p.rol === 'cuerpo_tecnico' ? 'Cuerpo técnico' : 'Delegados';
@@ -1660,18 +1701,18 @@ function renderNominaDelList(eqId) {
     cats[cat].push(p);
   });
   el.innerHTML = Object.entries(cats).map(([cat, ps]) => `
-    <div style="margin-bottom:10px">
-      <div style="font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.8px;text-transform:uppercase;padding:6px 0">${cat}</div>
+    <div style="margin-bottom:8px">
+      <div style="font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.8px;text-transform:uppercase;padding:4px 0">${cat}</div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
         ${ps.map(p => {
           const anio = p.fecha_nacimiento ? new Date(p.fecha_nacimiento).getFullYear() : '—';
           const fed  = p.federado ? '<span style="font-size:9px;color:var(--green);font-weight:700;margin-left:4px">• Federado</span>' : '';
-          return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)">
+          return `<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border)">
             <div style="flex:1;min-width:0">
               <div style="font-size:13px;font-weight:700">${p.nombre_completo}</div>
               <div style="font-size:11px;color:var(--muted)">${anio}${p.rut?' · '+p.rut:''}${fed}</div>
             </div>
-            <button class="del-btn" onclick="delJugador('${p.id}','${p.nombre_completo.replace(/'/g,"\\'")}')">✕</button>
+            <button class="btn-del-sm" onclick="delJugador('${p.id}','${p.nombre_completo.replace(/'/g,"\\'")}')">✕</button>
           </div>`;
         }).join('')}
       </div>
@@ -1685,14 +1726,12 @@ async function createJugadorDelegado() {
   const cat    = document.getElementById('del-cat').value;
   const rol    = document.getElementById('del-rol').value;
   const fed    = document.getElementById('del-fed').value;
-  const eqId   = _currentUser?.id_equipo;
+  const eqId   = document.getElementById('del-eq-sel')?.value;
   const eq     = D.equipos.find(e => e.ID === eqId);
-  // Buscar liga del equipo
   const ligaId = eq?.ID_Liga;
   if (!nombre) return toast('El nombre es obligatorio','err');
-  if (!eqId || !ligaId) return toast('Error: equipo sin liga asignada','err');
+  if (!eqId || !ligaId) return toast('Selecciona un equipo válido','err');
   if (rut && !rut.match(/^\d{7,8}-[\dkK]$/)) return toast('RUT inválido. Formato: 12345678-9','err');
-  // Verificar límite
   if (rol === 'jugador') {
     const count = D.personas.filter(p => p.id_equipo === eqId && p.rol === 'jugador' && p.categoria === cat).length;
     if (count >= 15) return toast(`Cupo completo en ${cat} (15/15)`,'err');
@@ -1705,32 +1744,23 @@ async function createJugadorDelegado() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action: 'createPersona',
-        adminPassword: adminPass,
-        nombreCompleto: nombre,
-        fechaNacimiento: fnac || null,
-        rut: rut || '',
-        idEquipo: eqId,
-        idLiga: ligaId,
-        categoria: cat,
-        rol,
-        federado: fed === 'true',
+        action: 'createPersona', adminPassword: adminPass,
+        nombreCompleto: nombre, fechaNacimiento: fnac || null,
+        rut: rut || '', idEquipo: eqId, idLiga: ligaId,
+        categoria: cat, rol, federado: fed === 'true',
       }),
     });
     const json = JSON.parse(await res.text());
     if (json?.success) {
-      toast(`✓ ${nombre} agregado al equipo`,'ok');
+      toast(`✓ ${nombre} agregado`,'ok');
       document.getElementById('del-nombre').value = '';
       document.getElementById('del-fnac').value   = '';
       document.getElementById('del-rut').value    = '';
       await refreshData();
       renderPanelDelegado();
-    } else {
-      toast(json?.message || 'Error al agregar','err');
-    }
-  } catch(e) {
-    toast('Error: ' + e.message,'err');
-  } finally {
+    } else { toast(json?.message || 'Error al agregar','err'); }
+  } catch(e) { toast('Error: ' + e.message,'err'); }
+  finally {
     const b = document.getElementById('btn-del-jugador');
     if (b) { b.innerHTML = '+ Agregar jugador'; b.disabled = false; }
   }
@@ -2985,17 +3015,19 @@ window.openEditUsuario = function(id) {
     <label class="f-label">Nombre</label>
     <input class="f-input" id="eu-nombre" type="text" placeholder="Nombre">
     <label class="f-label">Email</label>
-    <input class="f-input" id="eu-email" type="email" placeholder="email@ejemplo.com">`;
+    <input class="f-input" id="eu-email" type="email" placeholder="email@ejemplo.com">
+    <label class="f-label">Nombre del club</label>
+    <input class="f-input" id="eu-club" type="text" placeholder="Ej: Toros FC">`;
   document.getElementById('modal-overlay').classList.add('open');
   modalSaveCb = () => {
     const nombre = document.getElementById('eu-nombre').value.trim();
     const email  = document.getElementById('eu-email').value.trim();
-    showConfirmV3('¿Guardar cambios?','',async () => {
-      const res = await gasCall('updateUsuario', { usuarioId: id, nombre, email });
-      closeConfirmV3();
+    const club   = document.getElementById('eu-club').value.trim();
+    showConfirmV3('¿Guardar cambios?','', async () => {
+      const res = await gasCall('updateUsuario', { usuarioId: id, nombre, email, nombreClub: club });
       document.getElementById('modal-overlay').classList.remove('open');
-      if (res && res.success) { toast('✓ Usuario actualizado','ok'); renderUsuariosAdm(); }
-      else toast(res?.message || 'Error','err');
+      if (res?.success) { toast('✓ Usuario actualizado','ok'); renderUsuariosAdm(); }
+      else toast(res?.message||'Error','err');
     }, 'ok');
   };
 };
