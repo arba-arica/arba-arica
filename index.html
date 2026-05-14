@@ -702,6 +702,7 @@ textarea.f-input{resize:none}
         <button class="adm-tab" data-tab="tab-res-adm">Resultados</button>
         <button class="adm-tab" data-tab="tab-noticias-adm">Noticias</button>
         <button class="adm-tab" data-tab="tab-sanciones-adm">Sanciones</button>
+        <button class="adm-tab" data-tab="tab-temporada-adm">Temporada</button>
         <button class="adm-tab" data-tab="tab-jugadores-adm">Jugadores</button>
         <button class="adm-tab" data-tab="tab-stats-adm">Estadísticas</button>
         <button class="adm-tab" data-tab="tab-usuarios-adm">Usuarios</button>
@@ -812,6 +813,31 @@ textarea.f-input{resize:none}
       </div>
       <div style="padding:16px 18px 24px">
         <button class="btn-ghost" id="btn-logout">Cerrar sesión</button>
+      </div>
+
+      <!-- TAB TEMPORADA -->
+      <div class="adm-panel" id="tab-temporada-adm">
+        <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:4px">Gestión de temporadas</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Administra el ciclo de vida del torneo</div>
+
+        <!-- Temporada activa -->
+        <div id="temp-activa-box"></div>
+
+        <!-- Crear nueva temporada -->
+        <div id="temp-nueva-box" style="display:none">
+          <div style="font-family:'Archivo Black',sans-serif;font-size:13px;margin-bottom:12px;color:var(--green)">✓ Temporada cerrada — crear nueva</div>
+          <label class="f-label">Nombre de la nueva temporada</label>
+          <input class="f-input" id="temp-nuevo-nombre" type="text" placeholder="Ej: Torneo Clausura ARBA 2026">
+          <label class="f-label">Fecha de inicio</label>
+          <input class="f-input" id="temp-nuevo-inicio" type="date">
+          <button class="btn-primary" onclick="crearTemporada()">🆕 Crear nueva temporada</button>
+        </div>
+
+        <!-- Historial de temporadas -->
+        <div style="margin-top:20px">
+          <div class="adm-sec-label" style="margin-bottom:10px">Historial de temporadas</div>
+          <div id="temp-historial"></div>
+        </div>
       </div>
 
       <!-- TAB JUGADORES -->
@@ -971,7 +997,7 @@ const CACHE_TTL     = 2 * 60 * 1000; // 2 minutos
 const _supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
-var D = { ligas:[], equipos:[], partidos:[], sanciones:[], noticias:[], personas:[], stats:[] };
+var D = { ligas:[], equipos:[], partidos:[], sanciones:[], noticias:[], personas:[], stats:[], temporadas:[] };
 var adminPass = '';
 var activeAdmTab = 'tab-ligas';
 var confirmCb = null;
@@ -982,7 +1008,7 @@ var _cache = { data: null, ts: 0 };
 async function fetchAllData() {
   if (_cache.data && Date.now() - _cache.ts < CACHE_TTL) return _cache.data;
 
-  const [rL, rE, rP, rS, rN, rPer, rSt] = await Promise.all([
+  const [rL, rE, rP, rS, rN, rPer, rSt, rTemp] = await Promise.all([
     _supa.from('ligas').select('*').order('created_at'),
     _supa.from('equipos').select('*').order('nombre_equipo'),
     _supa.from('encuentros').select('*').order('partidos'),
@@ -990,6 +1016,7 @@ async function fetchAllData() {
     _supa.from('noticias').select('*').order('fecha', { ascending: false }),
     _supa.from('personas').select('*').order('nombre_completo'),
     _supa.from('stats_carrera').select('*'),
+    _supa.from('temporadas').select('*').order('created_at'),
   ]);
 
   const norm = {
@@ -1023,8 +1050,9 @@ async function fetchAllData() {
       Descripcion: r.descripcion, ImagenURL: r.imagen_url,
       foto_url: r.foto_url, Enlace: r.enlace, me_gusta: r.me_gusta || 0,
     })),
-    personas: (rPer.data || []),
-    stats:    (rSt.data  || []),
+    personas:   (rPer.data  || []),
+    stats:      (rSt.data   || []),
+    temporadas: (rTemp.data || []),
   };
 
   _cache = { data: norm, ts: Date.now() };
@@ -3140,7 +3168,386 @@ window.openEditNoticia = function(id) {
   };
 };
 
-// ─── ESTADÍSTICAS ────────────────────────────────────────────────────────────
+// ─── REPORTE CIERRE TEMPORADA ─────────────────────────────────────────────────
+// ─── GESTIÓN DE TEMPORADAS ────────────────────────────────────────────────────
+function setupTemporadaTab() {
+  renderTemporadaActiva();
+  renderHistorialTemporadas();
+}
+
+function renderTemporadaActiva() {
+  const activa   = (D.temporadas||[]).find(t => t.estado === 'activa');
+  const box      = document.getElementById('temp-activa-box');
+  const nuevaBox = document.getElementById('temp-nueva-box');
+  if (!box) return;
+
+  if (!activa) {
+    box.innerHTML = `<div style="background:var(--orange-light);border:1px solid #fed7aa;border-radius:var(--r);padding:12px 14px;font-size:12px;color:var(--orange);font-weight:600;margin-bottom:16px">
+      ⚠ No hay temporada activa. Crea una nueva para comenzar.
+    </div>`;
+    if (nuevaBox) nuevaBox.style.display = 'block';
+    return;
+  }
+
+  // Calcular estadísticas de la temporada activa
+  const ligasTemp    = D.ligas.filter(l => l.id_temporada === activa.id || !l.id_temporada);
+  const ligasIds     = ligasTemp.map(l => l.ID);
+  const partidosT    = D.partidos.filter(p => ligasIds.includes(p.ID_Liga));
+  const finalizados  = partidosT.filter(p => p.Estado === 'Finalizado').length;
+  const programados  = partidosT.filter(p => p.Estado === 'Programado').length;
+  const sancionesT   = D.sanciones.filter(s => ligasIds.includes(s.ID_Liga) && !s.trasladada);
+  const jugadoresT   = D.personas.filter(p => ligasIds.some(lid => D.equipos.find(e=>e.ID===p.id_equipo)?.ID_Liga===lid));
+  const fechaInicio  = activa.fecha_inicio ? new Date(activa.fecha_inicio).toLocaleDateString('es-CL') : '—';
+
+  box.innerHTML = `
+    <div style="background:var(--green-light);border:1px solid #bbf7d0;border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--green)">${activa.nombre}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Activa desde ${fechaInicio} · ${ligasTemp.length} liga(s)</div>
+        </div>
+        <span style="background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:100px">🟢 ACTIVA</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+        <div style="background:#fff;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary)">${D.equipos.filter(e=>ligasIds.includes(e.ID_Liga)).length}</div>
+          <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase">Equipos</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--green)">${finalizados}</div>
+          <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase">Jugados</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--orange)">${programados}</div>
+          <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase">Pendientes</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--red)">${sancionesT.length}</div>
+          <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase">Sanciones</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTE PDF -->
+    <div style="background:var(--primary-light);border:1px solid #bfdbfe;border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:8px">📄 Reporte de cierre incluye:</div>
+      <div style="font-size:11px;color:var(--primary);display:grid;grid-template-columns:1fr 1fr;gap:3px">
+        <span>✓ Portada con datos de la temporada</span>
+        <span>✓ Tabla de posiciones por liga</span>
+        <span>✓ Todos los resultados</span>
+        <span>✓ Sanciones aplicadas</span>
+        <span>✓ Nóminas por equipo</span>
+        <span>✓ Top anotadores</span>
+      </div>
+    </div>
+    <button class="btn-primary" id="btn-reporte-temporada" onclick="generarReporteTemporada('${activa.id}','${activa.nombre}')">
+      📄 Descargar reporte de temporada
+    </button>
+
+    ${sancionesT.filter(s=>s.TerminoSancion).length > 0 ? `
+    <div style="background:var(--red-light);border:1px solid #fecaca;border-radius:var(--r);padding:12px 14px;margin-top:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:4px">⚠ ${sancionesT.length} sanción(es) para trasladar</div>
+      <div style="font-size:11px;color:var(--muted)">Al cerrar la temporada, se trasladarán a la siguiente automáticamente.</div>
+    </div>` : ''}
+
+    <div style="border-top:1px solid var(--border);margin-top:20px;padding-top:16px">
+      <div style="font-family:'Archivo Black',sans-serif;font-size:13px;margin-bottom:8px;color:var(--red)">Cerrar temporada</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+        Al cerrar, la temporada queda en solo lectura. Las sanciones pendientes se marcarán para trasladar a la próxima.
+      </div>
+      <button style="width:100%;padding:12px;border-radius:10px;background:var(--red-light);color:var(--red);border:1.5px solid #fecaca;font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;cursor:pointer" onclick="cerrarTemporada('${activa.id}','${activa.nombre}')">
+        🔒 Cerrar temporada
+      </button>
+    </div>`;
+
+  if (nuevaBox) nuevaBox.style.display = 'none';
+}
+
+function renderHistorialTemporadas() {
+  const el = document.getElementById('temp-historial');
+  if (!el) return;
+  const cerradas = (D.temporadas||[]).filter(t => t.estado === 'cerrada');
+  if (!cerradas.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:4px 0">Sin temporadas anteriores.</div>';
+    return;
+  }
+  el.innerHTML = cerradas.map(t => {
+    const fecha = t.fecha_cierre ? new Date(t.fecha_cierre).toLocaleDateString('es-CL') : '—';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px">
+      <div>
+        <div style="font-size:13px;font-weight:700">${t.nombre}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Cerrada el ${fecha}</div>
+      </div>
+      <button class="pdf-btn" onclick="generarReporteTemporada('${t.id}','${t.nombre}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        PDF
+      </button>
+    </div>`;
+  }).join('');
+}
+
+async function crearTemporada() {
+  const nombre = document.getElementById('temp-nuevo-nombre')?.value.trim();
+  const inicio = document.getElementById('temp-nuevo-inicio')?.value;
+  if (!nombre) return toast('Ingresa el nombre de la temporada','err');
+  showConfirmV3(`¿Crear temporada "${nombre}"?`, 'Se activará inmediatamente.', async () => {
+    const res = await fetch(NETLIFY_FN, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'createTemporada', adminPassword: adminPass, nombre, fechaInicio: inicio||null }),
+    });
+    const json = JSON.parse(await res.text());
+    if (json?.success) {
+      toast('✓ Temporada creada','ok');
+      await refreshData();
+      renderAdmin();
+      setupTemporadaTab();
+    } else toast(json?.message||'Error','err');
+  }, 'ok');
+}
+
+async function cerrarTemporada(id, nombre) {
+  showConfirmV3(
+    `¿Cerrar "${nombre}"?`,
+    'La temporada quedará en solo lectura. Esta acción no se puede deshacer.',
+    async () => {
+      const res = await fetch(NETLIFY_FN, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'cerrarTemporada', adminPassword: adminPass, temporadaId: id }),
+      });
+      const json = JSON.parse(await res.text());
+      if (json?.success) {
+        toast('✓ Temporada cerrada','ok');
+        await refreshData();
+        renderAdmin();
+        setupTemporadaTab();
+        document.getElementById('temp-nueva-box').style.display = 'block';
+      } else toast(json?.message||'Error','err');
+    }, 'danger'
+  );
+}
+
+function generarReporteTemporada(tempId, tempNombre) {
+  const nombre = tempNombre || document.getElementById('temp-nombre')?.value.trim() || 'Temporada ARBA 2026';
+  // Filtrar ligas de esta temporada
+  const ligasSel = D.ligas.filter(l => l.id_temporada === tempId || !l.id_temporada);
+  const ligasSelIds = ligasSel.map(l => l.ID);
+  if (!ligasSelIds.length) return toast('Sin ligas en esta temporada','err');
+  const btn = document.getElementById('btn-reporte-temporada');
+  btn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;margin-right:6px"></div> Generando PDF...';
+  btn.disabled = true;
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const fecha = new Date().toLocaleDateString('es-CL', {day:'2-digit',month:'long',year:'numeric'});
+    const totalEquipos  = D.equipos.filter(e => ligasSelIds.includes(e.ID_Liga)).length;
+    const totalPartidos = D.partidos.filter(p => ligasSelIds.includes(p.ID_Liga) && p.Estado==='Finalizado').length;
+    const totalJugadores = D.personas.filter(p => ligasSelIds.some(lid => D.equipos.find(e=>e.ID===p.id_equipo)?.ID_Liga===lid)).length;
+    const totalSanciones = D.sanciones.filter(s => ligasSelIds.includes(s.ID_Liga)).length;
+
+    // ── PORTADA ──────────────────────────────────────────────────────────────
+    doc.setFillColor(30,58,138);
+    doc.rect(0,0,210,80,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(11); doc.setFont('helvetica','normal');
+    doc.text('ASOCIACIÓN DEPORTIVA REGIONAL DE BÁSQUETBOL ARICA', 105, 20, {align:'center'});
+    doc.setFontSize(22); doc.setFont('helvetica','bold');
+    doc.text('ARBA', 105, 32, {align:'center'});
+    doc.setFontSize(14); doc.setFont('helvetica','normal');
+    doc.text('Reporte de Cierre de Temporada', 105, 43, {align:'center'});
+    doc.setFontSize(18); doc.setFont('helvetica','bold');
+    doc.text(nombre, 105, 58, {align:'center'});
+    doc.setFontSize(10); doc.setFont('helvetica','normal');
+    doc.text(`Generado: ${fecha}`, 105, 70, {align:'center'});
+
+    // ── RESUMEN GENERAL ───────────────────────────────────────────────────────
+    doc.setTextColor(30,58,138);
+    doc.setFontSize(13); doc.setFont('helvetica','bold');
+    doc.text('RESUMEN GENERAL', 14, 95);
+    doc.setDrawColor(30,58,138); doc.setLineWidth(0.5);
+    doc.line(14, 97, 196, 97);
+
+    doc.autoTable({
+      startY: 100,
+      body: [
+        ['Ligas disputadas', ligasSel.length],
+        ['Equipos participantes', totalEquipos],
+        ['Partidos finalizados', totalPartidos],
+        ['Jugadores inscritos', totalJugadores],
+        ['Sanciones aplicadas', totalSanciones],
+      ],
+      styles: { fontSize:11, cellPadding:4 },
+      columnStyles: { 0:{fontStyle:'bold',cellWidth:120}, 1:{halign:'center',fontStyle:'bold',fontSize:13,textColor:[30,58,138]} },
+      alternateRowStyles: { fillColor:[239,246,255] },
+    });
+
+    // ── TABLAS DE POSICIONES ─────────────────────────────────────────────────
+    doc.addPage();
+    let y = 14;
+    doc.setTextColor(30,58,138);
+    doc.setFontSize(13); doc.setFont('helvetica','bold');
+    doc.text('TABLA DE POSICIONES', 14, y); y += 4;
+    doc.setLineWidth(0.5); doc.line(14, y, 196, y); y += 6;
+
+    ligasSel.forEach(l => {
+      const standings = calcStandings(l.ID);
+      if (!standings.length) return;
+      doc.setFontSize(10); doc.setFont('helvetica','bold');
+      doc.setTextColor(30,58,138);
+      doc.text(`${l.NombreFantasia} — ${l.Categoria}`, 14, y+4);
+      doc.autoTable({
+        startY: y+7,
+        head:[['Pos','Equipo','PJ','G','P','Pts','PF','PC','Dif']],
+        body: standings.map((s,i) => [i+1, s.NombreEquipo, s.PJ, s.PG, s.PP, s.Puntos, s.GF, s.GC, (s.DG>0?'+':'')+s.DG]),
+        styles:{fontSize:9,cellPadding:2.5},
+        headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},
+        alternateRowStyles:{fillColor:[239,246,255]},
+        columnStyles:{0:{halign:'center',cellWidth:12},2:{halign:'center'},3:{halign:'center'},4:{halign:'center'},5:{halign:'center',fontStyle:'bold'},6:{halign:'center'},7:{halign:'center'},8:{halign:'center'}},
+      });
+      y = doc.lastAutoTable.finalY + 8;
+      if (y > 260) { doc.addPage(); y = 14; }
+    });
+
+    // ── RESULTADOS ───────────────────────────────────────────────────────────
+    doc.addPage(); y = 14;
+    doc.setTextColor(30,58,138);
+    doc.setFontSize(13); doc.setFont('helvetica','bold');
+    doc.text('RESULTADOS DE LA TEMPORADA', 14, y); y += 4;
+    doc.setLineWidth(0.5); doc.line(14, y, 196, y); y += 6;
+
+    ligasSel.forEach(l => {
+      const partidos = D.partidos.filter(p => p.ID_Liga===l.ID && p.Estado==='Finalizado');
+      if (!partidos.length) return;
+      doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(30,58,138);
+      doc.text(`${l.NombreFantasia} — ${l.Categoria}`, 14, y+4);
+      doc.autoTable({
+        startY: y+7,
+        head:[['Fecha','Local','PL','—','PV','Visita','Fase']],
+        body: partidos.map(p => [
+          fmtDate(p.Fecha), teamName(p.ID_EquipoLocal),
+          String(p.GolesLocal??''), '-', String(p.GolesVisita??''),
+          teamName(p.ID_EquipoVisita), p.Fase||'—'
+        ]),
+        styles:{fontSize:8.5,cellPadding:2},
+        headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},
+        alternateRowStyles:{fillColor:[239,246,255]},
+        columnStyles:{2:{halign:'right',fontStyle:'bold'},3:{halign:'center'},4:{halign:'left',fontStyle:'bold'}},
+      });
+      y = doc.lastAutoTable.finalY + 8;
+      if (y > 260) { doc.addPage(); y = 14; }
+    });
+
+    // ── SANCIONES ────────────────────────────────────────────────────────────
+    const sanciones = D.sanciones.filter(s => ligasSelIds.includes(s.ID_Liga));
+    if (sanciones.length) {
+      doc.addPage(); y = 14;
+      doc.setTextColor(30,58,138);
+      doc.setFontSize(13); doc.setFont('helvetica','bold');
+      doc.text('SANCIONES DE LA TEMPORADA', 14, y); y += 4;
+      doc.setLineWidth(0.5); doc.line(14, y, 196, y); y += 6;
+      doc.autoTable({
+        startY: y,
+        head:[['Jugador','Equipo','Liga','Tipo falta','Sanción']],
+        body: sanciones.map(s => {
+          const eq = D.equipos.find(e=>e.ID===s.ID_Equipo);
+          const lg = D.ligas.find(l=>l.ID===s.ID_Liga);
+          return [s.NombreJugador, eq?.NombreEquipo||'—', lg?.NombreFantasia||'—', s.TipoFalta||'—', s.Sancion||'—'];
+        }),
+        styles:{fontSize:9,cellPadding:2.5},
+        headStyles:{fillColor:[220,38,38],textColor:255,fontStyle:'bold'},
+        alternateRowStyles:{fillColor:[254,242,242]},
+      });
+    }
+
+    // ── NÓMINAS ──────────────────────────────────────────────────────────────
+    const equiposSel = D.equipos.filter(e => ligasSelIds.includes(e.ID_Liga));
+    if (D.personas.length && equiposSel.length) {
+      doc.addPage(); y = 14;
+      doc.setTextColor(30,58,138);
+      doc.setFontSize(13); doc.setFont('helvetica','bold');
+      doc.text('NÓMINAS DE JUGADORES', 14, y); y += 4;
+      doc.setLineWidth(0.5); doc.line(14, y, 196, y); y += 6;
+
+      ligasSel.forEach(l => {
+        const eqsLiga = D.equipos.filter(e=>e.ID_Liga===l.ID);
+        eqsLiga.forEach(eq => {
+          const personas = D.personas.filter(p=>p.id_equipo===eq.ID);
+          if (!personas.length) return;
+          doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(30,58,138);
+          doc.text(`${eq.NombreEquipo} — ${l.NombreFantasia}`, 14, y+4);
+          doc.autoTable({
+            startY: y+7,
+            head:[['N°','Nombre','Rol','Categoría','Año nac.','RUT','Fed.']],
+            body: personas.map((p,i) => [
+              i+1, p.nombre_completo,
+              p.rol==='jugador'?'Jugador':p.rol==='cuerpo_tecnico'?'C.Técnico':'Delegado',
+              p.categoria||'—',
+              p.fecha_nacimiento ? new Date(p.fecha_nacimiento).getFullYear() : '—',
+              p.rut||'—', p.federado?'Sí':'No'
+            ]),
+            styles:{fontSize:8,cellPadding:2},
+            headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},
+            alternateRowStyles:{fillColor:[239,246,255]},
+            columnStyles:{0:{halign:'center',cellWidth:10},4:{halign:'center'},6:{halign:'center'}},
+          });
+          y = doc.lastAutoTable.finalY + 6;
+          if (y > 260) { doc.addPage(); y = 14; }
+        });
+      });
+    }
+
+    // ── TOP ANOTADORES ────────────────────────────────────────────────────────
+    if (D.stats && D.stats.length) {
+      const statsConPts = D.stats.map(s => {
+        const p = D.personas.find(x=>x.id===s.id_jugador);
+        const eq = p ? D.equipos.find(e=>e.ID===p.id_equipo) : null;
+        const total = (s.pts_1p||0) + (s.pts_2p||0)*2 + (s.pts_3p||0)*3;
+        return { nombre: p?.nombre_completo||'—', equipo: eq?.NombreEquipo||'—', pj: s.partidos||0, tl:s.pts_1p||0, dos:s.pts_2p||0, tres:s.pts_3p||0, total };
+      }).filter(s=>s.total>0).sort((a,b)=>b.total-a.total).slice(0,20);
+
+      if (statsConPts.length) {
+        doc.addPage(); y = 14;
+        doc.setTextColor(30,58,138);
+        doc.setFontSize(13); doc.setFont('helvetica','bold');
+        doc.text('TOP ANOTADORES', 14, y); y += 4;
+        doc.setLineWidth(0.5); doc.line(14, y, 196, y); y += 6;
+        doc.autoTable({
+          startY: y,
+          head:[['Pos','Jugador','Equipo','PJ','TL','2P','3P','Total PTS','Prom']],
+          body: statsConPts.map((s,i) => [
+            i+1, s.nombre, s.equipo, s.pj, s.tl, s.dos, s.tres, s.total,
+            s.pj>0 ? (s.total/s.pj).toFixed(1) : '—'
+          ]),
+          styles:{fontSize:9,cellPadding:2.5},
+          headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},
+          alternateRowStyles:{fillColor:[239,246,255]},
+          columnStyles:{0:{halign:'center',cellWidth:12},3:{halign:'center'},4:{halign:'center'},5:{halign:'center'},6:{halign:'center'},7:{halign:'center',fontStyle:'bold'},8:{halign:'center'}},
+        });
+      }
+    }
+
+    // ── PIÉ DE PÁGINA EN TODAS LAS PÁGINAS ───────────────────────────────────
+    const totalPags = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPags; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8); doc.setFont('helvetica','normal');
+      doc.setTextColor(150,150,150);
+      doc.text(`ARBA Arica · ${nombre} · arba.arica@gmail.com`, 14, 290);
+      doc.text(`Pág. ${i} / ${totalPags}`, 196, 290, {align:'right'});
+      doc.setDrawColor(200,200,200); doc.setLineWidth(0.3);
+      doc.line(14, 287, 196, 287);
+    }
+
+    const nombreArchivo = `ARBA_Reporte_${nombre.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'')}_${new Date().getFullYear()}.pdf`;
+    doc.save(nombreArchivo);
+    toast('✓ Reporte descargado','ok');
+  } catch(e) {
+    toast('Error: ' + e.message,'err');
+  } finally {
+    btn.innerHTML = '📄 Generar reporte de temporada';
+    btn.disabled = false;
+  }
+}
 function populateStEquipos() {
   const ligaId = document.getElementById('st-liga')?.value;
   const sel = document.getElementById('st-equipo');
@@ -3225,6 +3632,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (t.dataset.tab === 'tab-validar-adm') renderValidarAdm();
       if (t.dataset.tab === 'tab-usuarios-adm') renderUsuariosAdm();
       if (t.dataset.tab === 'tab-stats-adm') setupStatsAdmin();
+      if (t.dataset.tab === 'tab-temporada-adm') setupTemporadaTab();
     });
   });
   // Botón jugador
