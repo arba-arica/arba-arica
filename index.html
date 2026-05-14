@@ -823,7 +823,23 @@ textarea.f-input{resize:none}
         <select class="f-select" id="jug-liga" onchange="populateEqJugadores()"></select>
         <label class="f-label">Equipo</label>
         <select class="f-select" id="jug-equipo" onchange="updateContadorJugadores()"></select>
-        <div id="jug-contador" style="font-size:12px;color:var(--muted);margin-top:-10px;margin-bottom:14px"></div>
+        <div class="f-row">
+          <div>
+            <label class="f-label">Categoría</label>
+            <select class="f-select" id="jug-cat" style="margin-bottom:0" onchange="updateContadorJugadores()">
+              <option>Varones</option><option>Damas</option><option>Mixto</option>
+            </select>
+          </div>
+          <div>
+            <label class="f-label">Rol</label>
+            <select class="f-select" id="jug-rol" style="margin-bottom:0">
+              <option value="jugador">Jugador</option>
+              <option value="cuerpo_tecnico">Cuerpo técnico</option>
+              <option value="delegado">Delegado</option>
+            </select>
+          </div>
+        </div>
+        <div id="jug-contador" style="font-size:12px;color:var(--muted);margin-top:8px;margin-bottom:14px"></div>
         <div class="f-row">
           <div>
             <label class="f-label">Nombre completo</label>
@@ -836,19 +852,18 @@ textarea.f-input{resize:none}
         </div>
         <div class="f-row">
           <div>
-            <label class="f-label">Categoría</label>
-            <select class="f-select" id="jug-cat" style="margin-bottom:0"><option>Varones</option><option>Damas</option><option>Mixto</option></select>
+            <label class="f-label">RUT</label>
+            <input class="f-input" id="jug-rut" type="text" placeholder="12345678-9" maxlength="10" style="margin-bottom:0">
           </div>
           <div>
-            <label class="f-label">Rol</label>
-            <select class="f-select" id="jug-rol" style="margin-bottom:0"><option value="jugador">Jugador</option><option value="cuerpo_tecnico">Cuerpo técnico</option><option value="delegado">Delegado</option></select>
+            <label class="f-label">Estado federativo</label>
+            <select class="f-select" id="jug-fed" style="margin-bottom:0">
+              <option value="true">Federado</option>
+              <option value="false">No federado</option>
+            </select>
           </div>
         </div>
         <div style="height:14px"></div>
-        <label class="f-label">Estado federativo</label>
-        <select class="f-select" id="jug-fed"><option value="true">Federado</option><option value="false">No federado</option></select>
-        <label class="f-label">RUT</label>
-        <input class="f-input" id="jug-rut" type="text" placeholder="12345678-9" maxlength="10">
         <button class="btn-primary" id="btn-jugador">+ Agregar jugador</button>
         <div class="adm-sec-label" style="margin-top:20px">Jugadores registrados</div>
         <div id="jugadores-adm-list"></div>
@@ -1525,13 +1540,18 @@ function renderPanelDelegado() {
 
   const nombreClub = _currentUser.nombre_club || '';
   const idEquipo   = _currentUser.id_equipo   || '';
+  const ligasIds   = _currentUser.ligas_ids   || [];
   let equiposClub  = [];
 
   if (nombreClub) {
-    equiposClub = D.equipos.filter(e =>
-      e.NombreEquipo.toLowerCase().includes(nombreClub.toLowerCase()) ||
-      nombreClub.toLowerCase().includes(e.NombreEquipo.toLowerCase())
-    );
+    equiposClub = D.equipos.filter(e => {
+      const nombreMatch =
+        e.NombreEquipo.toLowerCase().includes(nombreClub.toLowerCase()) ||
+        nombreClub.toLowerCase().includes(e.NombreEquipo.toLowerCase());
+      // Si tiene ligas asignadas, filtrar también por liga
+      const ligaMatch = !ligasIds.length || ligasIds.includes(e.ID_Liga);
+      return nombreMatch && ligaMatch;
+    });
   }
   if (!equiposClub.length && idEquipo) {
     equiposClub = D.equipos.filter(e => e.ID === idEquipo);
@@ -2498,12 +2518,17 @@ function populateEqJugadores() {
 
 function updateContadorJugadores() {
   const eqId = document.getElementById('jug-equipo')?.value;
+  const cat  = document.getElementById('jug-cat')?.value;
   const el   = document.getElementById('jug-contador');
   if (!el) return;
   if (!eqId) { el.textContent = ''; return; }
-  const jugadores = (D.personas||[]).filter(p => p.id_equipo === eqId && p.rol === 'jugador');
+  const jugadores = (D.personas||[]).filter(p =>
+    p.id_equipo === eqId && p.rol === 'jugador' && (!cat || p.categoria === cat)
+  );
   const restantes = 15 - jugadores.length;
-  el.textContent = `${jugadores.length}/15 jugadores · ${restantes > 0 ? restantes + ' cupos disponibles' : '⚠ Cupo completo'}`;
+  const eqNom = D.equipos.find(e => e.ID === eqId)?.NombreEquipo || '';
+  const catLabel = cat ? ` · ${cat}` : '';
+  el.textContent = `${eqNom}${catLabel} · ${jugadores.length}/15 · ${restantes > 0 ? restantes + ' cupos disponibles' : '⚠ Cupo completo'}`;
   el.style.color = restantes <= 0 ? 'var(--red)' : restantes <= 3 ? 'var(--orange)' : 'var(--muted)';
 }
 async function uploadImagen(file, bucket) {
@@ -2949,21 +2974,33 @@ async function renderUsuariosAdm() {
 }
 
 window.openCrearUsuario = function() {
-  const eqOpts = D.equipos.map(e => `<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');
   const claveGen = generarClave();
+  const ligasOpts = D.ligas.map(l =>
+    `<label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;cursor:pointer;border:1px solid var(--border);margin-bottom:6px;font-size:13px;background:var(--bg)">
+      <input type="checkbox" class="nu-liga-chk" value="${l.ID}" style="width:16px;height:16px;accent-color:var(--primary)">
+      ${l.NombreFantasia} <span style="font-size:11px;color:var(--muted);margin-left:4px">${l.Categoria}</span>
+    </label>`
+  ).join('');
   document.getElementById('modal-title').textContent = 'Nuevo delegado';
   document.getElementById('modal-body').innerHTML = `
     <label class="f-label">Nombre</label>
     <input class="f-input" id="nu-nombre" type="text" placeholder="Apellido, Nombre">
     <label class="f-label">Email</label>
     <input class="f-input" id="nu-email" type="email" placeholder="delegado@email.com">
-    <label class="f-label">Equipo a cargo</label>
-    <select class="f-select" id="nu-equipo"><option value="">— Sin equipo —</option>${eqOpts}</select>
+    <label class="f-label">Nombre del club</label>
+    <input class="f-input" id="nu-club" type="text" placeholder="Ej: Toros FC">
+    <div style="background:var(--primary-light);border:1px solid #bfdbfe;border-radius:8px;padding:8px 12px;font-size:11px;color:var(--primary);margin-bottom:14px">
+      💡 Debe coincidir exactamente con el nombre del equipo en la base de datos
+    </div>
+    <label class="f-label">Ligas en que participa</label>
+    <div id="nu-ligas-list" style="margin-bottom:14px">
+      ${ligasOpts || '<div style="font-size:13px;color:var(--muted)">Sin ligas registradas</div>'}
+    </div>
     <label class="f-label">Contraseña de acceso</label>
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
       <input class="f-input" id="nu-clave" type="text" value="${claveGen}" style="margin-bottom:0;font-family:monospace;letter-spacing:2px;font-size:16px;font-weight:700;color:var(--primary)">
-      <button onclick="document.getElementById('nu-clave').value=generarClave()" style="flex-shrink:0;padding:11px 12px;border-radius:10px;background:var(--bg);border:1.5px solid var(--border);cursor:pointer;font-size:18px" title="Generar nueva clave">🔄</button>
-      <button onclick="navigator.clipboard?.writeText(document.getElementById('nu-clave').value);toast('✓ Clave copiada','ok')" style="flex-shrink:0;padding:11px 12px;border-radius:10px;background:var(--bg);border:1.5px solid var(--border);cursor:pointer;font-size:18px" title="Copiar clave">📋</button>
+      <button onclick="document.getElementById('nu-clave').value=generarClave()" style="flex-shrink:0;padding:11px 12px;border-radius:10px;background:var(--bg);border:1.5px solid var(--border);cursor:pointer;font-size:18px">🔄</button>
+      <button onclick="navigator.clipboard?.writeText(document.getElementById('nu-clave').value);toast('✓ Clave copiada','ok')" style="flex-shrink:0;padding:11px 12px;border-radius:10px;background:var(--bg);border:1.5px solid var(--border);cursor:pointer;font-size:18px">📋</button>
     </div>
     <div style="background:var(--orange-light);border:1px solid #fed7aa;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--orange);font-weight:600">
       ⚠ Copia esta clave antes de guardar — deberás enviársela al delegado manualmente
@@ -2972,15 +3009,20 @@ window.openCrearUsuario = function() {
   modalSaveCb = () => {
     const nombre = document.getElementById('nu-nombre').value.trim();
     const email  = document.getElementById('nu-email').value.trim();
-    const eqId   = document.getElementById('nu-equipo').value;
+    const club   = document.getElementById('nu-club').value.trim();
     const clave  = document.getElementById('nu-clave').value.trim();
+    const ligas  = [...document.querySelectorAll('.nu-liga-chk:checked')].map(c => c.value);
     if (!nombre || !email) { toast('Nombre y email son obligatorios','err'); return; }
+    if (!club) { toast('Ingresa el nombre del club','err'); return; }
+    if (!ligas.length) { toast('Selecciona al menos una liga','err'); return; }
     showConfirmV3(`¿Crear delegado ${nombre}?`, '¿Ya copiaste la clave para enviársela?', async () => {
-      const res = await gasCall('createUsuario', { nombre, email, password: clave, rol:'delegado', idEquipo: eqId || null });
-      closeConfirmV3();
+      const res = await gasCall('createUsuario', {
+        nombre, email, password: clave,
+        rol: 'delegado', nombreClub: club, ligasIds: ligas,
+      });
       document.getElementById('modal-overlay').classList.remove('open');
-      if (res && res.success) { toast('✓ Delegado creado','ok'); renderUsuariosAdm(); }
-      else toast(res?.message || 'Error','err');
+      if (res?.success) { toast('✓ Delegado creado','ok'); renderUsuariosAdm(); }
+      else toast(res?.message||'Error','err');
     }, 'ok');
   };
 };
