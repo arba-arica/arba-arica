@@ -83,7 +83,7 @@ exports.handler = async (event) => {
         }
         // Actualizar last_login
         await db.from('usuarios').update({ last_login: new Date().toISOString() }).eq('id', usuario.id);
-        result = { success: true, usuario: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, id_equipo: usuario.id_equipo, nombre_club: usuario.nombre_club || '', ligas_ids: usuario.ligas_ids || [] } };
+        result = { success: true, usuario: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, id_equipo: usuario.id_equipo, nombre_club: usuario.nombre_club || '', ligas_ids: usuario.ligas_ids || [], equipos_ids: usuario.equipos_ids || [] } };
         break;
       }
 
@@ -389,6 +389,7 @@ exports.handler = async (event) => {
           id_equipo:     data.idEquipo    || null,
           nombre_club:   data.nombreClub  || '',
           ligas_ids:     data.ligasIds    || [],
+          equipos_ids:   data.equiposIds  || [],
           activo:        true,
         });
         result = error ? fail(error) : { success:true, message:'Usuario creado. Se enviará acceso por correo.' };
