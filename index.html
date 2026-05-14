@@ -587,9 +587,7 @@ textarea.f-input{resize:none}
         </button>
       </div>
       <label class="f-label">Filtrar por liga</label>
-      <select class="f-select" id="rep-liga-pts" style="margin-bottom:8px;font-size:13px;padding:8px 10px" onchange="updateRepEquipos('pts')"></select>
-      <label class="f-label">Filtrar por equipo</label>
-      <select class="f-select" id="rep-eq-pts" style="margin-bottom:0;font-size:13px;padding:8px 10px"></select>
+      <select class="f-select" id="rep-liga-pts" style="margin-bottom:0;font-size:13px;padding:8px 10px" onchange="updateRepEquipos('pts')"></select>
     </div>
     <div class="reporte-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -2608,13 +2606,13 @@ function pdfHeader(doc, titulo, subtitulo) {
 }
 
 window.downloadPDF = function(tipo) {
-  const ligaSuffix = tipo === 'fixture' ? 'fixture' : tipo === 'resultados' ? 'res' : 'pts';
+  const ligaSuffix = tipo === 'fixture' ? 'fixture' : tipo === 'resultados' ? 'res' : tipo === 'nomina' ? 'nomina' : 'pts';
   const ligaEl = document.getElementById('rep-liga-' + ligaSuffix);
-  const eqEl   = document.getElementById('rep-eq-'   + ligaSuffix);
-  const ligaId  = ligaEl?.value  || '';
-  const eqId    = eqEl?.value    || '';
-  const liga    = ligaId ? D.ligas.find(l => l.ID === ligaId) : null;
-  const equipo  = eqId   ? D.equipos.find(e => e.ID === eqId) : null;
+  const eqEl   = tipo === 'puntaje' ? null : document.getElementById('rep-eq-' + ligaSuffix);
+  const ligaId = ligaEl?.value || '';
+  const eqId   = eqEl?.value  || '';
+  const liga   = ligaId ? D.ligas.find(l => l.ID === ligaId) : null;
+  const equipo = eqId   ? D.equipos.find(e => e.ID === eqId) : null;
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
@@ -2684,15 +2682,28 @@ window.downloadPDF = function(tipo) {
         startY: startY + 7,
         head: [['Pos','Equipo','PJ','G','P','Pts','PF','PC','Dif']],
         body: standings.map((s,i) => [
-          i+1, s.nombre, s.pj, s.g, s.p, s.pts,
-          s.pf, s.pc, (s.pf-s.pc > 0?'+':'') + (s.pf-s.pc)
+          i+1,
+          s.NombreEquipo,
+          s.PJ,
+          s.PG,
+          s.PP,
+          s.Puntos,
+          s.GF,
+          s.GC,
+          (s.DG > 0 ? '+' : '') + s.DG
         ]),
         styles: { fontSize: 9, cellPadding: 2.5 },
         headStyles: { fillColor: [30,58,138], textColor: 255, fontStyle: 'bold' },
         alternateRowStyles: { fillColor: [239,246,255] },
-        columnStyles: { 0:{halign:'center'}, 2:{halign:'center'}, 3:{halign:'center'}, 4:{halign:'center'}, 5:{halign:'center',fontStyle:'bold'}, 6:{halign:'center'}, 7:{halign:'center'}, 8:{halign:'center'} },
+        columnStyles: {
+          0:{halign:'center',cellWidth:12},
+          2:{halign:'center'}, 3:{halign:'center'},
+          4:{halign:'center'}, 5:{halign:'center',fontStyle:'bold'},
+          6:{halign:'center'}, 7:{halign:'center'}, 8:{halign:'center'}
+        },
       });
-      startY = doc.lastAutoTable.finalY + 8;
+      startY = doc.lastAutoTable.finalY + 10;
+      if (startY > 170) { doc.addPage(); startY = 14; }
     });
   }
 
@@ -2744,7 +2755,7 @@ function populateReporteSelects() {
     const el = document.getElementById(id);
     if (el) el.innerHTML = ligaOpts;
   });
-  ['rep-eq-fixture','rep-eq-res','rep-eq-pts','rep-eq-nomina'].forEach(id => {
+  ['rep-eq-fixture','rep-eq-res','rep-eq-nomina'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = '<option value="">Todos los equipos</option>';
   });
