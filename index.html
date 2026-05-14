@@ -2623,24 +2623,27 @@ window.downloadPDF = function(tipo) {
     let partidos = D.partidos.filter(p => p.Estado === 'Programado');
     if (ligaId) partidos = partidos.filter(p => p.ID_Liga === ligaId);
     if (eqId)   partidos = partidos.filter(p => p.ID_EquipoLocal === eqId || p.ID_EquipoVisita === eqId);
-    const rows = partidos.map(p => [
-      fmtDate(p.Fecha),
-      p.Hora || '—',
-      teamName(p.ID_EquipoLocal),
-      'vs',
-      teamName(p.ID_EquipoVisita),
-      p.Cancha || '—',
-      p.Fase || '—',
-    ]);
-    doc.autoTable({
-      startY: 26,
-      head: [['Fecha','Hora','Local','','Visita','Cancha','Fase']],
-      body: rows.length ? rows : [['Sin partidos programados','','','','','','']],
-      styles: { fontSize: 9, cellPadding: 3 },
-      headStyles: { fillColor: [30,58,138], textColor: 255, fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [239,246,255] },
-      columnStyles: { 3: { halign:'center', fontStyle:'bold' } },
-    });
+
+    if (!partidos.length) {
+      doc.autoTable({ startY:26, head:[['Fecha','Hora','Local','','Visita','Cancha','Fase']], body:[['Sin partidos programados','','','','','','']], styles:{fontSize:9,cellPadding:3}, headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'} });
+    } else if (ligaId || eqId) {
+      // Con filtro — tabla simple
+      const rows = partidos.map(p => [fmtDate(p.Fecha), p.Hora||'—', teamName(p.ID_EquipoLocal), 'vs', teamName(p.ID_EquipoVisita), p.Cancha||'—', p.Fase||'—']);
+      doc.autoTable({ startY:26, head:[['Fecha','Hora','Local','','Visita','Cancha','Fase']], body:rows, styles:{fontSize:9,cellPadding:3}, headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'}, alternateRowStyles:{fillColor:[239,246,255]}, columnStyles:{3:{halign:'center',fontStyle:'bold'}} });
+    } else {
+      // Sin filtro — agrupar por liga
+      let startY = 26;
+      D.ligas.forEach(l => {
+        const pLiga = partidos.filter(p => p.ID_Liga === l.ID);
+        if (!pLiga.length) return;
+        doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(30,58,138);
+        doc.text(`${l.NombreFantasia} — ${l.Categoria}`, 14, startY + 4);
+        const rows = pLiga.map(p => [fmtDate(p.Fecha), p.Hora||'—', teamName(p.ID_EquipoLocal), 'vs', teamName(p.ID_EquipoVisita), p.Cancha||'—', p.Fase||'—']);
+        doc.autoTable({ startY: startY+7, head:[['Fecha','Hora','Local','','Visita','Cancha','Fase']], body:rows, styles:{fontSize:9,cellPadding:2.5}, headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'}, alternateRowStyles:{fillColor:[239,246,255]}, columnStyles:{3:{halign:'center',fontStyle:'bold'}} });
+        startY = doc.lastAutoTable.finalY + 8;
+        if (startY > 170) { doc.addPage(); startY = 14; }
+      });
+    }
   }
 
   else if (tipo === 'resultados') {
@@ -2648,24 +2651,25 @@ window.downloadPDF = function(tipo) {
     let partidos = D.partidos.filter(p => p.Estado === 'Finalizado');
     if (ligaId) partidos = partidos.filter(p => p.ID_Liga === ligaId);
     if (eqId)   partidos = partidos.filter(p => p.ID_EquipoLocal === eqId || p.ID_EquipoVisita === eqId);
-    const rows = partidos.map(p => [
-      fmtDate(p.Fecha),
-      teamName(p.ID_EquipoLocal),
-      String(p.GolesLocal ?? '—'),
-      '-',
-      String(p.GolesVisita ?? '—'),
-      teamName(p.ID_EquipoVisita),
-      p.Fase || '—',
-    ]);
-    doc.autoTable({
-      startY: 26,
-      head: [['Fecha','Local','','','','Visita','Fase']],
-      body: rows.length ? rows : [['Sin resultados','','','','','','']],
-      styles: { fontSize: 9, cellPadding: 3 },
-      headStyles: { fillColor: [30,58,138], textColor: 255, fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [239,246,255] },
-      columnStyles: { 2:{halign:'right',fontStyle:'bold'}, 3:{halign:'center'}, 4:{halign:'left',fontStyle:'bold'} },
-    });
+
+    if (!partidos.length) {
+      doc.autoTable({ startY:26, head:[['Fecha','Local','','','','Visita','Fase']], body:[['Sin resultados','','','','','','']], styles:{fontSize:9,cellPadding:3}, headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'} });
+    } else if (ligaId || eqId) {
+      const rows = partidos.map(p => [fmtDate(p.Fecha), teamName(p.ID_EquipoLocal), String(p.GolesLocal??'—'), '-', String(p.GolesVisita??'—'), teamName(p.ID_EquipoVisita), p.Fase||'—']);
+      doc.autoTable({ startY:26, head:[['Fecha','Local','','','','Visita','Fase']], body:rows, styles:{fontSize:9,cellPadding:3}, headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'}, alternateRowStyles:{fillColor:[239,246,255]}, columnStyles:{2:{halign:'right',fontStyle:'bold'},3:{halign:'center'},4:{halign:'left',fontStyle:'bold'}} });
+    } else {
+      let startY = 26;
+      D.ligas.forEach(l => {
+        const pLiga = partidos.filter(p => p.ID_Liga === l.ID);
+        if (!pLiga.length) return;
+        doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(30,58,138);
+        doc.text(`${l.NombreFantasia} — ${l.Categoria}`, 14, startY + 4);
+        const rows = pLiga.map(p => [fmtDate(p.Fecha), teamName(p.ID_EquipoLocal), String(p.GolesLocal??'—'), '-', String(p.GolesVisita??'—'), teamName(p.ID_EquipoVisita), p.Fase||'—']);
+        doc.autoTable({ startY: startY+7, head:[['Fecha','Local','','','','Visita','Fase']], body:rows, styles:{fontSize:9,cellPadding:2.5}, headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'}, alternateRowStyles:{fillColor:[239,246,255]}, columnStyles:{2:{halign:'right',fontStyle:'bold'},3:{halign:'center'},4:{halign:'left',fontStyle:'bold'}} });
+        startY = doc.lastAutoTable.finalY + 8;
+        if (startY > 170) { doc.addPage(); startY = 14; }
+      });
+    }
   }
 
   else if (tipo === 'puntaje') {
