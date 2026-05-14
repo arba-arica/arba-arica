@@ -83,7 +83,7 @@ exports.handler = async (event) => {
         }
         // Actualizar last_login
         await db.from('usuarios').update({ last_login: new Date().toISOString() }).eq('id', usuario.id);
-        result = { success: true, usuario: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, id_equipo: usuario.id_equipo } };
+        result = { success: true, usuario: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, id_equipo: usuario.id_equipo, nombre_club: usuario.nombre_club || '' } };
         break;
       }
 
@@ -382,11 +382,12 @@ exports.handler = async (event) => {
       // ─── USUARIOS (Admin crea cuentas de delegados) ───────────
       case 'createUsuario': {
         const { error } = await db.from('usuarios').insert({
-          nombre:        data.nombre    || '',
+          nombre:        data.nombre      || '',
           email:         (data.email || '').toLowerCase(),
-          password_hash: data.password  || '',
+          password_hash: data.password    || '',
           rol:           ['admin','delegado','publico'].includes(data.rol) ? data.rol : 'delegado',
-          id_equipo:     data.idEquipo  || null,
+          id_equipo:     data.idEquipo    || null,
+          nombre_club:   data.nombreClub  || '',
           activo:        true,
         });
         result = error ? fail(error) : { success:true, message:'Usuario creado. Se enviará acceso por correo.' };
@@ -394,11 +395,12 @@ exports.handler = async (event) => {
       }
       case 'updateUsuario': {
         const { error } = await db.from('usuarios').update({
-          nombre:    data.nombre    || '',
-          email:     data.email     || '',
-          rol:       data.rol       || 'delegado',
-          id_equipo: data.idEquipo  || null,
-          activo:    data.activo !== false,
+          nombre:      data.nombre      || '',
+          email:       (data.email || '').toLowerCase(),
+          rol:         data.rol         || 'delegado',
+          id_equipo:   data.idEquipo    || null,
+          nombre_club: data.nombreClub  || '',
+          activo:      data.activo !== false,
         }).eq('id', data.usuarioId);
         result = error ? fail(error) : { success:true, message:'Usuario actualizado' };
         break;
