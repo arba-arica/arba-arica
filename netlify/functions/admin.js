@@ -418,6 +418,25 @@ exports.handler = async (event) => {
         break;
       }
 
+      // ─── TEMPORADAS ──────────────────────────────────────────────────────
+      case 'createTemporada': {
+        const { error } = await db.from('temporadas').insert({
+          nombre:       data.nombre      || '',
+          estado:       'activa',
+          fecha_inicio: data.fechaInicio || null,
+        });
+        result = error ? fail(error) : { success: true, message: 'Temporada creada' };
+        break;
+      }
+      case 'cerrarTemporada': {
+        const { error } = await db.from('temporadas').update({
+          estado:       'cerrada',
+          fecha_cierre: new Date().toISOString().split('T')[0],
+        }).eq('id', data.temporadaId);
+        result = error ? fail(error) : { success: true, message: 'Temporada cerrada' };
+        break;
+      }
+
       // ─── DELETE GENÉRICO ─────────────────────────────────────
       case 'deleteItem': {
         const map = {
