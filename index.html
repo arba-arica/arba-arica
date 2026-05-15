@@ -1305,33 +1305,17 @@ function renderSanciones() {
 // ─── ADMIN ───────────────────────────────────────────────────────────────────
 function setupAdmin() {
   const overlay = document.getElementById('admin-overlay');
-  document.getElementById('admin-btn').addEventListener('click', () => overlay.classList.add('open'));
-  document.getElementById('panel-close-btn').addEventListener('click', closeAdmin);
-  overlay.addEventListener('click', e => { if (e.target === overlay) closeAdmin(); });
-  document.getElementById('do-login').addEventListener('click', doLogin);
-  document.getElementById('admin-pass').addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
-  document.getElementById('btn-logout').addEventListener('click', doLogout);
-  document.querySelectorAll('.adm-tab').forEach(t => {
-    t.addEventListener('click', () => {
-      document.querySelectorAll('.adm-tab').forEach(b => b.classList.remove('active'));
-      t.classList.add('active');
-      document.querySelectorAll('.adm-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById(t.dataset.tab).classList.add('active');
-      activeAdmTab = t.dataset.tab;
-      if (t.dataset.tab === 'tab-res-adm') renderResAdm();
-      if (t.dataset.tab === 'tab-partidos') renderPartidosAdm();
-    });
-  });
-  document.getElementById('pt-liga').addEventListener('change', function() { populateEqForLiga(this.value, 'pt-local', 'pt-visita'); });
-  document.getElementById('sa-liga').addEventListener('change', function() { populateEqForLiga(this.value, 'sa-equipo'); });
-  document.getElementById('eq-liga').addEventListener('change', function() { renderEquiposAdm(); });
-  document.getElementById('btn-liga').addEventListener('click', createLiga);
-  document.getElementById('btn-equipo').addEventListener('click', createEquipo);
-  document.getElementById('btn-partido').addEventListener('click', createPartido);
-  document.getElementById('btn-noticia').addEventListener('click', createNoticia);
-  document.getElementById('btn-sancion').addEventListener('click', createSancion);
-  document.getElementById('modal-cancel').addEventListener('click', () => document.getElementById('modal-overlay').classList.remove('open'));
-  document.getElementById('modal-save').addEventListener('click', () => { if (modalSaveCb) modalSaveCb(); });
+  const adminBtn = document.getElementById('admin-btn');
+  if (adminBtn) adminBtn.addEventListener('click', openAdmin);
+  if (overlay) overlay.addEventListener('click', e => { if (e.target === overlay) closeAdmin(); });
+  const doLoginBtn = document.getElementById('do-login');
+  if (doLoginBtn) doLoginBtn.addEventListener('click', doLogin);
+  const passInput = document.getElementById('admin-pass');
+  if (passInput) passInput.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
+  const modalCancel = document.getElementById('modal-cancel');
+  if (modalCancel) modalCancel.addEventListener('click', () => document.getElementById('modal-overlay').classList.remove('open'));
+  const modalSaveBtn = document.getElementById('modal-save');
+  if (modalSaveBtn) modalSaveBtn.addEventListener('click', () => { if (modalSaveCb) modalSaveCb(); });
 }
 
 function openAdmin() {
