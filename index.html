@@ -334,23 +334,28 @@ html,body{background:var(--bg);color:var(--text);font-family:'Archivo',sans-seri
 /* ─── NUEVO PANEL ADMIN B+C ─────────────────────────── */
 #admin-overlay{position:fixed;inset:0;z-index:200;background:rgba(15,23,42,.85);display:none;backdrop-filter:blur(4px)}
 #admin-overlay.open{display:flex;flex-direction:column}
-.adm-icon-btn{width:36px;height:36px;border-radius:8px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);transition:all .15s}
-.adm-icon-btn:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8)}
-.adm-icon-btn.active{background:rgba(255,255,255,.18);color:#fff}
-.adm-sub-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);cursor:pointer;font-size:12px;color:var(--muted);margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;transition:all .15s}
-.adm-sub-item:hover{background:var(--bg);color:var(--text)}
-.adm-sub-item.active{background:var(--primary-light);color:var(--primary);font-weight:700}
-.adm-sub-item svg{width:15px;height:15px;flex-shrink:0}
+.adm-icon-btn{width:100%;padding:10px 12px;border-radius:8px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.5);transition:all .15s;font-size:13px;font-family:inherit;text-align:left}
+.adm-icon-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.85)}
+.adm-icon-btn.active{background:rgba(255,255,255,.15);color:#fff;font-weight:600}
+.adm-icon-btn svg{width:16px;height:16px;flex-shrink:0}
+.adm-icon-btn .chv{margin-left:auto;width:14px;height:14px;transition:transform .2s;opacity:.5}
+.adm-icon-btn.active .chv{transform:rotate(180deg);opacity:1}
+.adm-submenu-inner{overflow:hidden;transition:max-height .2s ease;max-height:0}
+.adm-submenu-inner.open{max-height:300px}
+.adm-sub-item{display:flex;align-items:center;gap:8px;padding:7px 12px 7px 38px;border-radius:var(--r);cursor:pointer;font-size:12px;color:rgba(255,255,255,.45);margin-bottom:1px;border:none;background:transparent;width:100%;text-align:left;transition:all .15s}
+.adm-sub-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.8)}
+.adm-sub-item.active{background:rgba(59,130,246,.25);color:#93c5fd;font-weight:600}
 .adm-metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
 .adm-metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px}
 .adm-metric-val{font-family:'Archivo Black',sans-serif;font-size:22px;color:var(--primary)}
 .adm-metric-lbl{font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
 @media(max-width:640px){
-  #adm-submenu{display:none}
+  #adm-sidebar{width:100%!important;height:52px!important;flex-direction:row!important;position:fixed;bottom:0;left:0;right:0;padding:0 4px!important;justify-content:space-around;z-index:10;overflow:hidden}
+  .adm-icon-btn{flex-direction:column;gap:2px;padding:6px 8px;font-size:9px;width:auto;border-radius:6px}
+  .adm-icon-btn .chv{display:none}
+  .adm-submenu-inner{display:none}
+  #adm-main{padding-bottom:52px}
   .adm-metric-grid{grid-template-columns:repeat(2,1fr)}
-  #adm-icon-bar{width:100%;height:52px;flex-direction:row;position:fixed;bottom:0;left:0;right:0;padding:0 8px;justify-content:space-around;z-index:10}
-  #admin-panel-full{padding-bottom:52px}
-  .adm-icon-btn{flex-direction:column;gap:2px;width:48px;height:48px;border-radius:0}
 }
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
@@ -738,33 +743,69 @@ textarea.f-input{resize:none}
     <!-- BODY -->
     <div style="display:flex;flex:1;overflow:hidden">
 
-      <!-- ICON BAR -->
-      <div id="adm-icon-bar" style="width:52px;background:#0f172a;display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px;flex-shrink:0">
-        <button class="adm-icon-btn active" data-sec="torneo" onclick="admSetSection('torneo',this)" title="Torneo">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="2"/><path d="M12 10v4M8 14h8M6 20h12"/></svg>
-        </button>
-        <button class="adm-icon-btn" data-sec="jugadores" onclick="admSetSection('jugadores',this)" title="Jugadores">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85"/></svg>
-        </button>
-        <button class="adm-icon-btn" data-sec="noticias" onclick="admSetSection('noticias',this)" title="Noticias">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
-        </button>
-        <button class="adm-icon-btn" data-sec="sanciones" onclick="admSetSection('sanciones',this)" title="Sanciones">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        </button>
-        <button class="adm-icon-btn" data-sec="reportes" onclick="admSetSection('reportes',this)" title="Reportes">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        </button>
+      <!-- SIDEBAR -->
+      <div id="adm-sidebar" style="width:200px;background:#0f172a;display:flex;flex-direction:column;padding:8px;flex-shrink:0;overflow-y:auto">
+        <div style="margin-bottom:4px">
+          <!-- TORNEO -->
+          <button class="adm-icon-btn active" data-sec="torneo" onclick="admToggleSection('torneo',this)">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="2"/><path d="M12 10v4M8 14h8M6 20h12"/></svg>
+            Torneo
+            <svg class="chv" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="adm-submenu-inner open" id="sub-torneo">
+            <button class="adm-sub-item active" onclick="admSetTab('tab-ligas',this)">Ligas</button>
+            <button class="adm-sub-item" onclick="admSetTab('tab-equipos',this)">Equipos</button>
+            <button class="adm-sub-item" onclick="admSetTab('tab-partidos',this)">Partidos</button>
+            <button class="adm-sub-item" onclick="admSetTab('tab-res-adm',this)">Resultados</button>
+          </div>
+          <!-- JUGADORES -->
+          <button class="adm-icon-btn" data-sec="jugadores" onclick="admToggleSection('jugadores',this)">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Jugadores
+            <svg class="chv" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="adm-submenu-inner" id="sub-jugadores">
+            <button class="adm-sub-item" onclick="admSetTab('tab-jugadores-adm',this)">Nóminas</button>
+            <button class="adm-sub-item" onclick="admSetTab('tab-stats-adm',this)">Estadísticas</button>
+          </div>
+          <!-- NOTICIAS -->
+          <button class="adm-icon-btn" data-sec="noticias" onclick="admToggleSection('noticias',this)">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
+            Noticias
+            <svg class="chv" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="adm-submenu-inner" id="sub-noticias">
+            <button class="adm-sub-item" onclick="admSetTab('tab-noticias-adm',this)">Publicar</button>
+          </div>
+          <!-- SANCIONES -->
+          <button class="adm-icon-btn" data-sec="sanciones" onclick="admToggleSection('sanciones',this)">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Sanciones
+            <svg class="chv" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="adm-submenu-inner" id="sub-sanciones">
+            <button class="adm-sub-item" onclick="admSetTab('tab-sanciones-adm',this)">Registrar</button>
+          </div>
+          <!-- REPORTES -->
+          <button class="adm-icon-btn" data-sec="reportes" onclick="admToggleSection('reportes',this)">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+            Reportes
+            <svg class="chv" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="adm-submenu-inner" id="sub-reportes">
+            <button class="adm-sub-item" onclick="admSetTab('tab-temporada-adm',this)">Temporada</button>
+          </div>
+        </div>
         <div style="flex:1"></div>
-        <button class="adm-icon-btn" data-sec="usuarios" onclick="admSetSection('usuarios',this)" title="Usuarios">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <!-- USUARIOS -->
+        <button class="adm-icon-btn" data-sec="usuarios" onclick="admToggleSection('usuarios',this)">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Configuración
+          <svg class="chv" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-      </div>
-
-      <!-- SUBMENU -->
-      <div id="adm-submenu" style="width:180px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden">
-        <div id="adm-submenu-title" style="padding:14px 16px;border-bottom:1px solid var(--border);font-family:'Archivo Black',sans-serif;font-size:14px;color:var(--primary)"></div>
-        <div id="adm-submenu-items" style="flex:1;overflow-y:auto;padding:6px"></div>
+        <div class="adm-submenu-inner" id="sub-usuarios">
+          <button class="adm-sub-item" onclick="admSetTab('tab-usuarios-adm',this)">Usuarios</button>
+        </div>
       </div>
 
       <!-- MAIN CONTENT -->
@@ -881,13 +922,7 @@ textarea.f-input{resize:none}
             <label class="f-label">Jugador</label>
             <input class="f-input" id="sa-jugador" type="text" placeholder="Nombre del jugador">
             <label class="f-label">Tipo de falta</label>
-            <select class="f-select" id="sa-tipo">
-              <option>Agresión física a oficial o rival</option>
-              <option>Agresión verbal o insulto grave</option>
-              <option>Conducta antideportiva reiterada</option>
-              <option>Abandono de cancha sin justificación</option>
-              <option>Publicación ofensiva en RRSS</option>
-            </select>
+            <input class="f-input" id="sa-tipo" type="text" placeholder="Ej: Agresión verbal, conducta antideportiva...">
             <label class="f-label">Sanción</label>
             <input class="f-input" id="sa-sancion" type="text" placeholder="Ej: 2 partidos suspendido">
             <label class="f-label">Término de sanción</label>
@@ -1987,9 +2022,17 @@ window.delJugador = function(id, nombre) {
       body: JSON.stringify({ action:'deletePersona', adminPassword: adminPass, personaId: id }),
     });
     const json = JSON.parse(await res.text());
-    closeConfirmV3();
-    if (json?.success) { toast('✓ Eliminado','ok'); await refreshData(); renderAll(); renderAdmin(); }
-    else toast(json?.message||'Error','err');
+    if (json?.success) {
+      toast('✓ Eliminado','ok');
+      // Eliminar del array D.personas inmediatamente sin esperar refresh
+      D.personas = D.personas.filter(p => p.id !== id);
+      renderJugadores();
+      renderJugadoresAdm();
+      renderNominaDelList && document.querySelectorAll('[id^="del-nomina-"]').forEach(el => {
+        const eqId = el.id.replace('del-nomina-','');
+        renderNominaDelList(eqId);
+      });
+    } else toast(json?.message||'Error','err');
   },'danger');
 };
 
@@ -3715,29 +3758,24 @@ const ADM_SECTIONS = {
   },
 };
 
-var _admCurrentSection = 'torneo';
-var _admCurrentTab = 'tab-ligas';
+function admToggleSection(sec, btn) {
+  const subEl = document.getElementById('sub-' + sec);
+  const isOpen = subEl.classList.contains('open');
+  // Cerrar todos
+  document.querySelectorAll('.adm-submenu-inner').forEach(el => el.classList.remove('open'));
+  document.querySelectorAll('.adm-icon-btn').forEach(b => b.classList.remove('active'));
+  // Abrir el seleccionado si estaba cerrado
+  if (!isOpen) {
+    subEl.classList.add('open');
+    btn.classList.add('active');
+    // Activar primer subitem
+    const firstItem = subEl.querySelector('.adm-sub-item');
+    if (firstItem) firstItem.click();
+  }
+}
 
 function admSetSection(sec, btn) {
-  _admCurrentSection = sec;
-  document.querySelectorAll('.adm-icon-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  const section = ADM_SECTIONS[sec];
-  // Render submenu
-  document.getElementById('adm-submenu-title').textContent = section.label;
-  document.getElementById('adm-submenu-items').innerHTML = section.items.map(item =>
-    `<button class="adm-sub-item${item.id===_admCurrentTab?' active':''}" onclick="admSetTab('${item.id}',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="${item.icon}"/></svg>
-      ${item.label}
-    </button>`
-  ).join('');
-  // Activar primer item si el actual no está en esta sección
-  const itemIds = section.items.map(i => i.id);
-  if (!itemIds.includes(_admCurrentTab)) {
-    admSetTab(section.items[0].id, null);
-  } else {
-    admSetTab(_admCurrentTab, null);
-  }
+  admToggleSection(sec, btn);
 }
 
 function admSetTab(tabId, btn) {
