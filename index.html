@@ -776,7 +776,212 @@ textarea.f-input{resize:none}
           </div>
           <div id="adm-main-actions"></div>
         </div>
-        <div id="adm-main-content" style="flex:1;overflow-y:auto;padding:16px 18px 80px"></div>
+        <div id="adm-main-content" style="flex:1;overflow-y:auto;padding:16px 18px 80px">
+          <!-- PANELS — se muestran según la navegación -->
+          <div id="tab-ligas" class="adm-panel-new">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Ligas del torneo</div>
+            <label class="f-label">Nombre de fantasía</label>
+            <input class="f-input" id="lg-nombre" type="text" placeholder="Ej: Apertura Varones 2026">
+            <div class="f-row">
+              <div>
+                <label class="f-label">Categoría</label>
+                <select class="f-select" id="lg-cat"><option>Varones</option><option>Damas</option><option>Mixto</option></select>
+              </div>
+              <div>
+                <label class="f-label">Estado</label>
+                <select class="f-select" id="lg-estado"><option>Activo</option><option>Finalizado</option></select>
+              </div>
+            </div>
+            <button class="btn-primary" id="btn-liga">+ Crear liga</button>
+            <div class="adm-sec-label" style="margin-top:16px">Ligas registradas</div>
+            <div id="ligas-adm-list"></div>
+          </div>
+
+          <div id="tab-equipos" class="adm-panel-new" style="display:none">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Equipos</div>
+            <label class="f-label">Liga</label>
+            <select class="f-select" id="eq-liga"></select>
+            <label class="f-label">Nombre del equipo</label>
+            <input class="f-input" id="eq-nombre" type="text" placeholder="Nombre del equipo">
+            <div class="f-row">
+              <div><label class="f-label">Color local</label><input class="f-input" id="eq-cl" type="text" placeholder="Azul"></div>
+              <div><label class="f-label">Color visita</label><input class="f-input" id="eq-cv" type="text" placeholder="Blanco"></div>
+            </div>
+            <button class="btn-primary" id="btn-equipo">+ Crear equipo</button>
+            <div class="adm-sec-label" style="margin-top:16px">Equipos registrados</div>
+            <div id="equipos-adm-list"></div>
+          </div>
+
+          <div id="tab-partidos" class="adm-panel-new" style="display:none">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Programar partido</div>
+            <label class="f-label">Liga</label>
+            <select class="f-select" id="pt-liga"></select>
+            <div class="f-row">
+              <div><label class="f-label">Jornada</label><input class="f-input" id="pt-jornada" type="number" min="1" placeholder="1"></div>
+              <div><label class="f-label">Fase</label><select class="f-select" id="pt-fase"><option>Regular</option><option>Semifinales</option><option>Final</option></select></div>
+            </div>
+            <div class="f-row">
+              <div><label class="f-label">Fecha</label><input class="f-input" id="pt-fecha" type="date"></div>
+              <div><label class="f-label">Hora</label><input class="f-input" id="pt-hora" type="time"></div>
+            </div>
+            <label class="f-label">Cancha</label>
+            <input class="f-input" id="pt-cancha" type="text" placeholder="Gimnasio Municipal">
+            <div class="f-row">
+              <div><label class="f-label">Local</label><select class="f-select" id="pt-local"></select></div>
+              <div><label class="f-label">Visita</label><select class="f-select" id="pt-visita"></select></div>
+            </div>
+            <label class="f-label">URL YouTube (opcional)</label>
+            <input class="f-input" id="pt-yt" type="url" placeholder="https://youtube.com/...">
+            <button class="btn-primary" id="btn-partido">+ Programar partido</button>
+            <div class="adm-sec-label" style="margin-top:16px">Partidos programados</div>
+            <div id="partidos-adm-list"></div>
+          </div>
+
+          <div id="tab-res-adm" class="adm-panel-new" style="display:none">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Cargar resultados</div>
+            <div id="res-adm-list"></div>
+          </div>
+
+          <div id="tab-noticias-adm" class="adm-panel-new" style="display:none">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Publicar noticia</div>
+            <label class="f-label">Imagen de portada</label>
+            <div id="nt-foto-preview" style="display:none;margin-bottom:10px;border-radius:var(--r);overflow:hidden;aspect-ratio:16/9;background:var(--bg)">
+              <img id="nt-foto-img" style="width:100%;height:100%;object-fit:cover">
+            </div>
+            <div style="border:2px dashed var(--border2);border-radius:var(--r);padding:16px;text-align:center;background:var(--bg);margin-bottom:8px;cursor:pointer" onclick="document.getElementById('nt-foto-input').click()">
+              <input type="file" id="nt-foto-input" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none" onchange="previewFotoNoticia(this)">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--muted2);margin-bottom:4px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <div style="font-size:12px;color:var(--muted);font-weight:600">Subir imagen desde el dispositivo</div>
+              <div style="font-size:10px;color:var(--muted2);margin-top:2px">JPG, PNG · máx 3MB</div>
+            </div>
+            <div style="text-align:center;font-size:11px;color:var(--muted2);margin-bottom:8px">— o pegar URL —</div>
+            <input class="f-input" id="nt-img" type="url" placeholder="https://ejemplo.com/imagen.jpg" style="margin-bottom:14px">
+            <label class="f-label">Título</label>
+            <input class="f-input" id="nt-titulo" type="text" placeholder="Título de la noticia">
+            <label class="f-label">Contenido</label>
+            <textarea class="f-input" id="nt-desc" rows="4" placeholder="Cuerpo de la noticia"></textarea>
+            <div style="margin-bottom:14px">
+              <button type="button" onclick="toggleNtExtra()" style="font-size:11px;font-weight:700;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline">+ Agregar enlace externo</button>
+              <div id="nt-extra" style="display:none;margin-top:10px">
+                <label class="f-label">URL enlace (opcional)</label>
+                <input class="f-input" id="nt-link" type="url" placeholder="https://...">
+              </div>
+            </div>
+            <button class="btn-orange" id="btn-noticia" style="margin-bottom:16px">📰 Publicar Noticia</button>
+            <div class="adm-sec-label">Publicadas</div>
+            <div id="noticias-adm-list"></div>
+          </div>
+
+          <div id="tab-sanciones-adm" class="adm-panel-new" style="display:none">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Registrar sanción</div>
+            <div class="f-row">
+              <div><label class="f-label">Liga</label><select class="f-select" id="sa-liga"></select></div>
+              <div><label class="f-label">Equipo</label><select class="f-select" id="sa-equipo"></select></div>
+            </div>
+            <label class="f-label">Jugador</label>
+            <input class="f-input" id="sa-jugador" type="text" placeholder="Nombre del jugador">
+            <label class="f-label">Tipo de falta</label>
+            <select class="f-select" id="sa-tipo">
+              <option>Agresión física a oficial o rival</option>
+              <option>Agresión verbal o insulto grave</option>
+              <option>Conducta antideportiva reiterada</option>
+              <option>Abandono de cancha sin justificación</option>
+              <option>Publicación ofensiva en RRSS</option>
+            </select>
+            <label class="f-label">Sanción</label>
+            <input class="f-input" id="sa-sancion" type="text" placeholder="Ej: 2 partidos suspendido">
+            <label class="f-label">Término de sanción</label>
+            <input class="f-input" id="sa-termino" type="text" placeholder="Fecha o condición">
+            <label class="f-label">Apelación (opcional)</label>
+            <input class="f-input" id="sa-apelacion" type="text" placeholder="Detalle si hay apelación">
+            <button class="btn-primary" id="btn-sancion">⚠ Registrar sanción</button>
+            <div class="adm-sec-label" style="margin-top:16px">Sanciones registradas</div>
+            <div id="sanciones-adm-list"></div>
+          </div>
+
+          <div id="tab-jugadores-adm" class="adm-panel-new" style="display:none">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Agregar jugador</div>
+            <label class="f-label">Liga</label>
+            <select class="f-select" id="jug-liga" onchange="populateEqJugadores()"></select>
+            <label class="f-label">Equipo</label>
+            <select class="f-select" id="jug-equipo" onchange="updateContadorJugadores()"></select>
+            <div class="f-row">
+              <div>
+                <label class="f-label">Categoría</label>
+                <select class="f-select" id="jug-cat" style="margin-bottom:0" onchange="updateContadorJugadores()"><option>Varones</option><option>Damas</option><option>Mixto</option></select>
+              </div>
+              <div>
+                <label class="f-label">Rol</label>
+                <select class="f-select" id="jug-rol" style="margin-bottom:0"><option value="jugador">Jugador</option><option value="cuerpo_tecnico">Cuerpo técnico</option><option value="delegado">Delegado</option></select>
+              </div>
+            </div>
+            <div id="jug-contador" style="font-size:12px;color:var(--muted);margin-top:8px;margin-bottom:14px"></div>
+            <div class="f-row">
+              <div><label class="f-label">Nombre completo</label><input class="f-input" id="jug-nombre" type="text" placeholder="Apellido, Nombre"></div>
+              <div><label class="f-label">Fecha de nacimiento</label><input class="f-input" id="jug-fnac" type="date"></div>
+            </div>
+            <div class="f-row">
+              <div><label class="f-label">RUT</label><input class="f-input" id="jug-rut" type="text" placeholder="12345678-9" maxlength="10" style="margin-bottom:0"></div>
+              <div><label class="f-label">Federativo</label><select class="f-select" id="jug-fed" style="margin-bottom:0"><option value="true">Federado</option><option value="false">No federado</option></select></div>
+            </div>
+            <div style="height:14px"></div>
+            <button class="btn-primary" id="btn-jugador">+ Agregar jugador</button>
+            <div class="adm-sec-label" style="margin-top:20px">Jugadores registrados</div>
+            <div id="jugadores-adm-list"></div>
+          </div>
+
+          <div id="tab-stats-adm" class="adm-panel-new" style="display:none">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:14px">Cargar estadísticas</div>
+            <label class="f-label">Liga</label>
+            <select class="f-select" id="st-liga" onchange="populateStEquipos()"></select>
+            <label class="f-label">Equipo</label>
+            <select class="f-select" id="st-equipo" onchange="populateStJugadores()"></select>
+            <label class="f-label">Jugador</label>
+            <select class="f-select" id="st-jugador"></select>
+            <div class="f-row">
+              <div><label class="f-label">TL (1P)</label><input class="f-input" id="st-1p" type="number" min="0" placeholder="0"></div>
+              <div><label class="f-label">Dobles (2P)</label><input class="f-input" id="st-2p" type="number" min="0" placeholder="0"></div>
+            </div>
+            <div class="f-row">
+              <div><label class="f-label">Triples (3P)</label><input class="f-input" id="st-3p" type="number" min="0" placeholder="0"></div>
+              <div><label class="f-label">Partidos jugados</label><input class="f-input" id="st-pj" type="number" min="0" placeholder="0"></div>
+            </div>
+            <div style="background:var(--primary-light);border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--primary);margin-bottom:14px">
+              💡 Total: TL×1 + 2P×2 + 3P×3 = puntos totales
+            </div>
+            <button class="btn-primary" id="btn-stats">📊 Guardar estadísticas</button>
+            <div class="adm-sec-label" style="margin-top:16px">Top anotadores</div>
+            <div id="stats-ranking-list"></div>
+          </div>
+
+          <div id="tab-usuarios-adm" class="adm-panel-new" style="display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-family:'Archivo Black',sans-serif;font-size:15px">Usuarios del sistema</div>
+              <button class="pdf-btn" onclick="openCrearUsuario()">+ Nuevo delegado</button>
+            </div>
+            <div id="usuarios-list"></div>
+            <div id="solicitudes-list" style="margin-top:12px"></div>
+          </div>
+
+          <div id="tab-temporada-adm" class="adm-panel-new" style="display:none">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:15px;margin-bottom:4px">Gestión de temporadas</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Administra el ciclo de vida del torneo</div>
+            <div id="temp-activa-box"></div>
+            <div id="temp-nueva-box" style="display:none">
+              <div style="font-family:'Archivo Black',sans-serif;font-size:13px;margin-bottom:12px;color:var(--green)">✓ Temporada cerrada — crear nueva</div>
+              <label class="f-label">Nombre de la nueva temporada</label>
+              <input class="f-input" id="temp-nuevo-nombre" type="text" placeholder="Ej: Torneo Clausura ARBA 2026">
+              <label class="f-label">Fecha de inicio</label>
+              <input class="f-input" id="temp-nuevo-inicio" type="date">
+              <button class="btn-primary" onclick="crearTemporada()">🆕 Crear nueva temporada</button>
+            </div>
+            <div style="margin-top:20px">
+              <div class="adm-sec-label" style="margin-bottom:10px">Historial de temporadas</div>
+              <div id="temp-historial"></div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>
@@ -1316,6 +1521,23 @@ function setupAdmin() {
   if (modalCancel) modalCancel.addEventListener('click', () => document.getElementById('modal-overlay').classList.remove('open'));
   const modalSaveBtn = document.getElementById('modal-save');
   if (modalSaveBtn) modalSaveBtn.addEventListener('click', () => { if (modalSaveCb) modalSaveCb(); });
+  // Botones de formularios admin — vinculados directamente al DOM
+  const btnLiga    = document.getElementById('btn-liga');    if (btnLiga)    btnLiga.addEventListener('click', createLiga);
+  const btnEquipo  = document.getElementById('btn-equipo');  if (btnEquipo)  btnEquipo.addEventListener('click', createEquipo);
+  const btnPartido = document.getElementById('btn-partido'); if (btnPartido) btnPartido.addEventListener('click', createPartido);
+  const btnNoticia = document.getElementById('btn-noticia'); if (btnNoticia) btnNoticia.addEventListener('click', createNoticia);
+  const btnSancion = document.getElementById('btn-sancion'); if (btnSancion) btnSancion.addEventListener('click', createSancion);
+  const btnJugador = document.getElementById('btn-jugador'); if (btnJugador) btnJugador.addEventListener('click', createJugador);
+  const btnStats   = document.getElementById('btn-stats');   if (btnStats)   btnStats.addEventListener('click', guardarStats);
+  // Selects con onchange
+  const ptLiga = document.getElementById('pt-liga');
+  if (ptLiga) ptLiga.addEventListener('change', function() { populateEqForLiga(this.value, 'pt-local', 'pt-visita'); });
+  const saLiga = document.getElementById('sa-liga');
+  if (saLiga) saLiga.addEventListener('change', function() { populateEqForLiga(this.value, 'sa-equipo'); });
+  const eqLiga = document.getElementById('eq-liga');
+  if (eqLiga) eqLiga.addEventListener('change', renderEquiposAdm);
+  const jugLiga = document.getElementById('jug-liga');
+  if (jugLiga) jugLiga.addEventListener('change', populateEqJugadores);
 }
 
 function openAdmin() {
@@ -1656,8 +1878,9 @@ function populateEqForLiga(ligaId, sel1, sel2) {
 
 function renderAdmin() {
   populateAdminSelects();
-  // En el nuevo sistema, solo renderizamos el tab activo
-  if (_admCurrentTab) renderAdmTab(_admCurrentTab);
+  // Poblar selects específicos
+  const ligaOpts = '<option value="">— Seleccionar liga —</option>' + D.ligas.map(l=>`<option value="${l.ID}">${l.NombreFantasia} (${l.Categoria})</option>`).join('');
+  ['jug-liga','st-liga'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=ligaOpts; });
 }
 
 function renderJugadoresAdm() {
@@ -3524,71 +3747,39 @@ function admSetTab(tabId, btn) {
   if (btn) btn.classList.add('active');
   else {
     document.querySelectorAll('.adm-sub-item').forEach(b => {
-      if (b.onclick?.toString().includes(tabId)) b.classList.add('active');
+      if (b.getAttribute('onclick')?.includes(`'${tabId}'`)) b.classList.add('active');
     });
   }
-  // Encontrar el item
+  // Encontrar el item para título y subtítulo
   let item = null;
   for (const sec of Object.values(ADM_SECTIONS)) {
     item = sec.items.find(i => i.id === tabId);
     if (item) break;
   }
-  if (!item) return;
-  document.getElementById('adm-main-title').textContent = item.label;
-  document.getElementById('adm-main-sub').textContent = item.sub;
-  // Renderizar contenido
-  renderAdmTab(tabId);
+  if (item) {
+    document.getElementById('adm-main-title').textContent = item.label;
+    document.getElementById('adm-main-sub').textContent   = item.sub;
+  }
+  // Mostrar panel correcto, ocultar el resto
+  document.querySelectorAll('.adm-panel-new').forEach(p => p.style.display = 'none');
+  const panel = document.getElementById(tabId);
+  if (panel) panel.style.display = 'block';
   // Callbacks por tab
-  if (tabId === 'tab-validar-adm') renderValidarAdm();
-  if (tabId === 'tab-usuarios-adm') renderUsuariosAdm();
-  if (tabId === 'tab-stats-adm') setupStatsAdmin();
+  if (tabId === 'tab-res-adm')      renderResAdm();
+  if (tabId === 'tab-jugadores-adm') { renderJugadoresAdm(); populateEqJugadores(); }
+  if (tabId === 'tab-noticias-adm')  renderNoticiasAdm();
+  if (tabId === 'tab-sanciones-adm') renderSancionesAdm();
+  if (tabId === 'tab-ligas')         renderLigasAdm();
+  if (tabId === 'tab-equipos')       renderEquiposAdm();
+  if (tabId === 'tab-partidos')      renderPartidosAdm();
+  if (tabId === 'tab-usuarios-adm')  renderUsuariosAdm();
+  if (tabId === 'tab-stats-adm')     setupStatsAdmin();
   if (tabId === 'tab-temporada-adm') setupTemporadaTab();
 }
 
 function renderAdmTab(tabId) {
-  const el = document.getElementById('adm-main-content');
-  if (!el) return;
-  // Mostrar el panel correspondiente
-  el.innerHTML = '';
-  const panel = document.getElementById(tabId);
-  if (panel) {
-    el.appendChild(panel.cloneNode(true));
-    // Re-bind eventos después de clonar
-    rebindAdmEvents(tabId, el);
-  }
-}
-
-function rebindAdmEvents(tabId, container) {
-  // Re-bind selects y botones específicos
-  if (tabId === 'tab-ligas') {
-    renderLigasAdm(container);
-  } else if (tabId === 'tab-equipos') {
-    renderEquiposAdm(container);
-    populateAdminSelects(container);
-  } else if (tabId === 'tab-partidos') {
-    renderPartidosAdm(container);
-    populateAdminSelects(container);
-  } else if (tabId === 'tab-res-adm') {
-    renderResAdm(container);
-  } else if (tabId === 'tab-noticias-adm') {
-    renderNoticiasAdm(container);
-    const btn = container.querySelector('#btn-noticia');
-    if (btn) btn.onclick = createNoticia;
-  } else if (tabId === 'tab-sanciones-adm') {
-    renderSancionesAdm(container);
-    populateAdminSelects(container);
-  } else if (tabId === 'tab-jugadores-adm') {
-    renderJugadoresAdm(container);
-    populateAdminSelects(container);
-    const btn = container.querySelector('#btn-jugador');
-    if (btn) btn.onclick = createJugador;
-  } else if (tabId === 'tab-stats-adm') {
-    setupStatsAdmin(container);
-  } else if (tabId === 'tab-usuarios-adm') {
-    renderUsuariosAdm(container);
-  } else if (tabId === 'tab-temporada-adm') {
-    setupTemporadaTab(container);
-  }
+  // Wrapper para compatibilidad — usa admSetTab directamente
+  admSetTab(tabId, null);
 }
 
 // ─── GASSCALL — envolver todas las acciones con confirm v3 ────────────────────
