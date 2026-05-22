@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Torneos ARBA Arica</title>
+<title>Basquet XV — Competencias</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23f97316' stroke='%23c2410c' stroke-width='2'/><path d='M50 2 Q65 25 65 50 Q65 75 50 98' stroke='%23c2410c' stroke-width='3' fill='none'/><path d='M50 2 Q35 25 35 50 Q35 75 50 98' stroke='%23c2410c' stroke-width='3' fill='none'/><path d='M2 50 Q25 35 50 35 Q75 35 98 50' stroke='%23c2410c' stroke-width='3' fill='none'/><path d='M2 50 Q25 65 50 65 Q75 65 98 50' stroke='%23c2410c' stroke-width='3' fill='none'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -452,30 +452,42 @@ textarea.f-input{resize:none}
 <body>
 
 <!-- PANTALLA BIENVENIDA -->
-<div id="splash-screen" style="position:fixed;inset:0;z-index:999;background:#0f1f4a;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow:hidden">
-  <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:rgba(255,255,255,.05);top:-100px;right:-100px"></div>
-  <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(249,115,22,.06);bottom:-50px;left:-80px"></div>
-  <div style="position:relative;z-index:1;text-align:center;max-width:360px;width:100%">
-    <div style="margin-bottom:24px;animation:float 3s ease-in-out infinite">
-      <svg width="90" height="90" viewBox="0 0 100 100" fill="none">
-        <circle cx="50" cy="50" r="46" fill="#f97316" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
-        <path d="M50 4 C50 4 50 96 50 96" stroke="rgba(0,0,0,0.25)" stroke-width="2.5" fill="none"/>
-        <path d="M4 50 C4 50 96 50 96 50" stroke="rgba(0,0,0,0.25)" stroke-width="2.5" fill="none"/>
-        <path d="M15 20 C30 35 35 65 25 80" stroke="rgba(0,0,0,0.2)" stroke-width="2" fill="none"/>
-        <path d="M85 20 C70 35 65 65 75 80" stroke="rgba(0,0,0,0.2)" stroke-width="2" fill="none"/>
-        <ellipse cx="35" cy="30" rx="10" ry="6" fill="rgba(255,255,255,0.15)" transform="rotate(-30 35 30)"/>
-      </svg>
+<div id="splash-screen" style="position:fixed;inset:0;z-index:999;background:#0a0e1f;display:flex;flex-direction:column;overflow-y:auto">
+
+  <!-- HERO -->
+  <div style="background:#1e3a8a;padding:28px 18px 22px;text-align:center;flex-shrink:0">
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px">
+      <div style="text-align:center">
+        <div style="font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:3px;color:#fff;line-height:1.2">BASQUET XV REGIÓN</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:2px;margin-top:2px">ARICA · CHILE</div>
+      </div>
     </div>
-    <div style="font-size:12px;font-weight:700;letter-spacing:4px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-bottom:4px">Arica · Chile</div>
-    <div style="font-family:'Archivo Black',sans-serif;font-size:52px;letter-spacing:4px;color:#fff;line-height:1;margin-bottom:4px">ARBA</div>
-    <div style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#f97316;margin-bottom:36px">Competencias</div>
-    <div style="width:48px;height:3px;background:#f97316;border-radius:2px;margin:0 auto 32px"></div>
-    <button onclick="enterApp()" style="width:100%;padding:15px;border-radius:14px;background:#f97316;color:#fff;font-family:'Archivo Black',sans-serif;font-size:16px;letter-spacing:1px;border:none;cursor:pointer;box-shadow:0 8px 24px rgba(249,115,22,.35);margin-bottom:16px">INGRESAR →</button>
-    <a href="https://www.instagram.com/arba.arica" target="_blank" style="display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;text-decoration:none;padding:10px 18px;border-radius:100px;border:1px solid rgba(255,255,255,.15);margin-bottom:32px">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-      @arba.arica
-    </a>
-    <div style="font-size:10px;color:rgba(255,255,255,.2);letter-spacing:.5px">arba.arica@gmail.com</div>
+    <div style="width:100%;height:1px;background:rgba(255,255,255,.1);margin:14px 0 12px"></div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#f97316;margin-bottom:4px">TEMPORADA 2026</div>
+    <div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#fff;letter-spacing:1px;margin-bottom:18px">TORNEO APERTURA</div>
+
+    <!-- SELECTOR LIGAS -->
+    <div style="text-align:left;margin-bottom:6px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin-bottom:10px">SELECCIONA UNA LIGA</div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px" id="splash-ligas-grid">
+        <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px;cursor:pointer;animation:pulse 1.5s infinite" onclick="null">
+          <div style="font-size:11px;color:rgba(255,255,255,.4)">Cargando ligas...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENIDO DINÁMICO -->
+  <div style="padding:14px 16px 100px;flex:1" id="splash-content">
+    <div style="text-align:center;padding:40px 0">
+      <div style="font-size:13px;color:rgba(255,255,255,.3)">Selecciona una liga para ver el contenido</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#0a0e1f;border-top:1px solid rgba(255,255,255,.08);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;z-index:10">
+    <div style="font-size:11px;color:rgba(255,255,255,.3)">arba.arica@gmail.com</div>
+    <button onclick="enterApp()" style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:100px;padding:6px 14px;cursor:pointer;letter-spacing:.5px">Panel admin →</button>
   </div>
 </div>
 
@@ -500,11 +512,11 @@ textarea.f-input{resize:none}
 <div id="drawer-overlay" onclick="closeDrawer()">
   <div id="drawer" onclick="event.stopPropagation()">
     <div class="drawer-top">
-      <div class="logo-arba" style="color:var(--primary);font-size:18px">ARBA</div>
+      <div class="logo-arba" style="color:var(--primary);font-size:18px">BASQUET XV</div>
       <div class="logo-sub" style="color:var(--muted2)">Arica · Temporada 2026</div>
     </div>
     <div class="drawer-nav">
-      <div class="drawer-section">Torneo</div>
+      <div class="drawer-section">Torneos</div>
       <button class="drawer-item" onclick="showSectionDrawer('sec-agenda')">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
         Fixture
@@ -1148,6 +1160,7 @@ async function loadData() {
     D = await fetchAllData();
     renderAll();
     if (adminPass) renderAdmin();
+    initLanding();
   } catch(e) {
     toast('Error al cargar datos: ' + e.message, 'err');
   }
@@ -3260,7 +3273,169 @@ window.openEditNoticia = function(id) {
 };
 
 // ─── REPORTE CIERRE TEMPORADA ─────────────────────────────────────────────────
-// ─── GESTIÓN DE TEMPORADAS ────────────────────────────────────────────────────
+// ─── LANDING PAGE ────────────────────────────────────────────────────────────
+var _splashLigaActual = null;
+
+async function initLanding() {
+  // Esperar a que los datos estén listos
+  if (!D.ligas || !D.ligas.length) {
+    await refreshData();
+  }
+  renderSplashLigas();
+}
+
+function renderSplashLigas() {
+  const grid = document.getElementById('splash-ligas-grid');
+  if (!grid) return;
+  if (!D.ligas.length) {
+    grid.innerHTML = '<div style="color:rgba(255,255,255,.4);font-size:12px;padding:8px">Sin ligas registradas</div>';
+    return;
+  }
+  grid.innerHTML = D.ligas.map(l => `
+    <button onclick="selectSplashLiga('${l.ID}')" id="splbtn-${l.ID}"
+      style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px;cursor:pointer;text-align:left;transition:all .15s;width:100%">
+      <div style="font-size:12px;font-weight:700;color:#fff;line-height:1.3">${l.NombreFantasia.replace('Apertura ','')}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px">${l.Categoria}</div>
+    </button>`).join('');
+  // Seleccionar primera liga por defecto
+  if (D.ligas.length) selectSplashLiga(D.ligas[0].ID);
+}
+
+function selectSplashLiga(ligaId) {
+  _splashLigaActual = ligaId;
+  // Actualizar botones
+  document.querySelectorAll('[id^="splbtn-"]').forEach(b => {
+    const active = b.id === 'splbtn-' + ligaId;
+    b.style.background = active ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.06)';
+    b.style.border = active ? '1.5px solid #f97316' : '1px solid rgba(255,255,255,.12)';
+  });
+  renderSplashContent(ligaId);
+}
+
+function renderSplashContent(ligaId) {
+  const el = document.getElementById('splash-content');
+  if (!el) return;
+  const liga = D.ligas.find(l => l.ID === ligaId);
+  const partidos = D.partidos.filter(p => p.ID_Liga === ligaId);
+  const proximos = partidos.filter(p => p.Estado === 'Programado').slice(0, 3);
+  const resultados = partidos.filter(p => p.Estado === 'Finalizado').slice(-3).reverse();
+  const standings = calcStandings(ligaId);
+
+  const fmtD = (f) => {
+    if (!f) return {dia:'—',mes:'—',dow:'—'};
+    const d = new Date(f + 'T12:00:00');
+    const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return {dia:d.getDate(),mes:meses[d.getMonth()],dow:dias[d.getDay()]};
+  };
+
+  const cardStyle = 'background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;margin-bottom:6px;display:flex;align-items:center;gap:10px';
+
+  let html = '';
+
+  // PRÓXIMOS
+  if (proximos.length) {
+    html += `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:0 0 8px">PRÓXIMOS PARTIDOS</div>`;
+    html += proximos.map(p => {
+      const {dia,mes,dow} = fmtD(p.Fecha);
+      return `<div style="${cardStyle}">
+        <div style="text-align:center;min-width:36px">
+          <div style="font-size:9px;color:rgba(255,255,255,.4)">${dow}</div>
+          <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.1">${dia}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4)">${mes}</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
+            <span style="font-size:13px;font-weight:700;color:#fff">${teamName(p.ID_EquipoLocal)}</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.4)">vs</span>
+            <span style="font-size:13px;font-weight:700;color:#fff">${teamName(p.ID_EquipoVisita)}</span>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px">${p.Hora||''} · ${p.Cancha||''}</div>
+        </div>
+        <div style="background:rgba(59,130,246,.2);color:#93c5fd;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap">Próx.</div>
+      </div>`;
+    }).join('');
+  }
+
+  // RESULTADOS
+  if (resultados.length) {
+    html += `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:14px 0 8px">ÚLTIMOS RESULTADOS</div>`;
+    html += resultados.map(p => {
+      const {dia,mes,dow} = fmtD(p.Fecha);
+      const gl = p.GolesLocal ?? '—'; const gv = p.GolesVisita ?? '—';
+      return `<div style="${cardStyle}">
+        <div style="text-align:center;min-width:36px">
+          <div style="font-size:9px;color:rgba(255,255,255,.4)">${dow}</div>
+          <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.1">${dia}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4)">${mes}</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
+            <span style="font-size:13px;font-weight:700;color:#fff">${teamName(p.ID_EquipoLocal)}</span>
+            <span style="font-size:14px;font-weight:700;color:#f97316;background:rgba(249,115,22,.15);padding:2px 8px;border-radius:6px">${gl}–${gv}</span>
+            <span style="font-size:13px;font-weight:700;color:#fff">${teamName(p.ID_EquipoVisita)}</span>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px">${p.Cancha||''} · ${p.Fase||''}</div>
+        </div>
+        <div style="background:rgba(34,197,94,.15);color:#86efac;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px">Final</div>
+      </div>`;
+    }).join('');
+  }
+
+  // TABLA
+  if (standings.length) {
+    html += `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:14px 0 8px">TABLA DE POSICIONES</div>`;
+    html += `<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;margin-bottom:6px">
+      <div style="display:flex;padding:8px 12px;border-bottom:0.5px solid rgba(255,255,255,.08)">
+        <span style="min-width:24px;font-size:10px;color:rgba(255,255,255,.3)">Pos</span>
+        <span style="flex:1;font-size:10px;color:rgba(255,255,255,.3)">Equipo</span>
+        <span style="min-width:28px;text-align:center;font-size:10px;color:rgba(255,255,255,.3)">PJ</span>
+        <span style="min-width:28px;text-align:center;font-size:10px;color:rgba(255,255,255,.3)">G</span>
+        <span style="min-width:28px;text-align:center;font-size:10px;color:rgba(255,255,255,.3)">P</span>
+        <span style="min-width:28px;text-align:center;font-size:10px;font-weight:700;color:#f97316">Pts</span>
+      </div>
+      ${standings.map((s,i) => `
+        <div style="display:flex;align-items:center;padding:10px 12px;border-bottom:0.5px solid rgba(255,255,255,.05)">
+          <span style="min-width:24px;font-size:13px;font-weight:700;color:${i<2?'#f97316':'rgba(255,255,255,.4)'}">${i+1}</span>
+          <span style="flex:1;font-size:13px;font-weight:${i<2?'700':'400'};color:#fff">${s.NombreEquipo}</span>
+          <span style="min-width:28px;text-align:center;font-size:12px;color:rgba(255,255,255,.4)">${s.PJ}</span>
+          <span style="min-width:28px;text-align:center;font-size:12px;color:rgba(255,255,255,.4)">${s.PG}</span>
+          <span style="min-width:28px;text-align:center;font-size:12px;color:rgba(255,255,255,.4)">${s.PP}</span>
+          <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#f97316">${s.Puntos}</span>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  // REPORTES
+  html += `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:14px 0 8px">REPORTES Y DOCUMENTOS</div>
+    <button onclick="splashPDF('fixture')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:#1e3a8a;border:none;border-radius:10px;cursor:pointer;margin-bottom:6px">
+      <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span style="font-size:13px;font-weight:700;color:#fff">Descargar fixture PDF</span>
+    </button>
+    <button onclick="splashPDF('resultados')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:#1e3a8a;border:none;border-radius:10px;cursor:pointer;margin-bottom:6px">
+      <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span style="font-size:13px;font-weight:700;color:#fff">Descargar resultados PDF</span>
+    </button>
+    <button onclick="splashPDF('puntaje')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:#1e3a8a;border:none;border-radius:10px;cursor:pointer;margin-bottom:6px">
+      <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span style="font-size:13px;font-weight:700;color:#fff">Descargar tabla de posiciones PDF</span>
+    </button>
+    <button onclick="abrirReglamento()" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(255,255,255,.06);border:0.5px solid rgba(255,255,255,.15);border-radius:10px;cursor:pointer;margin-bottom:6px">
+      <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span style="font-size:13px;font-weight:700;color:#fff">Ver reglamento del torneo</span>
+    </button>`;
+
+  el.innerHTML = html;
+}
+
+function splashPDF(tipo) {
+  if (!_splashLigaActual) return toast('Selecciona una liga primero','err');
+  // Setear el select de liga y llamar downloadPDF
+  const suffix = tipo === 'fixture' ? 'fixture' : tipo === 'resultados' ? 'res' : 'pts';
+  const el = document.getElementById('rep-liga-' + suffix);
+  if (el) el.value = _splashLigaActual;
+  downloadPDF(tipo);
+}
 function setupTemporadaTab() {
   renderTemporadaActiva();
   renderHistorialTemporadas();
