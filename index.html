@@ -471,10 +471,7 @@ textarea.f-input{resize:none}
 
     <!-- SELECTOR LIGAS -->
     <div style="text-align:left;margin-bottom:6px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4)">SELECCIONA UNA LIGA</div>
-        <button onclick="enterApp()" style="font-size:11px;font-weight:700;color:#f97316;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:100px;padding:5px 12px;cursor:pointer">Ver más información →</button>
-      </div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin-bottom:10px">SELECCIONA UNA LIGA</div>
       <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px" id="splash-ligas-grid">
         <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px;cursor:pointer;animation:pulse 1.5s infinite" onclick="null">
           <div style="font-size:11px;color:rgba(255,255,255,.4)">Cargando ligas...</div>
@@ -513,7 +510,7 @@ textarea.f-input{resize:none}
 <div id="drawer-overlay" onclick="closeDrawer()">
   <div id="drawer" onclick="event.stopPropagation()">
     <div class="drawer-top">
-      <div class="logo-arba" style="color:var(--primary);font-size:18px">Basquet XV</div>
+      <div class="logo-arba" style="color:var(--primary);font-size:18px">BASQUET XV</div>
       <div class="logo-sub" style="color:var(--muted2)">Arica · Temporada 2026</div>
     </div>
     <div class="drawer-nav">
@@ -3298,97 +3295,120 @@ function renderSplashContent(ligaId) {
   if (!el) return;
   const liga = D.ligas.find(l => l.ID === ligaId);
   const partidos = D.partidos.filter(p => p.ID_Liga === ligaId);
-  const proximos = partidos.filter(p => p.Estado === 'Programado');
-  const resultados = partidos.filter(p => p.Estado === 'Finalizado').reverse();
+  const proximos  = partidos.filter(p => p.Estado === 'Programado').sort((a,b) => new Date(a.Fecha) - new Date(b.Fecha));
+  const resultados = partidos.filter(p => p.Estado === 'Finalizado').sort((a,b) => new Date(b.Fecha) - new Date(a.Fecha));
   const standings = calcStandings(ligaId);
+  const sanciones = D.sanciones.filter(s => s.ID_Liga === ligaId);
 
   const fmtD = (f) => {
     if (!f) return {dia:'—',mes:'—',dow:'—'};
     const d = new Date(f + 'T12:00:00');
     const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
     const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    return {dia:d.getDate(),mes:meses[d.getMonth()],dow:dias[d.getDay()]};
+    return {dia:d.getDate(), mes:meses[d.getMonth()], dow:dias[d.getDay()]};
   };
 
-  const cardStyle = 'background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;margin-bottom:6px;display:flex;align-items:center;gap:10px';
+  const card = 'background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;margin-bottom:6px';
+  const secTitle = (txt, mt='14px') => `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:${mt} 0 8px">${txt}</div>`;
 
   let html = '';
 
-  // PRÓXIMOS
+  // ── PRÓXIMOS ──────────────────────────────────────────────────────────────
   if (proximos.length) {
-    html += `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:0 0 8px">PRÓXIMOS PARTIDOS</div>`;
+    html += secTitle('PRÓXIMOS PARTIDOS','0');
     html += proximos.map(p => {
       const {dia,mes,dow} = fmtD(p.Fecha);
-      return `<div style="${cardStyle}">
-        <div style="text-align:center;min-width:36px">
-          <div style="font-size:9px;color:rgba(255,255,255,.4)">${dow}</div>
-          <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.1">${dia}</div>
-          <div style="font-size:9px;color:rgba(255,255,255,.4)">${mes}</div>
+      return `<div style="${card}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">Partido N° ${p.Partidos||''}</span>
+          <span style="background:rgba(59,130,246,.2);color:#93c5fd;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">Próximo</span>
         </div>
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
-            <span style="font-size:13px;font-weight:700;color:#fff">${teamName(p.ID_EquipoLocal)}</span>
-            <span style="font-size:10px;color:rgba(255,255,255,.4)">vs</span>
-            <span style="font-size:13px;font-weight:700;color:#fff">${teamName(p.ID_EquipoVisita)}</span>
-          </div>
-          <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px">${p.Hora||''} · ${p.Cancha||''}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+          <span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:right">${teamName(p.ID_EquipoLocal)}</span>
+          <span style="font-size:11px;color:rgba(255,255,255,.4);padding:0 8px">vs</span>
+          <span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:left">${teamName(p.ID_EquipoVisita)}</span>
         </div>
-        <div style="background:rgba(59,130,246,.2);color:#93c5fd;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap">Próx.</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;border-top:0.5px solid rgba(255,255,255,.08);padding-top:8px">
+          <span style="font-size:10px;color:rgba(255,255,255,.4)">
+            <span style="color:rgba(255,255,255,.6);margin-right:4px">${dow} ${dia} ${mes}</span>
+          </span>
+          <span style="font-size:10px;color:rgba(255,255,255,.4)">·</span>
+          <span style="font-size:10px;color:rgba(255,255,255,.6)">${p.Hora||'—'}</span>
+          <span style="font-size:10px;color:rgba(255,255,255,.4)">·</span>
+          <span style="font-size:10px;color:rgba(255,255,255,.6)">${p.Cancha||'—'}</span>
+        </div>
       </div>`;
     }).join('');
   }
 
-  // RESULTADOS
+  // ── RESULTADOS ────────────────────────────────────────────────────────────
   if (resultados.length) {
-    html += `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:14px 0 8px">ÚLTIMOS RESULTADOS</div>`;
+    html += secTitle('RESULTADOS');
     html += resultados.map(p => {
       const {dia,mes,dow} = fmtD(p.Fecha);
       const gl = p.GolesLocal ?? '—'; const gv = p.GolesVisita ?? '—';
-      return `<div style="${cardStyle}">
-        <div style="text-align:center;min-width:36px">
-          <div style="font-size:9px;color:rgba(255,255,255,.4)">${dow}</div>
-          <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.1">${dia}</div>
-          <div style="font-size:9px;color:rgba(255,255,255,.4)">${mes}</div>
+      return `<div style="${card}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">Partido N° ${p.Partidos||''}</span>
+          <span style="background:rgba(34,197,94,.15);color:#86efac;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">Final</span>
         </div>
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
-            <span style="font-size:13px;font-weight:700;color:#fff">${teamName(p.ID_EquipoLocal)}</span>
-            <span style="font-size:14px;font-weight:700;color:#f97316;background:rgba(249,115,22,.15);padding:2px 8px;border-radius:6px">${gl}–${gv}</span>
-            <span style="font-size:13px;font-weight:700;color:#fff">${teamName(p.ID_EquipoVisita)}</span>
-          </div>
-          <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px">${p.Cancha||''} · ${p.Fase||''}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+          <span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:right">${teamName(p.ID_EquipoLocal)}</span>
+          <span style="font-size:18px;font-weight:700;color:#f97316;background:rgba(249,115,22,.15);padding:3px 12px;border-radius:8px">${gl}–${gv}</span>
+          <span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:left">${teamName(p.ID_EquipoVisita)}</span>
         </div>
-        <div style="background:rgba(34,197,94,.15);color:#86efac;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px">Final</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;border-top:0.5px solid rgba(255,255,255,.08);padding-top:8px">
+          <span style="font-size:10px;color:rgba(255,255,255,.6)">${dow} ${dia} ${mes}</span>
+          <span style="font-size:10px;color:rgba(255,255,255,.4)">·</span>
+          <span style="font-size:10px;color:rgba(255,255,255,.6)">${p.Cancha||'—'}</span>
+        </div>
       </div>`;
     }).join('');
   }
 
-  // TABLA
+  // ── TABLA COMPLETA ────────────────────────────────────────────────────────
   if (standings.length) {
-    html += `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:14px 0 8px">TABLA DE POSICIONES</div>`;
-    html += `<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;margin-bottom:6px">
-      <div style="display:flex;padding:8px 12px;border-bottom:0.5px solid rgba(255,255,255,.08)">
-        <span style="min-width:24px;font-size:10px;color:rgba(255,255,255,.3)">Pos</span>
-        <span style="flex:1;font-size:10px;color:rgba(255,255,255,.3)">Equipo</span>
-        <span style="min-width:28px;text-align:center;font-size:10px;color:rgba(255,255,255,.3)">PJ</span>
-        <span style="min-width:28px;text-align:center;font-size:10px;color:rgba(255,255,255,.3)">G</span>
-        <span style="min-width:28px;text-align:center;font-size:10px;color:rgba(255,255,255,.3)">P</span>
-        <span style="min-width:28px;text-align:center;font-size:10px;font-weight:700;color:#f97316">Pts</span>
-      </div>
-      ${standings.map((s,i) => `
-        <div style="display:flex;align-items:center;padding:10px 12px;border-bottom:0.5px solid rgba(255,255,255,.05)">
-          <span style="min-width:24px;font-size:13px;font-weight:700;color:${i<2?'#f97316':'rgba(255,255,255,.4)'}">${i+1}</span>
-          <span style="flex:1;font-size:13px;font-weight:${i<2?'700':'400'};color:#fff">${s.NombreEquipo}</span>
-          <span style="min-width:28px;text-align:center;font-size:12px;color:rgba(255,255,255,.4)">${s.PJ}</span>
-          <span style="min-width:28px;text-align:center;font-size:12px;color:rgba(255,255,255,.4)">${s.PG}</span>
-          <span style="min-width:28px;text-align:center;font-size:12px;color:rgba(255,255,255,.4)">${s.PP}</span>
-          <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#f97316">${s.Puntos}</span>
-        </div>`).join('')}
+    html += secTitle('TABLA DE POSICIONES');
+    html += `<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;margin-bottom:6px;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;min-width:320px">
+        <thead>
+          <tr style="border-bottom:0.5px solid rgba(255,255,255,.1)">
+            <th style="padding:8px 10px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:left;width:24px">#</th>
+            <th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:left">Equipo</th>
+            <th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">PJ</th>
+            <th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">G</th>
+            <th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">E</th>
+            <th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">P</th>
+            <th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">GF</th>
+            <th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">GC</th>
+            <th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">Dif</th>
+            <th style="padding:8px 10px;font-size:10px;color:#f97316;font-weight:700;text-align:center">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${standings.map((s,i) => {
+            const dif = (s.GF - s.GC);
+            return `<tr style="border-bottom:0.5px solid rgba(255,255,255,.05)">
+              <td style="padding:10px 10px;font-size:13px;font-weight:700;color:${i<2?'#f97316':'rgba(255,255,255,.35)'}">${i+1}</td>
+              <td style="padding:10px 6px;font-size:13px;font-weight:${i<2?'700':'400'};color:#fff">${s.NombreEquipo}</td>
+              <td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PJ}</td>
+              <td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PG}</td>
+              <td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PE||0}</td>
+              <td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PP}</td>
+              <td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.GF}</td>
+              <td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.GC}</td>
+              <td style="padding:10px 6px;font-size:12px;color:${dif>0?'#86efac':dif<0?'#fca5a5':'rgba(255,255,255,.5)'};text-align:center">${dif>0?'+':''}${dif}</td>
+              <td style="padding:10px 10px;font-size:14px;font-weight:700;color:#f97316;text-align:center">${s.Puntos}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
     </div>`;
   }
 
-  // REPORTES
-  html += `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:14px 0 8px">REPORTES Y DOCUMENTOS</div>
+  // ── REPORTES ──────────────────────────────────────────────────────────────
+  html += secTitle('REPORTES Y DOCUMENTOS');
+  html += `
     <button onclick="splashPDF('fixture')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:#1e3a8a;border:none;border-radius:10px;cursor:pointer;margin-bottom:6px">
       <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       <span style="font-size:13px;font-weight:700;color:#fff">Descargar fixture PDF</span>
@@ -3406,7 +3426,53 @@ function renderSplashContent(ligaId) {
       <span style="font-size:13px;font-weight:700;color:#fff">Ver reglamento del torneo</span>
     </button>`;
 
+  // ── SANCIONES ACORDEÓN ────────────────────────────────────────────────────
+  html += secTitle('SANCIONES');
+  if (!sanciones.length) {
+    html += `<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;text-align:center;font-size:13px;color:rgba(255,255,255,.35);margin-bottom:6px">Sin sanciones registradas</div>`;
+  } else {
+    html += sanciones.map((s,i) => `
+      <div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;margin-bottom:6px;overflow:hidden">
+        <button onclick="toggleSancAcc(${i})" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:none;border:none;cursor:pointer;gap:10px">
+          <div style="text-align:left">
+            <div style="font-size:13px;font-weight:700;color:#fff">${s.NombreJugador}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">${teamName(s.ID_Equipo)} · ${s.TipoFalta||''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <span style="background:rgba(239,68,68,.2);color:#fca5a5;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">Sancionado</span>
+            <svg id="sacc-chv-${i}" width="14" height="14" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" viewBox="0 0 24 24" style="transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </button>
+        <div id="sacc-body-${i}" style="display:none;padding:0 14px 14px;border-top:0.5px solid rgba(255,255,255,.08)">
+          <div style="padding-top:10px;display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:11px;color:rgba(255,255,255,.4)">Sanción</div>
+            <div style="font-size:12px;color:#fff">${s.Sancion||'—'}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">Término / Condición</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.7)">${s.TerminoSancion||'—'}</div>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── BOTÓN ADMIN ───────────────────────────────────────────────────────────
+  html += `<div style="margin-top:20px;padding-top:16px;border-top:0.5px solid rgba(255,255,255,.1);text-align:center">
+    <button onclick="enterApp()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:100px;cursor:pointer;font-size:12px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.5px">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Acceso administrador
+    </button>
+    <div style="font-size:10px;color:rgba(255,255,255,.2);margin-top:10px">arba.arica@gmail.com · Arica, Chile · Temporada 2026</div>
+  </div>`;
+
   el.innerHTML = html;
+
+  // Bind acordeón sanciones
+  window.toggleSancAcc = function(i) {
+    const body = document.getElementById('sacc-body-'+i);
+    const chv  = document.getElementById('sacc-chv-'+i);
+    const open = body.style.display === 'none';
+    body.style.display = open ? 'block' : 'none';
+    chv.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+  };
 }
 
 function splashPDF(tipo) {
