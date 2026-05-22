@@ -538,35 +538,12 @@ textarea.f-input{resize:none}
 </div>
 
 <div id="content">
-  <div id="sec-noticias" class="section">
-    <div class="sec-header"><div class="sec-title">Noticias<span>.</span></div></div>
-    <div id="noticias-list"></div>
-  </div>
-  <div id="sec-agenda" class="section">
-    <div class="sec-header"><div class="sec-title">Programación<span>.</span></div><div class="sec-badge" id="badge-ag">—</div></div>
-    <div id="agenda-list"><div class="skel" style="height:76px;margin-bottom:10px"></div><div class="skel" style="height:76px"></div></div>
-  </div>
-  <div id="sec-posiciones" class="section">
-    <div class="sec-header"><div class="sec-title">Tabla de Puntaje<span>.</span></div><div class="sec-badge" id="badge-pos">—</div></div>
-    <div id="posiciones-list"><div class="skel" style="height:56px;margin-bottom:10px"></div><div class="skel" style="height:56px"></div></div>
-  </div>
-  <div id="sec-resultados" class="section">
-    <div class="sec-header"><div class="sec-title">Resultados<span>.</span></div><div class="sec-badge" id="badge-res">—</div></div>
-    <div id="resultados-list"><div class="skel" style="height:100px;margin-bottom:10px"></div><div class="skel" style="height:100px"></div></div>
-  </div>
-  <div id="sec-sanciones" class="section">
+          <div id="sec-sanciones" class="section">
     <div class="sec-header"><div class="sec-title">Sanciones<span>.</span></div></div>
     <div id="sanciones-list"></div>
   </div>
   <!-- NUEVA: JUGADORES -->
-  <div id="sec-jugadores" class="section">
-    <div class="sec-header">
-      <div class="sec-title">Jugadores<span>.</span></div>
-      <div class="sec-badge" id="badge-jug">—</div>
-    </div>
-    <div id="jugadores-list"></div>
-  </div>
-  <!-- NUEVA: REPORTES -->
+    <!-- NUEVA: REPORTES -->
   <div id="sec-reportes" class="section">
     <div class="sec-header"><div class="sec-title">Reportes<span>.</span></div></div>
     <div class="reporte-card">
@@ -693,7 +670,7 @@ textarea.f-input{resize:none}
   <div id="admin-login-screen" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">
     <div style="background:var(--surface);border-radius:20px;width:100%;max-width:380px;padding:32px 28px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
       <div style="text-align:center;margin-bottom:28px">
-        <div style="font-family:'Archivo Black',sans-serif;font-size:28px;letter-spacing:3px;color:var(--primary)">ARBA</div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:28px;letter-spacing:3px;color:var(--primary)">BASQUET XV</div>
         <div style="font-size:12px;color:var(--muted);margin-top:4px;letter-spacing:1px;text-transform:uppercase">Panel administrativo</div>
       </div>
       <label class="f-label">Email</label>
@@ -714,7 +691,7 @@ textarea.f-input{resize:none}
     <!-- HEADER -->
     <div style="background:#1e3a8a;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10">
       <div style="display:flex;align-items:center;gap:12px">
-        <div style="font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:2px;color:#fff">ARBA</div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:2px;color:#fff">BASQUET XV</div>
         <div id="adm-temporada-badge" style="font-size:10px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);padding:3px 10px;border-radius:100px;display:none"></div>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
@@ -1197,16 +1174,6 @@ function catClass(cat) { return cat==='Varones'?'cat-v':cat==='Damas'?'cat-d':'c
 function empty(icon, txt) { return `<div class="empty"><div class="empty-icon">${icon}</div><div class="empty-text">${txt}</div></div>`; }
 
 // ─── NAV ─────────────────────────────────────────────────────────────────────
-function setupNav() {
-  document.querySelectorAll('.nav-item').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById('sec-' + btn.dataset.sec).classList.add('active');
-    });
-  });
-}
 
 // ─── STANDINGS (calculado en cliente) ────────────────────────────────────────
 function calcStandings(ligaId) {
@@ -1240,30 +1207,6 @@ function calcStandings(ligaId) {
 }
 
 // ─── POSICIONES ──────────────────────────────────────────────────────────────
-function renderPosiciones() {
-  const el = document.getElementById('posiciones-list');
-  const badge = document.getElementById('badge-pos');
-  badge.textContent = D.ligas.length + ' torneos';
-  if (!D.ligas.length) { el.innerHTML = empty('🏆','Sin torneos activos'); return; }
-  el.innerHTML = D.ligas.map(liga => {
-    const catCls = liga.EstadoTorneo === 'Finalizado' ? 'estado-finalizado' : 'estado-activo';
-    return `<div class="accordion-item" id="acc-${liga.ID}">
-      <div class="accordion-header" onclick="toggleAccordion('${liga.ID}')">
-        <div class="accordion-header-left">
-          <div class="accordion-liga-name">${liga.NombreFantasia}</div>
-          <div class="accordion-meta">
-            <span class="accordion-deporte">${liga.NombreDeporte||'Básquetbol'} · ${liga.Categoria}</span>
-            <span class="acc-estado ${catCls}">${liga.EstadoTorneo||'Activo'}</span>
-          </div>
-        </div>
-        <div class="accordion-chevron" id="chv-${liga.ID}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></div>
-      </div>
-      <div class="accordion-body" id="body-${liga.ID}">
-        <div id="standings-${liga.ID}"></div>
-      </div>
-    </div>`;
-  }).join('');
-}
 
 window.toggleAccordion = function(ligaId) {
   const body = document.getElementById('body-' + ligaId);
@@ -1306,139 +1249,8 @@ function bloqueHorario(hora) {
   return 'Noche';
 }
 
-function renderAgenda() {
-  const el = document.getElementById('agenda-list');
-  const badge = document.getElementById('badge-ag');
-  const ahora = new Date();
-  const partidos = D.partidos.filter(p => p.Estado === 'Programado')
-    .sort((a,b) => {
-      const ja = parseInt(a.Partidos) || 9999;
-      const jb = parseInt(b.Partidos) || 9999;
-      if (ja !== jb) return ja - jb;
-      const fa = new Date(cleanFecha(a.Fecha)+'T12:00:00');
-      const fb = new Date(cleanFecha(b.Fecha)+'T12:00:00');
-      if (fa - fb !== 0) return fa - fb;
-      return (a.Hora||'').localeCompare(b.Hora||'');
-    });
-  badge.textContent = partidos.length + ' partidos';
-  if (!partidos.length) { el.innerHTML = empty('📅','Sin partidos programados'); return; }
-
-  // Encontrar el partido más próximo
-  let proximoIdx = 0;
-  let menorDif = Infinity;
-  partidos.forEach((p, i) => {
-    const f = cleanFecha(p.Fecha);
-    const h = fmtTime(p.Hora).replace(' hrs','') || '00:00';
-    const dt = new Date(f + 'T' + h + ':00');
-    const dif = dt - ahora;
-    if (dif >= 0 && dif < menorDif) { menorDif = dif; proximoIdx = i; }
-  });
-
-  // Agrupar por fecha + bloque horario
-  const grupos = {};
-  partidos.forEach(p => {
-    const f = cleanFecha(p.Fecha);
-    const bloque = bloqueHorario(p.Hora);
-    const key = f + '||' + bloque;
-    if (!grupos[key]) grupos[key] = { fecha: f, bloque, partidos: [] };
-    grupos[key].partidos.push(p);
-  });
-
-  // Ordenar grupos por fecha luego bloque
-  const bloqueOrd = { 'Mañana':0, 'Tarde':1, 'Noche':2, 'Día':3 };
-  const gruposOrdenados = Object.values(grupos).sort((a,b) => {
-    const fa = new Date(a.fecha+'T12:00:00');
-    const fb = new Date(b.fecha+'T12:00:00');
-    if (fa-fb !== 0) return fa-fb;
-    return (bloqueOrd[a.bloque]||0) - (bloqueOrd[b.bloque]||0);
-  });
-
-  let html = '';
-  let partidoIdx = 0;
-  gruposOrdenados.forEach(grupo => {
-    const d = new Date(grupo.fecha+'T12:00:00');
-    const diaSemana = isNaN(d) ? '' : d.toLocaleDateString('es-CL',{weekday:'long'});
-    const fechaLarga = isNaN(d) ? grupo.fecha : d.toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'});
-    const tituloBloque = diaSemana.charAt(0).toUpperCase()+diaSemana.slice(1)+' · '+grupo.bloque;
-
-    html += `<div class="day-block">
-      <div class="day-block-header">
-        <div class="day-block-title">${tituloBloque}</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:11px;opacity:.75">${fechaLarga}</span>
-          <span class="day-block-count">${grupo.partidos.length} partido${grupo.partidos.length>1?'s':''}</span>
-        </div>
-      </div>`;
-
-    grupo.partidos.forEach(p => {
-      const liga = ligaObj(p.ID_Liga);
-      const cat = liga ? liga.Categoria : '';
-      const isProximo = partidos.indexOf(p) === proximoIdx;
-      const hora = fmtTime(p.Hora);
-      const horaNum = hora.replace(' hrs','');
-
-      const catLabel = cat || (liga ? liga.Categoria : '') || '';
-      html += `<div class="sched-card${isProximo?' proximo':''}">
-        <div class="sched-top">
-          <span class="sched-num${isProximo?' proximo-badge':''}">${isProximo?'<span class="proximo-dot"></span>':''}Partido ${p.Partidos||''}</span>
-          ${p.Fase && p.Fase!=='Regular' ? `<span style="font-size:10px;font-weight:700;color:var(--orange);background:var(--orange-light);padding:2px 8px;border-radius:100px">${p.Fase}</span>` : ''}
-        </div>
-        <div class="sched-teams">
-          <div class="sched-team-name">${teamName(p.ID_EquipoLocal)}</div>
-          <div style="text-align:center;flex-shrink:0">
-            <div class="sched-hora">${horaNum}</div>
-            <div class="sched-hora-sub">hrs</div>
-            <div style="font-size:10px;font-weight:700;color:var(--primary);margin-top:4px;line-height:1.2;max-width:110px">${liga?liga.NombreFantasia:''}</div>
-          </div>
-          <div class="sched-team-name right">${teamName(p.ID_EquipoVisita)}</div>
-        </div>
-        <div class="sched-bottom">
-          <span class="sched-lugar">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
-            ${p.Cancha||'Por confirmar'}
-          </span>
-          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-            ${p.YoutubeURL ? `<a class="yt-link" href="${p.YoutubeURL}" target="_blank" style="font-size:11px;font-weight:700;color:var(--red);text-decoration:none">📺 Ver</a>` : ''}
-            <button class="sched-share-btn" onclick="sharePartido('${p.ID}')">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.554 4.122 1.521 5.855L.057 23.882l6.174-1.438A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.372l-.36-.213-3.664.854.883-3.564-.233-.374A9.793 9.793 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182c5.43 0 9.818 4.388 9.818 9.818 0 5.43-4.388 9.818-9.818 9.818z"/></svg>
-              WhatsApp
-            </button>
-          </div>
-        </div>
-      </div>`;
-      partidoIdx++;
-    });
-
-    html += '</div>';
-  });
-  el.innerHTML = html;
-}
 
 // ─── RESULTADOS ──────────────────────────────────────────────────────────────
-function renderResultados() {
-  const el = document.getElementById('resultados-list');
-  const badge = document.getElementById('badge-res');
-  const cuartosE = ['1° Cuarto','2° Cuarto','3° Cuarto','4° Cuarto'];
-  const partidos = D.partidos
-    .filter(p => p.Estado === 'Finalizado' || cuartosE.indexOf(p.Estado) >= 0)
-    .sort((a,b) => new Date(cleanFecha(b.Fecha)+'T12:00:00') - new Date(cleanFecha(a.Fecha)+'T12:00:00'));
-  badge.textContent = partidos.length + ' partidos';
-  if (!partidos.length) { el.innerHTML = empty('🏀','Sin resultados disponibles'); return; }
-  let html = '';
-  const enCuarto = partidos.filter(p => cuartosE.indexOf(p.Estado) >= 0);
-  const finalizados = partidos.filter(p => p.Estado === 'Finalizado');
-  if (enCuarto.length) {
-    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="width:8px;height:8px;border-radius:50%;background:var(--orange);animation:pulse 1.2s infinite;flex-shrink:0"></div><span style="font-size:11px;font-weight:700;color:var(--orange);letter-spacing:1.2px;text-transform:uppercase">En curso</span></div>`;
-    enCuarto.forEach(p => { html += buildMatchCard(p); });
-  }
-  if (finalizados.length) {
-    if (enCuarto.length) html += '<div class="results-divider">Finalizados</div>';
-    finalizados.forEach(p => { html += buildMatchCard(p); });
-  }
-  if (!enCuarto.length && !finalizados.length) html = empty('🏀','Sin resultados disponibles');
-  el.innerHTML = html;
-  attachChevrons();
-}
 
 function buildMatchCard(p) {
   const cuartos = ['1° Cuarto','2° Cuarto','3° Cuarto','4° Cuarto'];
@@ -1514,25 +1326,6 @@ function fmtFechaNoticia(raw) {
 }
 
 // ─── SANCIONES ───────────────────────────────────────────────────────────────
-function renderSanciones() {
-  const el = document.getElementById('sanciones-list');
-  if (!D.sanciones.length) { el.innerHTML = empty('⚠️','Sin sanciones activas'); return; }
-  el.innerHTML = D.sanciones.map(s => {
-    const eq = D.equipos.find(e => e.ID === s.ID_Equipo);
-    const liga = D.ligas.find(l => l.ID === s.ID_Liga);
-    const catCls = liga && liga.Categoria==='Varones'?'badge-v':liga && liga.Categoria==='Damas'?'badge-d':'badge-m';
-    return `<div class="sanction-card">
-      <div class="sanc-header">
-        <span class="sanc-type">${s.TipoFalta}</span>
-        ${liga ? `<span class="${catCls}">${liga.Categoria}</span>` : ''}
-      </div>
-      ${liga ? `<div style="font-size:11px;color:var(--primary);font-weight:700;margin-bottom:4px">${liga.NombreFantasia}</div>` : ''}
-      <div class="sanc-player">${s.NombreJugador}</div>
-      <div class="sanc-detail">${eq?'<strong>'+eq.NombreEquipo+'</strong> · ':''}${s.Sancion}</div>
-      ${s.TerminoSancion ? `<div class="sanc-end"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Vence: ${s.TerminoSancion}</div>` : ''}
-    </div>`;
-  }).join('');
-}
 
 // ─── ADMIN ───────────────────────────────────────────────────────────────────
 function setupAdmin() {
@@ -1568,14 +1361,13 @@ function setupAdmin() {
 }
 
 function openAdmin() {
+  // Ocultar landing si está visible
+  const splash = document.getElementById('splash-screen');
+  if (splash) splash.style.display = 'none';
   document.getElementById('admin-overlay').classList.add('open');
-  if (adminPass && _currentUser) {
-    document.getElementById('admin-login-screen').style.display = 'none';
-    document.getElementById('admin-panel-full').style.display = 'flex';
-  } else {
-    document.getElementById('admin-login-screen').style.display = 'flex';
-    document.getElementById('admin-panel-full').style.display = 'none';
-  }
+  // Siempre mostrar login (no recordar sesión desde landing)
+  document.getElementById('admin-login-screen').style.display = 'flex';
+  document.getElementById('admin-panel-full').style.display = 'none';
 }
 function closeAdmin() { document.getElementById('admin-overlay').classList.remove('open'); }
 
@@ -1880,6 +1672,9 @@ function doLogout() {
   document.getElementById('admin-email').value = '';
   document.getElementById('admin-pass').value = '';
   closeAdmin();
+  // Volver al landing
+  const splash = document.getElementById('splash-screen');
+  if (splash) splash.style.display = 'flex';
   toast('Sesión cerrada','ok');
 }
 
@@ -2387,39 +2182,6 @@ function showConfirm(msg, cb) { showConfirmV3(msg, '', cb, 'danger'); }
 var _currentNoticia = null;
 var _likedNoticias = {};
 
-function renderNoticias() {
-  const el = document.getElementById('noticias-list');
-  const news = [...D.noticias].sort((a,b) => {
-    return new Date(cleanFecha(b.Fecha)+'T12:00:00') - new Date(cleanFecha(a.Fecha)+'T12:00:00');
-  });
-  if (!news.length) { el.innerHTML = empty('📰','Sin noticias publicadas'); return; }
-  el.innerHTML = news.map((n, i) => {
-    const fecha = fmtFechaNoticia(n.Fecha);
-    const likes = n.me_gusta || 0;
-    const foto  = n.foto_url || n.ImagenURL || n.imagen_url || '';
-    const imgHtml = foto
-      ? `<img src="${foto}" alt="${n.Titulo}" loading="lazy" style="width:100%;height:100%;object-fit:cover">`
-      : '<span style="font-size:48px">📰</span>';
-    return `<div class="news-card-v3">
-      <div class="news-img-v3" onclick="openNoticiaModal(${i})">${imgHtml}</div>
-      <div class="news-reactions-v3">
-        <button class="news-like-btn${_likedNoticias[n.ID]?' liked':''}" id="like-${n.ID}" onclick="toggleLike('${n.ID}',${likes})">
-          <svg viewBox="0 0 24 24" fill="${_likedNoticias[n.ID]?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          <span id="likes-${n.ID}">${likes}</span>
-        </button>
-        <button class="news-share-v3" onclick="openNoticiaModal(${i})">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          Compartir
-        </button>
-      </div>
-      <div class="news-body-v3" onclick="openNoticiaModal(${i})">
-        ${fecha ? `<div class="news-date-v3">${fecha}</div>` : ''}
-        <div class="news-title-v3">${n.Titulo}</div>
-        ${n.Descripcion ? `<div class="news-desc-v3">${n.Descripcion.substring(0,120)}${n.Descripcion.length>120?'...':''}</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
 
 async function toggleLike(newsId, currentLikes) {
   const isLiked = _likedNoticias[newsId];
@@ -2485,124 +2247,9 @@ function copyNoticiaLink() {
 
 // ─── JUGADORES público ───────────────────────────────────────────────────────
 function renderAll() {
-  renderAgenda();
-  renderPosiciones();
-  renderResultados();
-  renderNoticias();
-  renderSanciones();
-  renderJugadores();
   populateReporteSelects();
 }
 
-function renderJugadores() {
-  const el    = document.getElementById('jugadores-list');
-  const badge = document.getElementById('badge-jug');
-  if (!el) return;
-  const personas = (D.personas || []).filter(p => p.estado === 'oficial');
-  if (badge) badge.textContent = personas.length + ' oficiales';
-  if (!personas.length) { el.innerHTML = empty('🏀','Sin jugadores registrados'); return; }
-
-  // Agrupar por liga → equipo → categoría
-  const porLiga = {};
-  personas.forEach(p => {
-    const eq   = D.equipos.find(e => e.ID === p.id_equipo);
-    const liga = D.ligas.find(l => l.ID === p.id_liga) || (eq ? D.ligas.find(l => l.ID === eq.ID_Liga) : null);
-    const ligaKey = liga ? liga.ID : 'sin-liga';
-    const ligaNom = liga ? liga.NombreFantasia : 'Sin liga';
-    const eqKey   = p.id_equipo || 'sin-equipo';
-    const eqNom   = eq ? eq.NombreEquipo : 'Sin equipo';
-    if (!porLiga[ligaKey]) porLiga[ligaKey] = { nombre: ligaNom, equipos: {} };
-    if (!porLiga[ligaKey].equipos[eqKey]) porLiga[ligaKey].equipos[eqKey] = { nombre: eqNom, personas: [] };
-    porLiga[ligaKey].equipos[eqKey].personas.push(p);
-  });
-
-  el.innerHTML = Object.entries(porLiga).map(([ligaId, liga]) => {
-    const equiposHtml = Object.entries(liga.equipos).map(([eqId, club]) => {
-      // Agrupar por categoría dentro del club
-      const porCat = {};
-      club.personas.forEach(p => {
-        const cat = p.rol === 'jugador' ? (p.categoria || 'Varones') :
-                    p.rol === 'cuerpo_tecnico' ? 'Cuerpo técnico' : 'Delegados';
-        if (!porCat[cat]) porCat[cat] = [];
-        porCat[cat].push(p);
-      });
-      const bodyHtml = Object.entries(porCat).map(([cat, ps]) => `
-        <div class="cat-label-jug">${cat}</div>
-        ${ps.map(p => {
-          const initials = p.nombre_completo.split(',').map(s=>s.trim()[0]||'').join('').toUpperCase().substring(0,2);
-          const anio = p.fecha_nacimiento ? new Date(p.fecha_nacimiento).getFullYear() : '';
-          const fedBadge = p.federado ? '<span style="font-size:9px;color:var(--green);font-weight:700;margin-left:4px">• Federado</span>' : '';
-          // Buscar stats del jugador
-          const st = (D.stats||[]).find(s => s.id_jugador === p.id);
-          const tl   = st?.pts_1p  || 0;
-          const dos  = st?.pts_2p  || 0;
-          const tres = st?.pts_3p  || 0;
-          const pj   = st?.partidos || 0;
-          const total = tl + (dos*2) + (tres*3);
-          const prom  = pj > 0 ? (total/pj).toFixed(1) : '—';
-          const hasStats = st && (tl||dos||tres||pj);
-          return `<div class="jug-row" style="flex-direction:column;align-items:stretch;cursor:pointer" onclick="toggleJugStats(this)">
-            <div style="display:flex;align-items:center;gap:10px">
-              <div class="jug-av">${initials}</div>
-              <div style="flex:1;min-width:0">
-                <div class="jug-nombre">${p.nombre_completo}</div>
-                <div class="jug-sub">${p.rol==='jugador'?'Jugador':p.rol==='cuerpo_tecnico'?'C.Técnico':'Delegado'}${anio?' · '+anio:''}${fedBadge}</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:6px">
-                ${hasStats ? `<span style="font-family:'Archivo Black',sans-serif;font-size:13px;color:var(--primary)">${total} pts</span>` : ''}
-                <span class="badge-oficial">✓</span>
-              </div>
-            </div>
-            ${hasStats ? `<div class="jug-stats-detail" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-              <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center">
-                <div style="background:var(--bg);border-radius:8px;padding:7px 4px">
-                  <div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--primary)">${pj}</div>
-                  <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">PJ</div>
-                </div>
-                <div style="background:var(--bg);border-radius:8px;padding:7px 4px">
-                  <div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--muted)">${tl}</div>
-                  <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">TL</div>
-                </div>
-                <div style="background:var(--bg);border-radius:8px;padding:7px 4px">
-                  <div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--muted)">${dos}</div>
-                  <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">2P</div>
-                </div>
-                <div style="background:var(--bg);border-radius:8px;padding:7px 4px">
-                  <div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--muted)">${tres}</div>
-                  <div style="font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">3P</div>
-                </div>
-                <div style="background:var(--primary-light);border-radius:8px;padding:7px 4px;border:1px solid #bfdbfe">
-                  <div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--primary)">${prom}</div>
-                  <div style="font-size:9px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.4px;margin-top:1px">Prom</div>
-                </div>
-              </div>
-              <div style="text-align:right;margin-top:8px;font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary)">
-                ${total} <span style="font-size:11px;font-weight:400;color:var(--muted)">pts totales</span>
-              </div>
-            </div>` : ''}
-          </div>`;
-        }).join('')}
-      `).join('');
-      return `<div class="club-acc">
-        <div class="club-acc-header" onclick="toggleClubAcc(this)">
-          <div>
-            <div class="club-acc-name">${club.nombre}</div>
-            <div class="club-acc-meta">${club.personas.length} miembros</div>
-          </div>
-          <div class="club-acc-chv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
-        </div>
-        <div class="club-acc-body">${bodyHtml}</div>
-      </div>`;
-    }).join('');
-    return `<div style="margin-bottom:18px">
-      <div style="font-family:'Archivo Black',sans-serif;font-size:13px;color:var(--primary);letter-spacing:-.3px;margin-bottom:8px;display:flex;align-items:center;gap:8px">
-        ${liga.nombre}
-        <span style="width:100%;height:1px;background:var(--border);display:block"></span>
-      </div>
-      ${equiposHtml}
-    </div>`;
-  }).join('');
-}
 
 window.toggleClubAcc = function(header) {
   const chv  = header.querySelector('.club-acc-chv');
@@ -3456,7 +3103,7 @@ function renderSplashContent(ligaId) {
 
   // ── BOTÓN ADMIN ───────────────────────────────────────────────────────────
   html += `<div style="margin-top:20px;padding-top:16px;border-top:0.5px solid rgba(255,255,255,.1);text-align:center">
-    <button onclick="enterApp()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:100px;cursor:pointer;font-size:12px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.5px">
+    <button onclick="openAdmin()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:100px;cursor:pointer;font-size:12px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.5px">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       Acceso administrador
     </button>
