@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Basquet XV — Competencias</title>
+<title>ARBA — Competencias</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23f97316' stroke='%23c2410c' stroke-width='2'/><path d='M50 2 Q65 25 65 50 Q65 75 50 98' stroke='%23c2410c' stroke-width='3' fill='none'/><path d='M50 2 Q35 25 35 50 Q35 75 50 98' stroke='%23c2410c' stroke-width='3' fill='none'/><path d='M2 50 Q25 35 50 35 Q75 35 98 50' stroke='%23c2410c' stroke-width='3' fill='none'/><path d='M2 50 Q25 65 50 65 Q75 65 98 50' stroke='%23c2410c' stroke-width='3' fill='none'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -363,31 +363,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'Archivo',sans-seri
 }
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
-@media(min-width:640px){
-  #admin-overlay{align-items:center;justify-content:center;padding:20px}
-  #admin-panel{border-radius:20px;max-height:88vh;width:100%;max-width:720px;animation:fadeIn .25s ease}
-  .panel-handle{display:none}
-  .adm-tabs{flex-wrap:wrap;gap:8px;padding:16px 24px 0}
-  .adm-tab{padding:8px 16px;font-size:12px}
-  .adm-panel{padding:20px 24px 0}
-  .panel-header{padding:20px 24px}
-  #login-form{padding:28px 24px}
-  .f-row{grid-template-columns:1fr 1fr}
-}
-
-@media(min-width:640px){
-  #admin-overlay{align-items:center;justify-content:center;padding:20px}
-  #admin-panel{border-radius:20px;max-height:88vh;width:100%;max-width:680px;animation:fadeIn .25s ease}
-  .panel-handle{display:none}
-}
-.panel-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto}
-.panel-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
-.panel-logo-mark{font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:1.5px;color:var(--primary)}
-.panel-logo-mark span{color:var(--orange)}
-.panel-sub{font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
-.panel-close{width:30px;height:30px;border-radius:50%;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted)}
-.panel-close svg{width:14px;height:14px}
-#login-form{padding:24px 18px}
+.panel-handle{display:none}
 .f-label{font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px;display:block}
 .f-input,.f-select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:11px 14px;font-family:'Archivo',sans-serif;font-size:15px;outline:none;transition:border-color .2s;margin-bottom:14px;-webkit-appearance:none}
 .f-input:focus,.f-select:focus{border-color:var(--primary)}
@@ -399,20 +375,6 @@ textarea.f-input{resize:none}
 .btn-primary:active{background:var(--primary-h)}
 .btn-orange{width:100%;padding:13px;border-radius:10px;background:var(--orange);color:#fff;font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;cursor:pointer;border:none;margin-bottom:0}
 .btn-ghost{width:100%;padding:12px;border-radius:10px;background:transparent;color:var(--muted);border:1.5px solid var(--border);font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;cursor:pointer}
-#admin-content{display:none}
-.adm-tabs{display:flex;gap:6px;overflow-x:auto;padding:14px 18px 0;scrollbar-width:none;flex-wrap:wrap}
-.adm-tabs::-webkit-scrollbar{display:none}
-.adm-tab{flex-shrink:0;padding:7px 13px;border-radius:8px;background:var(--bg);border:1.5px solid var(--border);color:var(--muted2);font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;cursor:pointer;transition:all .2s}
-.adm-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-.adm-panel{display:none;padding:16px 18px 0}
-.adm-panel.active{display:block}
-@media(min-width:640px){
-  .adm-tabs{flex-wrap:wrap;gap:8px;padding:16px 24px 0}
-  .adm-tab{padding:8px 16px;font-size:12px}
-  .adm-panel{padding:20px 24px 0}
-  .panel-header{padding:20px 24px}
-  #login-form{padding:28px 24px}
-}
 .adm-sec-label{font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.6px;text-transform:uppercase;margin:16px 0 10px}
 .adm-list-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:8px}
 .adm-list-name{font-size:13px;font-weight:700;color:var(--text)}
@@ -472,6 +434,13 @@ textarea.f-input{resize:none}
     <!-- SELECTOR LIGAS -->
     <div style="text-align:left;margin-bottom:6px">
       <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin-bottom:10px">SELECCIONA UNA LIGA</div>
+      <div style="grid-column:1/-1;margin-bottom:4px">
+        <button onclick="selectSplashLiga('TODAS')" id="splbtn-TODAS"
+          style="width:100%;background:rgba(249,115,22,.12);border:1.5px solid rgba(249,115,22,.3);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:12px;font-weight:700;color:#f97316">📋 Ver toda la programación</div>
+          <div style="font-size:10px;color:rgba(249,115,22,.6)">Todas las ligas</div>
+        </button>
+      </div>
       <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px" id="splash-ligas-grid">
         <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px;cursor:pointer;animation:pulse 1.5s infinite" onclick="null">
           <div style="font-size:11px;color:rgba(255,255,255,.4)">Cargando ligas...</div>
@@ -2930,8 +2899,13 @@ function selectSplashLiga(ligaId) {
   // Actualizar botones
   document.querySelectorAll('[id^="splbtn-"]').forEach(b => {
     const active = b.id === 'splbtn-' + ligaId;
-    b.style.background = active ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.06)';
-    b.style.border = active ? '1.5px solid #f97316' : '1px solid rgba(255,255,255,.12)';
+    if (b.id === 'splbtn-TODAS') {
+      b.style.background = active ? 'rgba(249,115,22,.25)' : 'rgba(249,115,22,.12)';
+      b.style.border = active ? '1.5px solid #f97316' : '1.5px solid rgba(249,115,22,.3)';
+    } else {
+      b.style.background = active ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.06)';
+      b.style.border = active ? '1.5px solid #f97316' : '1px solid rgba(255,255,255,.12)';
+    }
   });
   renderSplashContent(ligaId);
 }
@@ -2939,12 +2913,18 @@ function selectSplashLiga(ligaId) {
 function renderSplashContent(ligaId) {
   const el = document.getElementById('splash-content');
   if (!el) return;
-  const liga = D.ligas.find(l => l.ID === ligaId);
-  const partidos = D.partidos.filter(p => p.ID_Liga === ligaId);
+
+  const todosModos = ligaId === 'TODAS';
+  const partidos = todosModos
+    ? D.partidos
+    : D.partidos.filter(p => p.ID_Liga === ligaId);
+  const standings = todosModos ? [] : calcStandings(ligaId);
+  const sanciones = todosModos
+    ? D.sanciones
+    : D.sanciones.filter(s => s.ID_Liga === ligaId);
+
   const proximos  = partidos.filter(p => p.Estado === 'Programado').sort((a,b) => new Date(a.Fecha) - new Date(b.Fecha));
   const resultados = partidos.filter(p => p.Estado === 'Finalizado').sort((a,b) => new Date(b.Fecha) - new Date(a.Fecha));
-  const standings = calcStandings(ligaId);
-  const sanciones = D.sanciones.filter(s => s.ID_Liga === ligaId);
 
   const fmtD = (f) => {
     if (!f) return {dia:'—',mes:'—',dow:'—'};
@@ -2954,20 +2934,41 @@ function renderSplashContent(ligaId) {
     return {dia:d.getDate(), mes:meses[d.getMonth()], dow:dias[d.getDay()]};
   };
 
+  const waPartido = (p) => {
+    const {dia,mes,dow} = fmtD(p.Fecha);
+    const liga = D.ligas.find(l => l.ID === p.ID_Liga);
+    const txt = `🏀 *ARBA Arica - ${liga?.NombreFantasia||''}*\n\n📋 Partido N° ${p.Partidos||''}\n${teamName(p.ID_EquipoLocal)} vs ${teamName(p.ID_EquipoVisita)}\n\n📅 ${dow} ${dia} ${mes}\n⏰ ${p.Hora||'—'}\n📍 ${p.Cancha||'—'}\n\n🔗 arba-arica.netlify.app`;
+    return `https://wa.me/?text=${encodeURIComponent(txt)}`;
+  };
+
   const card = 'background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;margin-bottom:6px';
-  const secTitle = (txt, mt='14px') => `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:${mt} 0 8px">${txt}</div>`;
+  const secTitle = (txt, mt='0') => `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:${mt} 0 8px">${txt}</div>`;
 
   let html = '';
 
+  // Título modo TODAS
+  if (todosModos) {
+    html += `<div style="background:rgba(249,115,22,.1);border:0.5px solid rgba(249,115,22,.3);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#f97316;font-weight:700">
+      📋 Mostrando toda la programación — ${proximos.length} partidos pendientes
+    </div>`;
+  }
+
   // ── PRÓXIMOS ──────────────────────────────────────────────────────────────
   if (proximos.length) {
-    html += secTitle('PRÓXIMOS PARTIDOS','0');
+    html += secTitle('PRÓXIMOS PARTIDOS');
     html += proximos.map(p => {
       const {dia,mes,dow} = fmtD(p.Fecha);
+      const liga = D.ligas.find(l => l.ID === p.ID_Liga);
       return `<div style="${card}">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">Partido N° ${p.Partidos||''}</span>
-          <span style="background:rgba(59,130,246,.2);color:#93c5fd;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">Próximo</span>
+          <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">Partido N° ${p.Partidos||''}${todosModos?' · '+liga?.NombreFantasia:''}</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <a href="${waPartido(p)}" target="_blank" style="display:flex;align-items:center;gap:4px;background:rgba(37,211,102,.15);color:#25d366;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;text-decoration:none">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.554 4.122 1.521 5.855L.057 23.882l6.174-1.438A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+              Compartir
+            </a>
+            <span style="background:rgba(59,130,246,.2);color:#93c5fd;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px">Próximo</span>
+          </div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
           <span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:right">${teamName(p.ID_EquipoLocal)}</span>
@@ -2975,9 +2976,7 @@ function renderSplashContent(ligaId) {
           <span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:left">${teamName(p.ID_EquipoVisita)}</span>
         </div>
         <div style="display:flex;align-items:center;justify-content:center;gap:12px;border-top:0.5px solid rgba(255,255,255,.08);padding-top:8px">
-          <span style="font-size:10px;color:rgba(255,255,255,.4)">
-            <span style="color:rgba(255,255,255,.6);margin-right:4px">${dow} ${dia} ${mes}</span>
-          </span>
+          <span style="font-size:10px;color:rgba(255,255,255,.6)">${dow} ${dia} ${mes}</span>
           <span style="font-size:10px;color:rgba(255,255,255,.4)">·</span>
           <span style="font-size:10px;color:rgba(255,255,255,.6)">${p.Hora||'—'}</span>
           <span style="font-size:10px;color:rgba(255,255,255,.4)">·</span>
@@ -2989,13 +2988,14 @@ function renderSplashContent(ligaId) {
 
   // ── RESULTADOS ────────────────────────────────────────────────────────────
   if (resultados.length) {
-    html += secTitle('RESULTADOS');
+    html += secTitle('RESULTADOS', '14px');
     html += resultados.map(p => {
       const {dia,mes,dow} = fmtD(p.Fecha);
+      const liga = D.ligas.find(l => l.ID === p.ID_Liga);
       const gl = p.GolesLocal ?? '—'; const gv = p.GolesVisita ?? '—';
       return `<div style="${card}">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">Partido N° ${p.Partidos||''}</span>
+          <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">Partido N° ${p.Partidos||''}${todosModos?' · '+liga?.NombreFantasia:''}</span>
           <span style="background:rgba(34,197,94,.15);color:#86efac;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">Final</span>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
@@ -3012,14 +3012,14 @@ function renderSplashContent(ligaId) {
     }).join('');
   }
 
-  // ── TABLA COMPLETA ────────────────────────────────────────────────────────
-  if (standings.length) {
-    html += secTitle('TABLA DE POSICIONES');
+  // ── TABLA (solo por liga específica) ──────────────────────────────────────
+  if (!todosModos && standings.length) {
+    html += secTitle('TABLA DE POSICIONES', '14px');
     html += `<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;margin-bottom:6px;overflow-x:auto">
       <table style="width:100%;border-collapse:collapse;min-width:320px">
         <thead>
           <tr style="border-bottom:0.5px solid rgba(255,255,255,.1)">
-            <th style="padding:8px 10px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:left;width:24px">#</th>
+            <th style="padding:8px 10px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:left">#</th>
             <th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:left">Equipo</th>
             <th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">PJ</th>
             <th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">G</th>
@@ -3033,7 +3033,7 @@ function renderSplashContent(ligaId) {
         </thead>
         <tbody>
           ${standings.map((s,i) => {
-            const dif = (s.GF - s.GC);
+            const dif = s.GF - s.GC;
             return `<tr style="border-bottom:0.5px solid rgba(255,255,255,.05)">
               <td style="padding:10px 10px;font-size:13px;font-weight:700;color:${i<2?'#f97316':'rgba(255,255,255,.35)'}">${i+1}</td>
               <td style="padding:10px 6px;font-size:13px;font-weight:${i<2?'700':'400'};color:#fff">${s.NombreEquipo}</td>
@@ -3053,7 +3053,7 @@ function renderSplashContent(ligaId) {
   }
 
   // ── REPORTES ──────────────────────────────────────────────────────────────
-  html += secTitle('REPORTES Y DOCUMENTOS');
+  html += secTitle('REPORTES Y DOCUMENTOS', '14px');
   html += `
     <button onclick="splashPDF('fixture')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:#1e3a8a;border:none;border-radius:10px;cursor:pointer;margin-bottom:6px">
       <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -3072,8 +3072,8 @@ function renderSplashContent(ligaId) {
       <span style="font-size:13px;font-weight:700;color:#fff">Ver reglamento del torneo</span>
     </button>`;
 
-  // ── SANCIONES ACORDEÓN ────────────────────────────────────────────────────
-  html += secTitle('SANCIONES');
+  // ── SANCIONES ─────────────────────────────────────────────────────────────
+  html += secTitle('SANCIONES', '14px');
   if (!sanciones.length) {
     html += `<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;text-align:center;font-size:13px;color:rgba(255,255,255,.35);margin-bottom:6px">Sin sanciones registradas</div>`;
   } else {
@@ -3111,16 +3111,14 @@ function renderSplashContent(ligaId) {
 
   el.innerHTML = html;
 
-  // Bind acordeón sanciones
   window.toggleSancAcc = function(i) {
     const body = document.getElementById('sacc-body-'+i);
     const chv  = document.getElementById('sacc-chv-'+i);
     const open = body.style.display === 'none';
     body.style.display = open ? 'block' : 'none';
-    chv.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+    chv.style.transform = open ? 'rotate(180deg)' : '';
   };
 }
-
 function splashPDF(tipo) {
   if (!_splashLigaActual) return toast('Selecciona una liga primero','err');
   // Setear el select de liga y llamar downloadPDF
