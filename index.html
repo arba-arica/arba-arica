@@ -65,7 +65,7 @@ function forceRefresh() {
 }
 html,body{background:var(--bg);color:var(--text);font-family:'Archivo',sans-serif;min-height:100vh;overflow-x:hidden}
 ::-webkit-scrollbar{width:0;height:0}
-#app-header{position:sticky;top:0;z-index:100;background:var(--primary);padding:0 16px;height:58px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(30,58,138,.3)}
+#app-header, #drawer-overlay, #main-nav, .section, #sec-sanciones, #sec-reportes { display: none !important; }
 .logo-wordmark{line-height:1}
 .logo-arba{font-family:'Archivo Black',sans-serif;font-size:22px;letter-spacing:2px;color:#fff}
 .logo-sub{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:1px}
@@ -1337,7 +1337,14 @@ function openAdmin() {
   document.getElementById('admin-login-screen').style.display = 'flex';
   document.getElementById('admin-panel-full').style.display = 'none';
 }
-function closeAdmin() { document.getElementById('admin-overlay').classList.remove('open'); }
+function closeAdmin() {
+  document.getElementById('admin-overlay').classList.remove('open');
+  // Si no hay sesión activa, volver al landing
+  if (!adminPass || !_currentUser) {
+    const splash = document.getElementById('splash-screen');
+    if (splash) splash.style.display = 'flex';
+  }
+}
 
 async function doLogin() {
   const email = (document.getElementById('admin-email').value || '').trim().toLowerCase();
