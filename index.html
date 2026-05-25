@@ -758,7 +758,7 @@ textarea.f-input{resize:none}
                 <div><label class="f-label">Categoría</label><select class="f-select" id="lg-cat"><option>Varones</option><option>Damas</option><option>Mixto</option></select></div>
                 <div><label class="f-label">Estado</label><select class="f-select" id="lg-estado"><option>Activo</option><option>Finalizado</option></select></div>
               </div>
-              <button class="adm-btn-primary" id="btn-liga">+ Crear liga</button>
+              <button class="adm-btn-primary" id="btn-liga" onclick="createLiga()">+ Crear liga</button>
             </div>
             <div class="adm-sec-label">Ligas registradas</div>
             <div id="ligas-adm-list"></div>
@@ -769,14 +769,14 @@ textarea.f-input{resize:none}
             <div class="adm-form-card">
               <div class="adm-form-title">Nuevo equipo</div>
               <label class="f-label">Liga</label>
-              <select class="f-select" id="eq-liga"></select>
+              <select class="f-select" id="eq-liga" onchange="renderEquiposAdm()"></select>
               <label class="f-label">Nombre del equipo</label>
               <input class="f-input" id="eq-nombre" type="text" placeholder="Nombre del club">
               <div class="f-row">
                 <div><label class="f-label">Color local</label><input class="f-input" id="eq-cl" type="text" placeholder="Azul"></div>
                 <div><label class="f-label">Color visita</label><input class="f-input" id="eq-cv" type="text" placeholder="Blanco"></div>
               </div>
-              <button class="adm-btn-primary" id="btn-equipo">+ Crear equipo</button>
+              <button class="adm-btn-primary" id="btn-equipo" onclick="createEquipo()">+ Crear equipo</button>
             </div>
             <div class="adm-sec-label">Equipos registrados</div>
             <div id="equipos-adm-list"></div>
@@ -787,7 +787,7 @@ textarea.f-input{resize:none}
             <div class="adm-form-card">
               <div class="adm-form-title">Programar partido</div>
               <div class="f-row">
-                <div><label class="f-label">Liga</label><select class="f-select" id="pt-liga"></select></div>
+                <div><label class="f-label">Liga</label><select class="f-select" id="pt-liga" onchange="populateEqForLiga(this.value,'pt-local','pt-visita')"></select></div>
                 <div><label class="f-label">N° Partido</label><input class="f-input" id="pt-jornada" type="number" min="1" placeholder="1"></div>
               </div>
               <div class="f-row">
@@ -802,7 +802,7 @@ textarea.f-input{resize:none}
                 <div><label class="f-label">Equipo local</label><select class="f-select" id="pt-local"></select></div>
                 <div><label class="f-label">Equipo visita</label><select class="f-select" id="pt-visita"></select></div>
               </div>
-              <button class="adm-btn-primary" id="btn-partido">+ Programar partido</button>
+              <button class="adm-btn-primary" id="btn-partido" onclick="createPartido()">+ Programar partido</button>
             </div>
             <div class="adm-sec-label">Partidos programados</div>
             <div id="partidos-adm-list"></div>
@@ -822,7 +822,7 @@ textarea.f-input{resize:none}
             <div class="adm-form-card">
               <div class="adm-form-title">Registrar sanción</div>
               <div class="f-row">
-                <div><label class="f-label">Liga</label><select class="f-select" id="sa-liga"></select></div>
+                <div><label class="f-label">Liga</label><select class="f-select" id="sa-liga" onchange="populateEqForLiga(this.value,'sa-equipo')"></select></div>
                 <div><label class="f-label">Equipo</label><select class="f-select" id="sa-equipo"></select></div>
               </div>
               <label class="f-label">Jugador</label>
@@ -833,7 +833,7 @@ textarea.f-input{resize:none}
               <input class="f-input" id="sa-sancion" type="text" placeholder="Ej: 2 partidos suspendido">
               <label class="f-label">Término / Condición</label>
               <input class="f-input" id="sa-termino" type="text" placeholder="Fecha o condición de cumplimiento">
-              <button class="adm-btn-primary" id="btn-sancion">⚠ Registrar sanción</button>
+              <button class="adm-btn-primary" id="btn-sancion" onclick="createSancion()">⚠ Registrar sanción</button>
             </div>
             <div class="adm-sec-label">Sanciones registradas</div>
             <div id="sanciones-adm-list"></div>
@@ -1213,23 +1213,6 @@ function setupAdmin() {
   if (modalCancel) modalCancel.addEventListener('click', () => document.getElementById('modal-overlay').classList.remove('open'));
   const modalSaveBtn = document.getElementById('modal-save');
   if (modalSaveBtn) modalSaveBtn.addEventListener('click', () => { if (modalSaveCb) modalSaveCb(); });
-  // Botones de formularios admin — vinculados directamente al DOM
-  const btnLiga    = document.getElementById('btn-liga');    if (btnLiga)    btnLiga.addEventListener('click', createLiga);
-  const btnEquipo  = document.getElementById('btn-equipo');  if (btnEquipo)  btnEquipo.addEventListener('click', createEquipo);
-  const btnPartido = document.getElementById('btn-partido'); if (btnPartido) btnPartido.addEventListener('click', createPartido);
-  const btnNoticia = document.getElementById('btn-noticia'); if (btnNoticia) btnNoticia.addEventListener('click', createNoticia);
-  const btnSancion = document.getElementById('btn-sancion'); if (btnSancion) btnSancion.addEventListener('click', createSancion);
-  const btnJugador = document.getElementById('btn-jugador'); if (btnJugador) btnJugador.addEventListener('click', createJugador);
-  const btnStats   = document.getElementById('btn-stats');   if (btnStats)   btnStats.addEventListener('click', guardarStats);
-  // Selects con onchange
-  const ptLiga = document.getElementById('pt-liga');
-  if (ptLiga) ptLiga.addEventListener('change', function() { populateEqForLiga(this.value, 'pt-local', 'pt-visita'); });
-  const saLiga = document.getElementById('sa-liga');
-  if (saLiga) saLiga.addEventListener('change', function() { populateEqForLiga(this.value, 'sa-equipo'); });
-  const eqLiga = document.getElementById('eq-liga');
-  if (eqLiga) eqLiga.addEventListener('change', renderEquiposAdm);
-  const jugLiga = document.getElementById('jug-liga');
-  if (jugLiga) jugLiga.addEventListener('change', populateEqJugadores);
 }
 
 function openAdmin() {
@@ -1354,8 +1337,7 @@ function renderNominaDelList(eqId) {
     </div>`).join('');
 }
 
-async 
-function doLogout() {
+async function doLogout() {
   adminPass = ''; _currentUser = null;
   document.getElementById('admin-panel-full').style.display = 'none';
   document.getElementById('admin-login-screen').style.display = 'flex';
@@ -2145,8 +2127,6 @@ window.createNoticia = async function() {
   }
 };
 
-// ─── JUGADOR con RUT y límite automático ─────────────────────────────────────
-async 
 // ─── ADMIN VALIDAR ───────────────────────────────────────────────────────────
 async function renderValidarAdm() {
   const el = document.getElementById('val-lista');
