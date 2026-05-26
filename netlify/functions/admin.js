@@ -1,5 +1,5 @@
 /**
- * netlify/functions/admin.js — v3.0
+ * netlify/functions/admin.js — v3.1
  * Variables de entorno en Netlify:
  *   SUPABASE_URL        = https://lwsyntjhbcdfuhfjdjqf.supabase.co
  *   SUPABASE_SERVICE_KEY = eyJ...service_role...
@@ -26,16 +26,11 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || '{}');
     const { action, adminPassword, ...data } = body;
 
-    // Acciones públicas (sin contraseña)
     const PUBLIC_ACTIONS = ['checkPassword', 'likeNoticia', 'checkLogin'];
-
-    // Acciones que cualquier usuario autenticado puede hacer (admin O delegado)
     const AUTH_ACTIONS = ['createPersona', 'getPersonasPendientes'];
 
-    // Verificar si es admin
     const isAdmin = adminPassword === ADMIN_PWD;
 
-    // Verificar si es delegado (buscar en BD)
     let isDelegado = false;
     if (!isAdmin && AUTH_ACTIONS.includes(action) && adminPassword) {
       const { data: usr } = await db.from('usuarios')
@@ -60,12 +55,10 @@ exports.handler = async (event) => {
 
       // ─── LOGIN CON EMAIL + CONTRASEÑA ────────────────────────
       case 'checkLogin': {
-        // Admin fijo
         if (data.email === 'arba.arica@gmail.com' && data.password === ADMIN_PWD) {
           result = { success: true, usuario: { nombre: 'Admin ARBA', email: data.email, rol: 'admin' } };
           break;
         }
-        // Buscar delegado en tabla usuarios
         const { data: usuario, error: errU } = await db
           .from('usuarios')
           .select('*')
@@ -76,18 +69,16 @@ exports.handler = async (event) => {
           result = { success: false, message: 'Email o contraseña incorrectos' };
           break;
         }
-        // Comparar contraseña (plain text por ahora — mejorar con bcrypt en v3.1)
         if (usuario.password_hash !== data.password) {
           result = { success: false, message: 'Email o contraseña incorrectos' };
           break;
         }
-        // Actualizar last_login
         await db.from('usuarios').update({ last_login: new Date().toISOString() }).eq('id', usuario.id);
         result = { success: true, usuario: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, id_equipo: usuario.id_equipo, nombre_club: usuario.nombre_club || '', ligas_ids: usuario.ligas_ids || [], equipos_ids: usuario.equipos_ids || [] } };
         break;
       }
 
-      // ─── PERSONAS PENDIENTES (para panel validar) ─────────────
+      // ─── PERSONAS PENDIENTES ──────────────────────────────────
       case 'getPersonasPendientes': {
         const { data: pendientes, error: errP } = await db
           .from('personas')
@@ -164,7 +155,6 @@ exports.handler = async (event) => {
         break;
       }
       case 'validateTeam': {
-        // data.accion: 'aprobar' | 'rechazar'
         const update = data.accion === 'aprobar'
           ? { estado_validacion: 'validado', motivo_rechazo: null, updated_at: new Date().toISOString() }
           : { estado_validacion: 'rechazado', motivo_rechazo: data.motivo || '', updated_at: new Date().toISOString() };
@@ -205,16 +195,27 @@ exports.handler = async (event) => {
         result = error ? fail(error) : { success:true, message:'Partido actualizado' };
         break;
       }
+
+      // ─── UPDATE RESULTADO CON CUARTOS Q1-Q4 ──────────────────
       case 'updateMatchResult': {
         const estadosOk = ['Programado','1° Cuarto','2° Cuarto','3° Cuarto','4° Cuarto','Finalizado'];
         const { error } = await db.from('encuentros').update({
           goles_local:  parseInt(data.golesLocal)  || 0,
           goles_visita: parseInt(data.golesVisita) || 0,
           estado:       estadosOk.includes(data.estado) ? data.estado : 'Programado',
+          q1_local:  data.q1Local  != null && data.q1Local  !== '' ? parseInt(data.q1Local)  : null,
+          q1_visita: data.q1Visita != null && data.q1Visita !== '' ? parseInt(data.q1Visita) : null,
+          q2_local:  data.q2Local  != null && data.q2Local  !== '' ? parseInt(data.q2Local)  : null,
+          q2_visita: data.q2Visita != null && data.q2Visita !== '' ? parseInt(data.q2Visita) : null,
+          q3_local:  data.q3Local  != null && data.q3Local  !== '' ? parseInt(data.q3Local)  : null,
+          q3_visita: data.q3Visita != null && data.q3Visita !== '' ? parseInt(data.q3Visita) : null,
+          q4_local:  data.q4Local  != null && data.q4Local  !== '' ? parseInt(data.q4Local)  : null,
+          q4_visita: data.q4Visita != null && data.q4Visita !== '' ? parseInt(data.q4Visita) : null,
         }).eq('id', data.matchId);
         result = error ? fail(error) : { success:true, message:'Resultado actualizado' };
         break;
       }
+
       case 'deleteMatch': {
         const { error } = await db.from('encuentros').delete().eq('id', data.matchId);
         result = error ? fail(error) : { success:true, message:'Partido eliminado' };
@@ -246,7 +247,6 @@ exports.handler = async (event) => {
         break;
       }
       case 'likeNoticia': {
-        // Acción pública — suma 1 like
         const { data: noticia, error: errGet } = await db
           .from('noticias').select('me_gusta').eq('id', data.newsId).single();
         if (errGet) { result = fail(errGet); break; }
@@ -259,15 +259,13 @@ exports.handler = async (event) => {
 
       // ─── SANCIONES ───────────────────────────────────────────
       case 'createSanction': {
-        const termino = (data.termino || '') +
-          (data.apelacion ? ' | Apelación: ' + data.apelacion : '');
         const { error } = await db.from('sanciones').insert({
           id_liga:         data.idLiga   || null,
           id_equipo:       data.idEquipo || null,
           nombre_jugador:  data.nombreJugador || '',
           tipo_falta:      data.tipoFalta     || '',
           sancion:         data.sancion       || '',
-          termino_sancion: termino,
+          termino_sancion: data.termino       || '',
         });
         result = error ? fail(error) : { success:true, message:'Sanción registrada' };
         break;
@@ -285,9 +283,8 @@ exports.handler = async (event) => {
         break;
       }
 
-      // ─── PERSONAS (jugadores, técnicos, delegados) ────────────
+      // ─── PERSONAS ────────────────────────────────────────────
       case 'createPersona': {
-        // Validar edad mínima 11 años
         if (data.fechaNacimiento) {
           const edad = calcularEdad(data.fechaNacimiento);
           if (edad < 11) {
@@ -295,7 +292,6 @@ exports.handler = async (event) => {
             break;
           }
         }
-        // Verificar si ya existe en otro equipo (mismo nombre + fecha)
         const { data: existe } = await db.from('personas')
           .select('id, id_equipo')
           .eq('nombre_completo', data.nombreCompleto)
@@ -320,7 +316,7 @@ exports.handler = async (event) => {
         if (error) { result = fail(error); break; }
         result = {
           success: true,
-          message: 'Jugador agregado y enviado a validación',
+          message: 'Jugador agregado',
           aviso: yaExiste ? '⚠ Este jugador ya está registrado en otro equipo' : null,
         };
         break;
@@ -341,8 +337,6 @@ exports.handler = async (event) => {
         break;
       }
       case 'validatePersona': {
-        // data.accion: 'aprobar' | 'rechazar'
-        // data.ids: array de IDs para acción masiva, o data.personaId para individual
         const ids = data.ids || (data.personaId ? [data.personaId] : []);
         if (!ids.length) { result = { success:false, message:'No hay jugadores seleccionados' }; break; }
         const update = data.accion === 'aprobar'
@@ -351,9 +345,7 @@ exports.handler = async (event) => {
         const { error } = await db.from('personas').update(update).in('id', ids);
         result = error ? fail(error) : {
           success: true,
-          message: data.accion === 'aprobar'
-            ? `${ids.length} jugador(es) aprobado(s)`
-            : `${ids.length} jugador(es) rechazado(s)`,
+          message: data.accion === 'aprobar' ? `${ids.length} jugador(es) aprobado(s)` : `${ids.length} jugador(es) rechazado(s)`,
         };
         break;
       }
@@ -363,9 +355,8 @@ exports.handler = async (event) => {
         break;
       }
 
-      // ─── ESTADÍSTICAS (1P, 2P, 3P) ───────────────────────────
+      // ─── ESTADÍSTICAS ─────────────────────────────────────────
       case 'updateStats': {
-        // Upsert stats de carrera por jugador + liga
         const { error } = await db.from('stats_carrera').upsert({
           id_jugador: data.idJugador,
           id_liga:    data.idLiga,
@@ -379,7 +370,7 @@ exports.handler = async (event) => {
         break;
       }
 
-      // ─── USUARIOS (Admin crea cuentas de delegados) ───────────
+      // ─── USUARIOS ─────────────────────────────────────────────
       case 'createUsuario': {
         const { error } = await db.from('usuarios').insert({
           nombre:        data.nombre      || '',
@@ -392,7 +383,7 @@ exports.handler = async (event) => {
           equipos_ids:   data.equiposIds  || [],
           activo:        true,
         });
-        result = error ? fail(error) : { success:true, message:'Usuario creado. Se enviará acceso por correo.' };
+        result = error ? fail(error) : { success:true, message:'Usuario creado.' };
         break;
       }
       case 'updateUsuario': {
@@ -412,13 +403,8 @@ exports.handler = async (event) => {
         result = error ? fail(error) : { success:true, message:'Usuario eliminado' };
         break;
       }
-      case 'aprobarSolicitudEdicion': {
-        // Admin aprueba/rechaza solicitud de edición de delegado
-        result = { success:true, message: data.accion === 'aprobar' ? 'Solicitud aprobada' : 'Solicitud rechazada' };
-        break;
-      }
 
-      // ─── TEMPORADAS ──────────────────────────────────────────────────────
+      // ─── TEMPORADAS ──────────────────────────────────────────
       case 'createTemporada': {
         const { error } = await db.from('temporadas').insert({
           nombre:       data.nombre      || '',
@@ -437,7 +423,7 @@ exports.handler = async (event) => {
         break;
       }
 
-      // ─── DELETE GENÉRICO ─────────────────────────────────────
+      // ─── DELETE GENÉRICO ──────────────────────────────────────
       case 'deleteItem': {
         const map = {
           Ligas:'ligas', Equipos:'equipos', Encuentros:'encuentros',
@@ -462,7 +448,7 @@ exports.handler = async (event) => {
   }
 };
 
-// ─── HELPERS ──────────────────────────────────────────────────
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
 const ok      = body => ({ statusCode:200, headers:HEADERS, body: JSON.stringify(body) });
 const fail    = err  => ({ success:false, message: err.message || err.details || 'Error BD' });
 const isBasket = d  => /básquet|basket|volei/i.test(d);
