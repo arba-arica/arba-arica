@@ -196,22 +196,24 @@ exports.handler = async (event) => {
         break;
       }
 
-      // ─── UPDATE RESULTADO CON CUARTOS Q1-Q4 ──────────────────
+      // ─── UPDATE RESULTADO ─────────────────────────────────────
       case 'updateMatchResult': {
-        const estadosOk = ['Programado','1° Cuarto','2° Cuarto','3° Cuarto','4° Cuarto','Finalizado'];
-        const { error } = await db.from('encuentros').update({
-          goles_local:  parseInt(data.golesLocal)  || 0,
-          goles_visita: parseInt(data.golesVisita) || 0,
+        const estadosOk = ['Programado','1° Cuarto','2° Cuarto','3° Cuarto','4° Cuarto','Finalizado','En curso'];
+        const updateData = {
+          goles_local:  data.golesLocal  !== '' && data.golesLocal  != null ? parseInt(data.golesLocal)  : null,
+          goles_visita: data.golesVisita !== '' && data.golesVisita != null ? parseInt(data.golesVisita) : null,
           estado:       estadosOk.includes(data.estado) ? data.estado : 'Programado',
-          q1_local:  data.q1Local  != null && data.q1Local  !== '' ? parseInt(data.q1Local)  : null,
-          q1_visita: data.q1Visita != null && data.q1Visita !== '' ? parseInt(data.q1Visita) : null,
-          q2_local:  data.q2Local  != null && data.q2Local  !== '' ? parseInt(data.q2Local)  : null,
-          q2_visita: data.q2Visita != null && data.q2Visita !== '' ? parseInt(data.q2Visita) : null,
-          q3_local:  data.q3Local  != null && data.q3Local  !== '' ? parseInt(data.q3Local)  : null,
-          q3_visita: data.q3Visita != null && data.q3Visita !== '' ? parseInt(data.q3Visita) : null,
-          q4_local:  data.q4Local  != null && data.q4Local  !== '' ? parseInt(data.q4Local)  : null,
-          q4_visita: data.q4Visita != null && data.q4Visita !== '' ? parseInt(data.q4Visita) : null,
-        }).eq('id', data.matchId);
+        };
+        // Cuartos opcionales — si no vienen se dejan como están (no se sobreescriben con null)
+        if (data.q1Local  != null && data.q1Local  !== '') updateData.q1_local  = parseInt(data.q1Local);
+        if (data.q1Visita != null && data.q1Visita !== '') updateData.q1_visita = parseInt(data.q1Visita);
+        if (data.q2Local  != null && data.q2Local  !== '') updateData.q2_local  = parseInt(data.q2Local);
+        if (data.q2Visita != null && data.q2Visita !== '') updateData.q2_visita = parseInt(data.q2Visita);
+        if (data.q3Local  != null && data.q3Local  !== '') updateData.q3_local  = parseInt(data.q3Local);
+        if (data.q3Visita != null && data.q3Visita !== '') updateData.q3_visita = parseInt(data.q3Visita);
+        if (data.q4Local  != null && data.q4Local  !== '') updateData.q4_local  = parseInt(data.q4Local);
+        if (data.q4Visita != null && data.q4Visita !== '') updateData.q4_visita = parseInt(data.q4Visita);
+        const { error } = await db.from('encuentros').update(updateData).eq('id', data.matchId);
         result = error ? fail(error) : { success:true, message:'Resultado actualizado' };
         break;
       }
