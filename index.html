@@ -169,24 +169,40 @@ textarea.f-input{resize:none}
 #toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:#fff;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.ok{background:var(--green)}#toast.err{background:var(--red)}
-/* === CAMBIO 1: ADMIN MOBILE — tabs top === */
+/* === ADMIN MOBILE — grid de secciones === */
 @media(max-width:640px){
   #admin-panel-full{flex-direction:column!important}
-  #adm-sidebar{width:100%!important;height:auto!important;flex-direction:row!important;position:sticky;top:52px;padding:0!important;justify-content:flex-start;z-index:10;overflow-x:auto;overflow-y:hidden;background:#0f172a;border-bottom:1px solid rgba(255,255,255,.1);border-right:none;flex-shrink:0;scrollbar-width:none}
-  #adm-sidebar::-webkit-scrollbar{display:none}
-  .adm-icon-btn{flex-direction:row;gap:6px;padding:10px 14px;font-size:12px;width:auto;min-width:auto;border-radius:0;height:46px;white-space:nowrap;border-bottom:3px solid transparent;flex-shrink:0}
-  .adm-icon-btn svg:first-child{width:16px!important;height:16px!important}
-  .adm-icon-btn .chv{display:none}
-  .adm-icon-btn.active{background:rgba(30,58,138,.25);border-bottom:3px solid #60a5fa;color:#93c5fd}
-  .adm-submenu-inner{display:none!important}
-  #adm-main{padding-bottom:0;flex:1;min-height:0}
+  #adm-sidebar{display:none!important}
+  #adm-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
   #adm-main-content{padding-bottom:40px!important}
+  #adm-home-grid{display:grid!important}
 }
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(min-width:640px){
   .confirm-v3-overlay{align-items:center;justify-content:center;padding:20px}
   .confirm-v3-box{border-radius:20px;max-width:480px}
+}
+
+/* === GRID ADMIN MOBILE ===*/
+#adm-home-grid{display:none;grid-template-columns:1fr 1fr;gap:10px;padding:14px;background:#0a0e1f;overflow-y:auto;flex:1}
+.adm-grid-card{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.adm-grid-card:active{border-color:#60a5fa}
+.adm-grid-card-head{padding:14px 14px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+.adm-grid-card-icon{width:34px;height:34px;border-radius:10px;background:rgba(30,58,138,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.adm-grid-card-icon svg{width:17px;height:17px;color:#93c5fd}
+.adm-grid-card-title{font-family:'Archivo Black',sans-serif;font-size:13px;color:#fff;letter-spacing:-.2px}
+.adm-grid-card-items{padding:8px 0}
+.adm-grid-item{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:12px;font-weight:600;color:rgba(255,255,255,.55);cursor:pointer;transition:all .15s;border:none;background:none;width:100%;text-align:left}
+.adm-grid-item:hover,.adm-grid-item:active{color:#fff;background:rgba(255,255,255,.05)}
+.adm-grid-item-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0}
+/* Botón volver en mobile */
+#adm-back-btn{display:none;align-items:center;gap:8px;padding:10px 16px;background:#111827;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer;border:none;width:100%;text-align:left;color:rgba(255,255,255,.6);font-size:13px;font-weight:700;font-family:inherit;flex-shrink:0}
+#adm-back-btn svg{width:16px;height:16px;color:#60a5fa}
+@media(min-width:641px){
+  #adm-home-grid{display:none!important}
+  #adm-back-btn{display:none!important}
+  #adm-sidebar{display:flex!important}
 }
 </style>
 </head>
@@ -399,6 +415,56 @@ textarea.f-input{resize:none}
       <div id="adm-main" style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#0a0e1f">
         <div style="padding:12px 18px;background:#111827;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
           <div><div id="adm-main-title" style="font-family:'Archivo Black',sans-serif;font-size:15px;color:#fff"></div><div id="adm-main-sub" style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px"></div></div>
+        </div>
+        <!-- GRID MOBILE - se muestra en lugar del sidebar en mobile -->
+        <button id="adm-back-btn" onclick="admShowGrid()">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          Volver al menú
+        </button>
+        <div id="adm-home-grid">
+          <!-- Torneo -->
+          <div class="adm-grid-card">
+            <div class="adm-grid-card-head">
+              <div class="adm-grid-card-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="2"/><path d="M12 10v4M8 14h8M6 20h12"/></svg></div>
+              <div class="adm-grid-card-title">Torneo</div>
+            </div>
+            <div class="adm-grid-card-items">
+              <button class="adm-grid-item" onclick="admGridGo('tab-ligas')"><span class="adm-grid-item-dot"></span>Ligas</button>
+              <button class="adm-grid-item" onclick="admGridGo('tab-equipos')"><span class="adm-grid-item-dot"></span>Equipos</button>
+              <button class="adm-grid-item" onclick="admGridGo('tab-partidos')"><span class="adm-grid-item-dot"></span>Partidos</button>
+              <button class="adm-grid-item" onclick="admGridGo('tab-res-adm')"><span class="adm-grid-item-dot"></span>Resultados</button>
+            </div>
+          </div>
+          <!-- Sanciones -->
+          <div class="adm-grid-card">
+            <div class="adm-grid-card-head">
+              <div class="adm-grid-card-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg></div>
+              <div class="adm-grid-card-title">Sanciones</div>
+            </div>
+            <div class="adm-grid-card-items">
+              <button class="adm-grid-item" onclick="admGridGo('tab-sanciones-adm')"><span class="adm-grid-item-dot"></span>Registrar</button>
+            </div>
+          </div>
+          <!-- Reportes -->
+          <div class="adm-grid-card">
+            <div class="adm-grid-card-head">
+              <div class="adm-grid-card-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="adm-grid-card-title">Reportes</div>
+            </div>
+            <div class="adm-grid-card-items">
+              <button class="adm-grid-item" onclick="admGridGo('tab-temporada-adm')"><span class="adm-grid-item-dot"></span>Temporada</button>
+            </div>
+          </div>
+          <!-- Usuarios -->
+          <div class="adm-grid-card">
+            <div class="adm-grid-card-head">
+              <div class="adm-grid-card-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+              <div class="adm-grid-card-title">Usuarios</div>
+            </div>
+            <div class="adm-grid-card-items">
+              <button class="adm-grid-item" onclick="admGridGo('tab-usuarios-adm')"><span class="adm-grid-item-dot"></span>Accesos</button>
+            </div>
+          </div>
         </div>
         <div id="adm-main-content" style="flex:1;overflow-y:auto;padding:16px 18px 80px">
 
@@ -741,11 +807,23 @@ async function doLogin(){
       adminPass=pass;_currentUser=json.usuario;
       document.getElementById('admin-login-screen').style.display='none';
       document.getElementById('admin-panel-full').style.display='flex';
+      // Preparar vistas para mobile
+      if(window.innerWidth<=640){
+        const mc=document.getElementById('adm-main-content');if(mc)mc.style.display='none';
+        const tb=document.querySelector('#adm-main > div:first-child');if(tb)tb.style.display='none';
+        const bb=document.getElementById('adm-back-btn');if(bb)bb.style.display='none';
+      }
       const n=document.getElementById('adm-user-nombre');if(n)n.textContent=json.usuario.nombre;
       const ta=(D.temporadas||[]).find(t=>t.estado==='activa');
       const tb=document.getElementById('adm-temporada-badge');if(tb&&ta){tb.textContent=ta.nombre;tb.style.display='block';}
-      admSetSection('torneo',document.querySelector('.adm-icon-btn[data-sec="torneo"]'));
-      renderAdmin();toast('Bienvenido, '+json.usuario.nombre,'ok');
+      renderAdmin();
+      toast('Bienvenido, '+json.usuario.nombre,'ok');
+      // En mobile → mostrar grid; en desktop → sidebar normal
+      if(window.innerWidth<=640){
+        admShowGrid();
+      } else {
+        admSetSection('torneo',document.querySelector('.adm-icon-btn[data-sec="torneo"]'));
+      }
     }else{document.getElementById('login-error').style.display='block';setTimeout(()=>document.getElementById('login-error').style.display='none',2500);}
   }catch(e){toast('Error: '+e.message,'err');}
   finally{txt.textContent='Ingresar →';btn.disabled=false;}
@@ -773,6 +851,10 @@ function admSetSection(sec,btn){admToggleSection(sec,btn);}
 function admSetTab(tabId,btn){
   document.querySelectorAll('.adm-sub-item').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');
   document.querySelectorAll('.adm-panel-new').forEach(p=>p.style.display='none');const panel=document.getElementById(tabId);if(panel)panel.style.display='block';
+  // En desktop: también activar el botón del sidebar correspondiente
+  if(window.innerWidth>640&&!btn){
+    document.querySelectorAll('.adm-sub-item').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+tabId+"'"))b.classList.add('active');});
+  }
   const titles={'tab-ligas':['Ligas','Gestión de ligas'],'tab-equipos':['Equipos','Equipos participantes'],'tab-partidos':['Partidos','Fixture del torneo'],'tab-res-adm':['Resultados','Cargar resultados'],'tab-sanciones-adm':['Sanciones','Registrar sanciones'],'tab-usuarios-adm':['Usuarios','Accesos del sistema'],'tab-temporada-adm':['Temporada','Gestión de temporada']};
   const t=titles[tabId]||[tabId,''];document.getElementById('adm-main-title').textContent=t[0];document.getElementById('adm-main-sub').textContent=t[1];
   if(tabId==='tab-ligas'){populateAdminSelects();renderLigasAdm();}
@@ -1112,6 +1194,42 @@ function splashPDF(tipo){
   const el=document.getElementById('rep-liga-'+suf);if(el)el.value=_splashLigaActual;
   downloadPDF(tipo);
 }
+
+// === ADMIN MOBILE GRID ===
+function admIsGridMode(){return window.innerWidth<=640;}
+
+function admShowGrid(){
+  if(!admIsGridMode())return;
+  // Mostrar grid, ocultar content y back btn
+  const grid=document.getElementById('adm-home-grid');
+  const content=document.getElementById('adm-main-content');
+  const back=document.getElementById('adm-back-btn');
+  const titleBar=document.querySelector('#adm-main > div:first-child');
+  if(grid)grid.style.display='grid';
+  if(content)content.style.display='none';
+  if(back)back.style.display='none';
+  if(titleBar)titleBar.style.display='none';
+  // Limpiar tab activo
+  document.querySelectorAll('.adm-panel-new').forEach(p=>p.style.display='none');
+}
+
+function admGridGo(tabId){
+  if(!admIsGridMode()){admSetTab(tabId,null);return;}
+  // Ocultar grid, mostrar content
+  const grid=document.getElementById('adm-home-grid');
+  const content=document.getElementById('adm-main-content');
+  const back=document.getElementById('adm-back-btn');
+  const titleBar=document.querySelector('#adm-main > div:first-child');
+  if(grid)grid.style.display='none';
+  if(content)content.style.display='block';
+  if(back)back.style.display='flex';
+  if(titleBar)titleBar.style.display='flex';
+  admSetTab(tabId,null);
+}
+
+// Sobrescribir doLogin para mostrar grid en mobile al entrar
+const _origDoLoginGrid = doLogin;
+
 </script>
 </body>
 </html>
