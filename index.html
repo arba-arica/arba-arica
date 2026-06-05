@@ -173,9 +173,10 @@ textarea.f-input{resize:none}
 @media(max-width:640px){
   #admin-panel-full{flex-direction:column!important}
   #adm-sidebar{display:none!important}
-  #adm-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
-  #adm-main-content{padding-bottom:40px!important}
+  #adm-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;height:100%}
+  #adm-main-content{padding-bottom:40px!important;display:none}
   #adm-home-grid{display:grid!important}
+  #adm-main > div:first-child{display:none}
 }
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -185,7 +186,7 @@ textarea.f-input{resize:none}
 }
 
 /* === GRID ADMIN MOBILE ===*/
-#adm-home-grid{display:none;grid-template-columns:1fr 1fr;gap:10px;padding:14px;background:#0a0e1f;overflow-y:auto;flex:1}
+#adm-home-grid{display:none;grid-template-columns:1fr 1fr;gap:10px;padding:14px 14px 80px;background:#0a0e1f;overflow-y:auto;flex:1;min-height:0;align-content:start}
 .adm-grid-card{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px 14px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:flex-start;gap:10px;font-family:inherit;text-align:left;width:100%}
 .adm-grid-card:active{border-color:#60a5fa;background:#1a2333}
 .adm-grid-card-icon{width:38px;height:38px;border-radius:11px;background:rgba(30,58,138,.5);border:1px solid rgba(99,102,241,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -795,12 +796,9 @@ async function doLogin(){
       adminPass=pass;_currentUser=json.usuario;
       document.getElementById('admin-login-screen').style.display='none';
       document.getElementById('admin-panel-full').style.display='flex';
-      // Preparar vistas para mobile
-      if(window.innerWidth<=640){
-        const mc=document.getElementById('adm-main-content');if(mc)mc.style.display='none';
-        const tb=document.querySelector('#adm-main > div:first-child');if(tb)tb.style.display='none';
-        const bb=document.getElementById('adm-back-btn');if(bb)bb.style.display='none';
-      }
+      // En mobile → arrancar siempre en el grid
+      if(window.innerWidth<=640){ admShowGrid(); }
+      else { admSetSection('torneo',document.querySelector('.adm-icon-btn[data-sec="torneo"]')); }
       const n=document.getElementById('adm-user-nombre');if(n)n.textContent=json.usuario.nombre;
       const ta=(D.temporadas||[]).find(t=>t.estado==='activa');
       const tb=document.getElementById('adm-temporada-badge');if(tb&&ta){tb.textContent=ta.nombre;tb.style.display='block';}
@@ -1187,31 +1185,27 @@ function splashPDF(tipo){
 function admIsGridMode(){return window.innerWidth<=640;}
 
 function admShowGrid(){
-  if(!admIsGridMode())return;
-  // Mostrar grid, ocultar content y back btn
-  const grid=document.getElementById('adm-home-grid');
-  const content=document.getElementById('adm-main-content');
-  const back=document.getElementById('adm-back-btn');
-  const titleBar=document.querySelector('#adm-main > div:first-child');
-  if(grid)grid.style.display='grid';
-  if(content)content.style.display='none';
-  if(back)back.style.display='none';
+  const grid    = document.getElementById('adm-home-grid');
+  const content = document.getElementById('adm-main-content');
+  const back    = document.getElementById('adm-back-btn');
+  const titleBar= document.querySelector('#adm-main > div:first-child');
+  if(grid)    { grid.style.display='grid'; grid.style.flex='1'; }
+  if(content) { content.style.display='none'; content.style.flex=''; }
+  if(back)    back.style.display='none';
   if(titleBar)titleBar.style.display='none';
-  // Limpiar tab activo
   document.querySelectorAll('.adm-panel-new').forEach(p=>p.style.display='none');
 }
 
 function admGridGo(tabId){
   if(!admIsGridMode()){admSetTab(tabId,null);return;}
-  // Ocultar grid, mostrar content
-  const grid=document.getElementById('adm-home-grid');
-  const content=document.getElementById('adm-main-content');
-  const back=document.getElementById('adm-back-btn');
-  const titleBar=document.querySelector('#adm-main > div:first-child');
-  if(grid)grid.style.display='none';
-  if(content)content.style.display='block';
-  if(back)back.style.display='flex';
-  if(titleBar)titleBar.style.display='flex';
+  const grid    = document.getElementById('adm-home-grid');
+  const content = document.getElementById('adm-main-content');
+  const back    = document.getElementById('adm-back-btn');
+  const titleBar= document.querySelector('#adm-main > div:first-child');
+  if(grid)    { grid.style.display='none'; grid.style.flex=''; }
+  if(content) { content.style.display='flex'; content.style.flex='1'; content.style.flexDirection='column'; content.style.overflowY='auto'; content.style.minHeight='0'; }
+  if(back)    back.style.display='flex';
+  if(titleBar){ titleBar.style.display='flex'; titleBar.style.flexShrink='0'; }
   admSetTab(tabId,null);
 }
 
