@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>ARBA — Competencias</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+function enterApp(){const s=document.getElementById('splash-screen');s.style.transition='opacity .5s';s.style.opacity='0';setTimeout(()=>s.style.display='none',500);}
+function abrirReglamento(){closeDrawer();window.open('https://lwsyntjhbcdfuhfjdjqf.supabase.co/storage/v1/object/public/documentos/Bases_Torneo_Apertura_ARBA_2026_v3.pdf','_blank');}
+function volverInicio(){document.getElementById('splash-screen').style.display='flex';}
+function forceRefresh(){const i=document.getElementById('refresh-icon');i.style.animation='spin .7s linear infinite';invalidateCache();fetchAllData().then(d=>{Object.assign(D,d);renderAll();if(typeof adminPass!=='undefined'&&adminPass)renderAdmin();i.style.animation='';toast('✓ Datos actualizados','ok');}).catch(()=>{i.style.animation='';toast('Error al actualizar','err');});}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#f1f5f9;--surface:#fff;--card:#fff;--border:#e2e8f0;--border2:#cbd5e1;--primary:#1e3a8a;--primary-h:#1e40af;--primary-light:#eff6ff;--orange:#f97316;--orange-light:#fff7ed;--red:#dc2626;--red-light:#fef2f2;--green:#16a34a;--green-light:#f0fdf4;--text:#1e293b;--muted:#64748b;--muted2:#94a3b8;--r:12px;}
+html,body{background:var(--bg);color:var(--text);font-family:'Archivo',sans-serif;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:0;height:0}
+#app-header,#drawer-overlay,#main-nav,.section,#sec-sanciones,#sec-reportes{display:none!important}
+#admin-btn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.8)}
+#admin-btn svg{width:18px;height:18px}
+#content{padding:16px 16px 90px}
+.section{display:none}
+.section.active{display:block;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.st-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;font-size:12px}
+.st-table th{background:#f8fafc;color:var(--muted2);font-size:10px;font-weight:700;padding:8px 6px;text-align:center;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.st-table th:nth-child(2){text-align:left;padding-left:10px}
+.st-table td{padding:10px 6px;text-align:center;border-bottom:1px solid #f1f5f9;color:var(--muted);font-weight:500}
+.st-table tr:last-child td{border-bottom:none}
+.st-table tr:hover td{background:#fafbff}
+.st-table td:nth-child(2){text-align:left;padding-left:10px;font-weight:700;font-size:13px;color:var(--text)}
+.rk{font-family:'Archivo Black',sans-serif;font-size:14px}
+.rk.g{color:var(--orange)}.rk.s{color:#94a3b8}.rk.b{color:#b45309}
+.pts-cell{font-family:'Archivo Black',sans-serif;font-size:15px;color:var(--primary)}
+.dif-pos{color:var(--green)}.dif-neg{color:var(--red)}
+.match-card{background:#fafbff;border:1px solid var(--border);border-left:3px solid var(--border2);border-radius:var(--r);padding:12px 14px;margin-bottom:8px}
+.match-card.live{border-left-color:var(--red)}.match-card.final{border-left-color:var(--primary)}.match-card.prog{border-left-color:var(--green)}
+.match-status{font-size:10px;font-weight:700;letter-spacing:.8px;padding:2px 8px;border-radius:100px;text-transform:uppercase}
+.status-live{background:var(--red-light);color:var(--red);border:1px solid #fecaca}
+.status-final{background:var(--primary-light);color:var(--primary);border:1px solid #bfdbfe}
+.status-prog{background:var(--green-light);color:var(--green);border:1px solid #bbf7d0}
+.status-cuarto{background:var(--orange-light);color:var(--orange);border:1px solid #fed7aa}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);display:inline-block;margin-right:4px;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.match-body{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px}
+.team-side{display:flex;flex-direction:column;gap:4px}
+.team-side.right{text-align:right;align-items:flex-end}
+.team-color{width:20px;height:3px;border-radius:2px;background:var(--border2)}
+.team-name{font-family:'Archivo Black',sans-serif;font-size:14px;letter-spacing:-.3px;line-height:1.2;color:var(--text)}
+.team-name.winner{color:var(--primary)}
+.score-block{text-align:center}
+.score-nums{font-family:'Archivo Black',sans-serif;font-size:30px;letter-spacing:-2px;line-height:1;display:flex;align-items:center;gap:3px;justify-content:center}
+.score-n{color:var(--text)}.score-n.live{color:var(--red)}.score-n.winner{color:var(--primary)}
+.score-sep{color:var(--muted2);font-size:18px;font-family:'Archivo Black',sans-serif}
+.score-vs{font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:2px}
+.match-footer{margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.match-info{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.match-expand{display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.match-expand.open{display:block}
+.exp-row{display:flex;justify-content:space-between;font-size:12px;padding:2px 0;color:var(--muted)}
+.exp-row span:last-child{color:var(--text);font-weight:600}
+.chevron{transition:transform .25s;color:var(--muted2);cursor:pointer}
+.chevron.open{transform:rotate(180deg)}
+.chevron svg{width:14px;height:14px}
+.yt-link{font-size:10px;font-weight:700;color:var(--red);text-decoration:none;display:flex;align-items:center;gap:3px}
+.reporte-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.pdf-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:100px;background:var(--orange-light);color:var(--orange);border:1px solid #fed7aa;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+.pdf-btn svg{width:13px;height:13px}
+.noticia-modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(15,23,42,.85);display:none;align-items:flex-end;justify-content:center}
+.noticia-modal-overlay.open{display:flex}
+.noticia-modal{background:var(--surface);border-radius:22px 22px 0 0;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.32,1,.4,1);padding-bottom:24px}
+.nm-body{padding:16px 18px}
+.nm-title{font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary);margin-bottom:8px;line-height:1.3}
+.nm-wa{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:13px;border-radius:12px;background:#25D366;color:#fff;font-weight:700;font-size:13px;border:none;cursor:pointer}
+.nm-close{width:100%;padding:12px;background:none;border:none;color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;margin-top:4px}
+.news-like-btn{display:flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);padding:0}
+.news-like-btn.liked{color:var(--red)}
+.news-like-btn svg{width:18px;height:18px}
+/* ADMIN */
+#admin-overlay{position:fixed;inset:0;z-index:200;background:#0a0e1f;display:none}
+#admin-overlay.open{display:flex;flex-direction:column}
+.adm-icon-btn{width:100%;padding:10px 12px;border-radius:8px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.45);transition:all .15s;font-size:13px;font-family:inherit;text-align:left}
+.adm-icon-btn:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.85)}
+.adm-icon-btn.active{background:rgba(30,58,138,.4);color:#93c5fd;font-weight:600}
+.adm-icon-btn svg{width:16px;height:16px;flex-shrink:0}
+.adm-icon-btn .chv{margin-left:auto;width:14px;height:14px;transition:transform .2s;opacity:.4}
+.adm-icon-btn.active .chv{transform:rotate(180deg);opacity:.8}
+.adm-submenu-inner{overflow:hidden;transition:max-height .25s ease;max-height:0}
+.adm-submenu-inner.open{max-height:300px}
+.adm-sub-item{display:flex;align-items:center;padding:7px 12px 7px 38px;border-radius:6px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.35);margin-bottom:1px;border:none;background:transparent;width:100%;text-align:left;transition:all .15s}
+.adm-sub-item:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.7)}
+.adm-sub-item.active{background:rgba(30,58,138,.35);color:#93c5fd;font-weight:600}
+.adm-panel-new{background:#0a0e1f}
+.adm-panel-new .f-input,.adm-panel-new .f-select{background:#111827;border-color:rgba(255,255,255,.1);color:#fff}
+.adm-panel-new .f-input::placeholder{color:rgba(255,255,255,.25)}
+.adm-panel-new .f-input:focus,.adm-panel-new .f-select:focus{border-color:#3b82f6}
+.adm-panel-new .f-label{color:rgba(255,255,255,.45)}
+.adm-panel-new .f-select option{background:#111827;color:#fff}
+.adm-panel-new .adm-sec-label{color:rgba(255,255,255,.3);border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:6px}
+.adm-panel-new .adm-list-item{background:#111827;border-color:rgba(255,255,255,.08)}
+.adm-panel-new .adm-list-name{color:#fff}
+.adm-panel-new .adm-list-sub{color:rgba(255,255,255,.4)}
+.adm-form-card{background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin-bottom:16px}
+.adm-form-title{font-family:'Archivo Black',sans-serif;font-size:14px;color:#fff;margin-bottom:14px}
+.adm-btn-primary{width:100%;padding:12px;border-radius:10px;background:#1e3a8a;color:#fff;font-family:'Archivo',sans-serif;font-weight:700;font-size:13px;cursor:pointer;border:none;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.adm-btn-primary:hover{background:#1d4ed8}
+.adm-btn-secondary{padding:8px 14px;border-radius:8px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);font-family:'Archivo',sans-serif;font-weight:700;font-size:12px;cursor:pointer;border:1px solid rgba(255,255,255,.1)}
+.adm-btn-danger{padding:6px 10px;border-radius:7px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#fca5a5;font-size:11px;font-weight:700;cursor:pointer}
+.adm-list-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:10px;margin-bottom:6px}
+.adm-list-name{font-size:13px;font-weight:700;color:#fff}
+.adm-list-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;display:flex;align-items:center;gap:5px}
+.score-in{width:54px;padding:9px 4px;text-align:center;background:#1e2332;border:1.5px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-family:'Archivo Black',sans-serif;font-size:22px;outline:none;-moz-appearance:textfield}
+.score-in:focus{border-color:#3b82f6}
+.score-in::-webkit-inner-spin-button,.score-in::-webkit-outer-spin-button{-webkit-appearance:none}
+#modal-overlay{position:fixed;inset:0;z-index:300;background:rgba(15,23,42,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
+#modal-overlay.open{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;padding:24px}
+.modal-title{font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:-.5px;margin-bottom:18px;color:var(--primary)}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.confirm-v3-overlay{position:fixed;inset:0;z-index:600;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+.confirm-v3-overlay.open{display:flex}
+.confirm-v3-box{background:var(--surface);border-radius:22px 22px 0 0;width:100%;max-width:640px;padding:24px 20px 32px;animation:slideUp .3s cubic-bezier(.32,1,.4,1)}
+.confirm-v3-icon{font-size:36px;text-align:center;margin-bottom:10px}
+.confirm-v3-title{font-family:'Archivo Black',sans-serif;font-size:18px;text-align:center;margin-bottom:6px}
+.confirm-v3-desc{font-size:13px;color:var(--muted);text-align:center;line-height:1.5;margin-bottom:20px}
+.confirm-v3-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.conf-v3-cancel{padding:13px;border-radius:10px;background:var(--bg);color:var(--muted);border:1.5px solid var(--border);font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;cursor:pointer}
+.conf-v3-ok{padding:13px;border-radius:10px;background:var(--primary);color:#fff;border:none;font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.conf-v3-ok.danger{background:var(--red)}.conf-v3-ok.ok-green{background:var(--green)}
+.conf-v3-ok:disabled{opacity:.6;cursor:not-allowed}
+.f-label{font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px;display:block}
+.f-input,.f-select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:11px 14px;font-family:'Archivo',sans-serif;font-size:15px;outline:none;transition:border-color .2s;margin-bottom:14px;-webkit-appearance:none}
+.f-input:focus,.f-select:focus{border-color:var(--primary)}
+.f-select option{background:var(--surface)}
+textarea.f-input{resize:none}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.login-error{font-size:13px;color:var(--red);margin-bottom:12px;display:none;font-weight:600}
+.btn-primary{width:100%;padding:13px;border-radius:10px;background:var(--primary);color:#fff;font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-ghost{width:100%;padding:12px;border-radius:10px;background:transparent;color:var(--muted);border:1.5px solid var(--border);font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;cursor:pointer}
+.adm-sec-label{font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.6px;text-transform:uppercase;margin:16px 0 10px}
+.del-btn{padding:5px 10px;background:var(--red-light);border:1px solid #fecaca;border-radius:7px;color:var(--red);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0}
+.edit-btn{padding:5px 10px;background:var(--primary-light);border:1px solid #bfdbfe;border-radius:7px;color:var(--primary);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;margin-right:6px}
+.usr-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+.usr-row:last-child{border-bottom:none}
+.usr-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;font-size:11px;flex-shrink:0}
+.usr-nombre{font-size:13px;font-weight:700}
+.usr-meta{font-size:11px;color:var(--muted);margin-top:1px}
+.usr-rol{font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;white-space:nowrap}
+.rol-admin{background:var(--primary-light);color:var(--primary);border:1px solid #bfdbfe}
+.rol-delegado{background:#fdf4ff;color:#9333ea;border:1px solid #e9d5ff}
+.btn-edit-sm{padding:5px 8px;border-radius:7px;background:var(--bg);color:var(--muted);border:1px solid var(--border);font-size:11px;font-weight:700;cursor:pointer}
+.btn-del-sm{padding:5px 8px;border-radius:7px;background:var(--red-light);color:var(--red);border:1px solid #fecaca;font-size:11px;font-weight:700;cursor:pointer}
+#drawer-overlay{position:fixed;inset:0;z-index:150;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:flex-start}
+#drawer-overlay.open{display:flex}
+#drawer{background:var(--surface);width:72vw;max-width:280px;height:100%;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.12);animation:slideRight .25s cubic-bezier(.32,1,.4,1)}
+@keyframes slideRight{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+.drawer-top{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.drawer-nav{flex:1;padding:12px 0}
+.drawer-section{font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;padding:12px 20px 4px}
+.drawer-item{display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;font-size:14px;font-weight:700;color:var(--muted);border:none;background:none;width:100%;text-align:left}
+.drawer-item:hover,.drawer-item.active{color:var(--primary);background:var(--primary-light)}
+.drawer-item svg{width:20px;height:20px;flex-shrink:0}
+#toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:#fff;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:700;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.ok{background:var(--green)}#toast.err{background:var(--red)}
+/* === ADMIN MOBILE — grid de secciones === */
+@media(max-width:640px){
+  #admin-panel-full{flex-direction:column!important}
+  #adm-sidebar{display:none!important}
+  #adm-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+  /* Por defecto en mobile: mostrar grid, ocultar panel y titlebar */
+  #adm-main > .adm-titlebar{display:none}
+  #adm-back-btn{display:none}
+  #adm-main-content{display:none!important;padding-bottom:80px!important}
+  #adm-home-grid{display:none}
+  /* Cuando está en modo panel: ocultar grid, mostrar panel */
+  #adm-main.panel-mode > .adm-titlebar{display:flex!important;flex-shrink:0}
+  #adm-main.panel-mode #adm-back-btn{display:flex!important;flex-shrink:0}
+  #adm-main.panel-mode #adm-main-content{display:block!important;flex:1;overflow-y:auto;min-height:0}
+  #adm-main.panel-mode #adm-home-grid{display:none!important}
+  /* Cuando está en modo grid: mostrar grid, ocultar panel */
+  #adm-main.grid-mode #adm-home-grid{display:grid!important;flex:1;overflow-y:auto;min-height:0}
+  #adm-main.grid-mode #adm-main-content{display:none!important}
+  #adm-main.grid-mode > .adm-titlebar{display:none!important}
+  #adm-main.grid-mode #adm-back-btn{display:none!important}
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(min-width:640px){
+  .confirm-v3-overlay{align-items:center;justify-content:center;padding:20px}
+  .confirm-v3-box{border-radius:20px;max-width:480px}
+}
+
+/* === GRID ADMIN MOBILE ===*/
+#adm-home-grid{display:none;grid-template-columns:1fr 1fr;gap:10px;padding:14px 14px 80px;background:#0a0e1f;overflow-y:auto;flex:1;min-height:0;align-content:start}
+.adm-grid-card{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px 14px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:flex-start;gap:10px;font-family:inherit;text-align:left;width:100%}
+.adm-grid-card:active{border-color:#60a5fa;background:#1a2333}
+.adm-grid-card-icon{width:38px;height:38px;border-radius:11px;background:rgba(30,58,138,.5);border:1px solid rgba(99,102,241,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.adm-grid-card-icon svg{width:18px;height:18px;stroke:#93c5fd}
+.adm-grid-card-title{font-family:'Archivo Black',sans-serif;font-size:14px;color:#fff;letter-spacing:-.3px;line-height:1.2}
+.adm-grid-card-sub{font-size:11px;color:rgba(255,255,255,.35);line-height:1.3;margin-top:-4px}
+/* Botón volver en mobile */
+#adm-back-btn{display:none;align-items:center;gap:8px;padding:10px 16px;background:#111827;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer;border:none;width:100%;text-align:left;color:rgba(255,255,255,.6);font-size:13px;font-weight:700;font-family:inherit;flex-shrink:0}
+#adm-back-btn svg{width:16px;height:16px;color:#60a5fa}
+@media(min-width:641px){
+  #adm-home-grid{display:none!important}
+  #adm-back-btn{display:none!important}
+  #adm-sidebar{display:flex!important}
+}
+</style>
+</head>
+<body>
+<!-- SPLASH -->
+<div id="splash-screen" style="position:fixed;inset:0;z-index:999;background:#0a0e1f;display:flex;flex-direction:column;overflow-y:auto">
+  <div style="background:#1e3a8a;padding:28px 18px 22px;text-align:center;flex-shrink:0">
+    <div style="font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:3px;color:#fff">BASQUET XV REGIÓN</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:2px;margin-top:2px">ARICA · CHILE</div>
+    <div style="width:100%;height:1px;background:rgba(255,255,255,.1);margin:14px 0 12px"></div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#f97316;margin-bottom:4px">TEMPORADA 2026</div>
+    <div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#fff;letter-spacing:1px;margin-bottom:18px">TORNEO APERTURA</div>
+    <div style="text-align:left;margin-bottom:6px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin-bottom:10px">SELECCIONA UNA LIGA</div>
+      <div style="grid-column:1/-1;margin-bottom:4px">
+        <button onclick="selectSplashLiga('TODAS')" id="splbtn-TODAS" style="width:100%;background:rgba(249,115,22,.12);border:1.5px solid rgba(249,115,22,.3);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:12px;font-weight:700;color:#f97316">📋 Ver toda la programación</div>
+          <div style="font-size:10px;color:rgba(249,115,22,.6)">Todas las ligas</div>
+        </button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px" id="splash-ligas-grid">
+        <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px"><div style="font-size:11px;color:rgba(255,255,255,.4)">Cargando ligas...</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:14px 16px 40px;flex:1" id="splash-content">
+    <div style="text-align:center;padding:40px 0"><div style="font-size:13px;color:rgba(255,255,255,.3)">Selecciona una liga para ver el contenido</div></div>
+  </div>
+</div>
+
+<header id="app-header" style="background:var(--primary);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100">
+  <button id="hamburger-btn" onclick="openDrawer()" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.8)">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);font-family:'Archivo Black',sans-serif;font-size:13px;letter-spacing:1.5px;color:#fff">BASQUET XV REGIÓN</div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button onclick="forceRefresh()" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.8)">
+      <svg id="refresh-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </button>
+    <button id="admin-btn"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 20v-2a6 6 0 0112 0v2"/></svg></button>
+  </div>
+</header>
+
+<div id="drawer-overlay" onclick="closeDrawer()">
+  <div id="drawer" onclick="event.stopPropagation()">
+    <div class="drawer-top">
+      <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary)">ARBA</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);margin-top:1px">Arica · Temporada 2026</div>
+    </div>
+    <div class="drawer-nav">
+      <div class="drawer-section">Inicio</div>
+      <button class="drawer-item" onclick="volverInicio();closeDrawer()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Volver al inicio
+      </button>
+      <div class="drawer-section">Documentos</div>
+      <button class="drawer-item" onclick="abrirReglamento()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Reglamento Torneo
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="content">
+  <div id="sec-sanciones" class="section">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div style="font-family:'Archivo Black',sans-serif;font-size:22px;letter-spacing:-.5px">Sanciones<span style="color:var(--orange)">.</span></div></div>
+    <div id="sanciones-list"></div>
+  </div>
+  <div id="sec-reportes" class="section">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div style="font-family:'Archivo Black',sans-serif;font-size:22px;letter-spacing:-.5px">Reportes<span style="color:var(--orange)">.</span></div></div>
+    <div class="reporte-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div><div style="font-family:'Archivo Black',sans-serif;font-size:15px">📅 Fixture</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Partidos por disputar</div></div>
+        <button class="pdf-btn" onclick="downloadPDF('fixture')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>
+      </div>
+      <label class="f-label">Liga</label>
+      <select class="f-select" id="rep-liga-fixture" style="margin-bottom:8px;font-size:13px;padding:8px 10px" onchange="updateRepEquipos('fixture')"></select>
+      <label class="f-label">Equipo</label>
+      <select class="f-select" id="rep-eq-fixture" style="margin-bottom:0;font-size:13px;padding:8px 10px"></select>
+    </div>
+    <div class="reporte-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div><div style="font-family:'Archivo Black',sans-serif;font-size:15px">🏆 Resultados</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Partidos finalizados</div></div>
+        <button class="pdf-btn" onclick="downloadPDF('resultados')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>
+      </div>
+      <label class="f-label">Liga</label>
+      <select class="f-select" id="rep-liga-res" style="margin-bottom:8px;font-size:13px;padding:8px 10px" onchange="updateRepEquipos('res')"></select>
+      <label class="f-label">Equipo</label>
+      <select class="f-select" id="rep-eq-res" style="margin-bottom:0;font-size:13px;padding:8px 10px"></select>
+    </div>
+    <div class="reporte-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div><div style="font-family:'Archivo Black',sans-serif;font-size:15px">📊 Posiciones</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Tabla de posiciones</div></div>
+        <button class="pdf-btn" onclick="downloadPDF('puntaje')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>
+      </div>
+      <label class="f-label">Liga</label>
+      <select class="f-select" id="rep-liga-pts" style="margin-bottom:0;font-size:13px;padding:8px 10px"></select>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOTICIA -->
+<div class="noticia-modal-overlay" id="noticia-modal-overlay">
+  <div class="noticia-modal">
+    <div style="width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,var(--primary),#1e40af);display:flex;align-items:center;justify-content:center;font-size:56px" id="nm-img"><span id="nm-emoji">🏀</span></div>
+    <div class="nm-body">
+      <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:12px">
+        <button class="news-like-btn" id="nm-like-btn" onclick="toggleLikeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="nm-likes">0</span>
+        </button>
+      </div>
+      <div style="font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px" id="nm-date"></div>
+      <div class="nm-title" id="nm-title"></div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6" id="nm-desc"></div>
+      <button class="nm-close" onclick="closeNoticiaModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM V3 -->
+<div class="confirm-v3-overlay" id="confirm-v3-overlay">
+  <div class="confirm-v3-box">
+    <div class="confirm-v3-icon" id="cv3-icon">⚠️</div>
+    <div class="confirm-v3-title" id="cv3-title">¿Confirmar acción?</div>
+    <div class="confirm-v3-desc" id="cv3-desc"></div>
+    <div class="confirm-v3-btns">
+      <button class="conf-v3-cancel" onclick="closeConfirmV3()">Cancelar</button>
+      <button class="conf-v3-ok" id="cv3-ok" onclick="executeConfirmV3()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<nav id="main-nav" style="display:flex;justify-content:center;position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--surface);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom)">
+  <button style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 20px 7px;cursor:pointer;color:var(--muted2);border:none;background:none;font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase" onclick="volverInicio()">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio
+  </button>
+  <button style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 20px 7px;cursor:pointer;color:var(--muted2);border:none;background:none;font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase" onclick="abrirReglamento()">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Reglamento
+  </button>
+</nav>
+<!-- ADMIN PANEL -->
+<div id="admin-overlay">
+  <div id="admin-login-screen" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">
+    <div style="width:100%;max-width:360px;margin:20px;padding:36px 28px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:20px">
+      <div style="text-align:center;margin-bottom:32px">
+        <div style="font-family:'Archivo Black',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.4);margin-bottom:8px">BASQUET XV REGIÓN</div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:22px;letter-spacing:2px;color:#fff">Panel Admin</div>
+        <div style="width:32px;height:2px;background:#f97316;border-radius:1px;margin:10px auto 0"></div>
+      </div>
+      <label class="f-label" style="color:rgba(255,255,255,.4)">Email</label>
+      <input class="f-input" type="email" id="admin-email" placeholder="correo@ejemplo.com" style="background:#1e2332;border-color:rgba(255,255,255,.12);color:#fff">
+      <label class="f-label" style="color:rgba(255,255,255,.4)">Contraseña</label>
+      <input class="f-input" type="password" id="admin-pass" placeholder="••••••••" style="background:#1e2332;border-color:rgba(255,255,255,.12);color:#fff">
+      <div class="login-error" id="login-error">Email o contraseña incorrectos</div>
+      <button id="do-login" style="width:100%;padding:13px;border-radius:10px;background:#1e3a8a;color:#fff;font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;cursor:pointer;border:none;margin-top:4px"><span id="login-btn-txt">Ingresar →</span></button>
+      <button onclick="closeAdmin()" style="width:100%;padding:12px;border-radius:10px;background:transparent;color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.1);font-family:'Archivo',sans-serif;font-weight:600;font-size:13px;cursor:pointer;margin-top:8px">Cancelar</button>
+    </div>
+  </div>
+  <div id="admin-panel-full" style="display:none;width:100%;height:100%;flex-direction:column">
+    <div style="background:#0f172a;border-bottom:1px solid rgba(255,255,255,.08);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:2px;color:#fff">ARBA</div>
+        <div id="adm-temporada-badge" style="font-size:10px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.08);padding:3px 10px;border-radius:100px;display:none"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="forceRefresh()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;cursor:pointer;padding:6px;display:flex">
+          <svg id="refresh-icon-adm" width="15" height="15" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:4px 10px">
+          <svg width="12" height="12" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <span id="adm-user-nombre" style="font-size:12px;color:rgba(255,255,255,.6)"></span>
+        </div>
+        <button onclick="doLogout()" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;cursor:pointer;padding:6px 10px;font-size:11px;font-weight:700;color:#fca5a5;font-family:inherit">Salir</button>
+      </div>
+    </div>
+    <div style="display:flex;flex:1;overflow:hidden;min-height:0">
+      <div id="adm-sidebar" style="width:200px;background:#0f172a;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;padding:8px;flex-shrink:0;overflow-y:auto">
+        <button class="adm-icon-btn active" data-sec="torneo" onclick="admToggleSection('torneo',this)">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="2"/><path d="M12 10v4M8 14h8M6 20h12"/></svg>
+          Torneo<svg class="chv" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="adm-submenu-inner open" id="sub-torneo">
+          <button class="adm-sub-item active" onclick="admSetTab('tab-ligas',this)">Ligas</button>
+          <button class="adm-sub-item" onclick="admSetTab('tab-equipos',this)">Equipos</button>
+          <button class="adm-sub-item" onclick="admSetTab('tab-partidos',this)">Partidos</button>
+          <button class="adm-sub-item" onclick="admSetTab('tab-res-adm',this)">Resultados</button>
+        </div>
+        <button class="adm-icon-btn" data-sec="sanciones" onclick="admToggleSection('sanciones',this)">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+          Sanciones<svg class="chv" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="adm-submenu-inner" id="sub-sanciones">
+          <button class="adm-sub-item" onclick="admSetTab('tab-sanciones-adm',this)">Registrar</button>
+        </div>
+        <button class="adm-icon-btn" data-sec="reportes" onclick="admToggleSection('reportes',this)">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Reportes<svg class="chv" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="adm-submenu-inner" id="sub-reportes">
+          <button class="adm-sub-item" onclick="admSetTab('tab-temporada-adm',this)">Temporada</button>
+        </div>
+        <button class="adm-icon-btn" data-sec="usuarios" onclick="admToggleSection('usuarios',this)">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Usuarios<svg class="chv" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="adm-submenu-inner" id="sub-usuarios">
+          <button class="adm-sub-item" onclick="admSetTab('tab-usuarios-adm',this)">Accesos</button>
+        </div>
+      </div>
+      <div id="adm-main" style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#0a0e1f">
+        <div class="adm-titlebar" style="padding:12px 18px;background:#111827;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <div><div id="adm-main-title" style="font-family:'Archivo Black',sans-serif;font-size:15px;color:#fff"></div><div id="adm-main-sub" style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px"></div></div>
+        </div>
+        <!-- GRID MOBILE - se muestra en lugar del sidebar en mobile -->
+        <button id="adm-back-btn" onclick="admShowGrid()">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          Volver al menú
+        </button>
+        <div id="adm-home-grid">
+          <button class="adm-grid-card" onclick="admGridGo('tab-ligas')">
+            <div class="adm-grid-card-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg></div>
+            <div class="adm-grid-card-title">Ligas</div>
+            <div class="adm-grid-card-sub">Gestión de ligas</div>
+          </button>
+          <button class="adm-grid-card" onclick="admGridGo('tab-equipos')">
+            <div class="adm-grid-card-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="adm-grid-card-title">Equipos</div>
+            <div class="adm-grid-card-sub">Equipos participantes</div>
+          </button>
+          <button class="adm-grid-card" onclick="admGridGo('tab-partidos')">
+            <div class="adm-grid-card-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div class="adm-grid-card-title">Partidos</div>
+            <div class="adm-grid-card-sub">Fixture y carga masiva</div>
+          </button>
+          <button class="adm-grid-card" onclick="admGridGo('tab-res-adm')">
+            <div class="adm-grid-card-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+            <div class="adm-grid-card-title">Resultados</div>
+            <div class="adm-grid-card-sub">Cargar puntajes</div>
+          </button>
+          <button class="adm-grid-card" onclick="admGridGo('tab-sanciones-adm')">
+            <div class="adm-grid-card-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div class="adm-grid-card-title">Sanciones</div>
+            <div class="adm-grid-card-sub">Registrar y gestionar</div>
+          </button>
+          <button class="adm-grid-card" onclick="admGridGo('tab-temporada-adm')">
+            <div class="adm-grid-card-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+            <div class="adm-grid-card-title">Temporada</div>
+            <div class="adm-grid-card-sub">Reporte y cierre</div>
+          </button>
+          <button class="adm-grid-card" onclick="admGridGo('tab-usuarios-adm')">
+            <div class="adm-grid-card-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+            <div class="adm-grid-card-title">Usuarios</div>
+            <div class="adm-grid-card-sub">Delegados y accesos</div>
+          </button>
+        </div>
+        <div id="adm-main-content" style="padding:16px 18px 80px">
+
+          <!-- TAB LIGAS -->
+          <div id="tab-ligas" class="adm-panel-new" style="display:block">
+            <div class="adm-form-card">
+              <div class="adm-form-title">Nueva liga</div>
+              <label class="f-label">Nombre de fantasía</label>
+              <input class="f-input" id="lg-nombre" type="text" placeholder="Ej: Apertura Varones 2026">
+              <div class="f-row">
+                <div><label class="f-label">Categoría</label><select class="f-select" id="lg-cat"><option>Varones</option><option>Damas</option><option>Mixto</option></select></div>
+                <div><label class="f-label">Estado</label><select class="f-select" id="lg-estado"><option>Activo</option><option>Finalizado</option></select></div>
+              </div>
+              <button class="adm-btn-primary" onclick="createLiga()">+ Crear liga</button>
+            </div>
+            <div class="adm-sec-label">Ligas registradas</div>
+            <div id="ligas-adm-list"></div>
+          </div>
+
+          <!-- TAB EQUIPOS -->
+          <div id="tab-equipos" class="adm-panel-new" style="display:none">
+            <div class="adm-form-card">
+              <div class="adm-form-title">Nuevo equipo</div>
+              <label class="f-label">Liga</label>
+              <select class="f-select" id="eq-liga" onchange="renderEquiposAdm()"></select>
+              <label class="f-label">Nombre del equipo</label>
+              <input class="f-input" id="eq-nombre" type="text" placeholder="Nombre del club">
+              <div class="f-row">
+                <div><label class="f-label">Color local</label><input class="f-input" id="eq-cl" type="text" placeholder="Azul"></div>
+                <div><label class="f-label">Color visita</label><input class="f-input" id="eq-cv" type="text" placeholder="Blanco"></div>
+              </div>
+              <button class="adm-btn-primary" onclick="createEquipo()">+ Crear equipo</button>
+            </div>
+            <div class="adm-sec-label">Equipos registrados</div>
+            <div id="equipos-adm-list"></div>
+          </div>
+
+          <!-- TAB PARTIDOS -->
+          <div id="tab-partidos" class="adm-panel-new" style="display:none">
+            <div class="adm-form-card">
+              <div class="adm-form-title">Programar partido</div>
+              <div class="f-row">
+                <div><label class="f-label">Liga</label><select class="f-select" id="pt-liga" onchange="populateEqForLiga(this.value,'pt-local','pt-visita')"></select></div>
+                <div><label class="f-label">N° Partido</label><input class="f-input" id="pt-jornada" type="number" min="1" placeholder="1"></div>
+              </div>
+              <div class="f-row">
+                <div><label class="f-label">Fecha</label><input class="f-input" id="pt-fecha" type="date"></div>
+                <div><label class="f-label">Hora</label><input class="f-input" id="pt-hora" type="time"></div>
+              </div>
+              <label class="f-label">Cancha / Recinto</label>
+              <input class="f-input" id="pt-cancha" type="text" placeholder="Ej: Gimnasio Municipal">
+              <label class="f-label">Fase</label>
+              <select class="f-select" id="pt-fase"><option>Regular</option><option>Grupo A</option><option>Grupo B</option><option>Semifinales</option><option>Tercer Lugar</option><option>Final</option></select>
+              <div class="f-row">
+                <div><label class="f-label">Equipo local</label><select class="f-select" id="pt-local"></select></div>
+                <div><label class="f-label">Equipo visita</label><select class="f-select" id="pt-visita"></select></div>
+              </div>
+              <button class="adm-btn-primary" onclick="createPartido()">+ Programar partido</button>
+            </div>
+            <!-- CAMBIO 4: CARGA MASIVA XLSX -->
+            <div style="background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;margin-bottom:16px">
+              <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">📂 Carga masiva</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:12px">Columnas: <span style="color:#93c5fd;font-family:monospace">Partido · Liga · Fecha · Hora · Cancha · Fase · Local · Visita</span></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <label style="display:inline-flex;align-items:center;gap:6px;padding:9px 14px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);border-radius:9px;cursor:pointer;font-size:12px;font-weight:700;color:#86efac">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Importar XLSX
+                  <input type="file" accept=".xlsx,.xls" style="display:none" onchange="importPartidosXLSX(this)">
+                </label>
+                <button onclick="exportPartidosXLSX()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 14px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);border-radius:9px;cursor:pointer;font-size:12px;font-weight:700;color:#93c5fd">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Exportar fixture
+                </button>
+                <button onclick="descargarPlantillaXLSX()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 14px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.2);border-radius:9px;cursor:pointer;font-size:12px;font-weight:700;color:#f97316">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Descargar plantilla
+                </button>
+              </div>
+              <div id="import-log" style="display:none;margin-top:12px;padding:10px 12px;background:rgba(0,0,0,.3);border-radius:8px;font-size:11px;line-height:1.8;max-height:180px;overflow-y:auto"></div>
+            </div>
+            <div class="adm-sec-label">Partidos programados</div>
+            <div id="partidos-adm-list"></div>
+          </div>
+
+          <!-- TAB RESULTADOS — CAMBIO 2: solo puntaje final, sin cuartos -->
+          <div id="tab-res-adm" class="adm-panel-new" style="display:none">
+            <div class="adm-sec-label" style="margin-top:0">Cargar resultados</div>
+            <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:#93c5fd;margin-bottom:14px">
+              💡 Ingresa el puntaje final y selecciona <strong>Finalizado</strong> para confirmar el resultado.
+            </div>
+            <div id="res-adm-list"></div>
+          </div>
+
+          <!-- TAB SANCIONES -->
+          <div id="tab-sanciones-adm" class="adm-panel-new" style="display:none">
+            <div class="adm-form-card">
+              <div class="adm-form-title">Registrar sanción</div>
+              <div class="f-row">
+                <div><label class="f-label">Liga</label><select class="f-select" id="sa-liga" onchange="populateEqForLiga(this.value,'sa-equipo')"></select></div>
+                <div><label class="f-label">Equipo</label><select class="f-select" id="sa-equipo"></select></div>
+              </div>
+              <label class="f-label">Jugador</label>
+              <input class="f-input" id="sa-jugador" type="text" placeholder="Nombre completo del jugador">
+              <label class="f-label">Tipo de falta</label>
+              <input class="f-input" id="sa-tipo" type="text" placeholder="Ej: Agresión verbal, conducta antideportiva...">
+              <label class="f-label">Sanción aplicada</label>
+              <input class="f-input" id="sa-sancion" type="text" placeholder="Ej: 2 partidos suspendido">
+              <label class="f-label">Término / Condición</label>
+              <input class="f-input" id="sa-termino" type="text" placeholder="Fecha o condición de cumplimiento">
+              <button class="adm-btn-primary" onclick="createSancion()">⚠ Registrar sanción</button>
+            </div>
+            <div class="adm-sec-label">Sanciones registradas</div>
+            <div id="sanciones-adm-list"></div>
+          </div>
+
+          <!-- TAB USUARIOS -->
+          <div id="tab-usuarios-adm" class="adm-panel-new" style="display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div class="adm-form-title" style="margin:0">Accesos del sistema</div>
+              <button class="adm-btn-secondary" onclick="openCrearUsuario()">+ Nuevo usuario</button>
+            </div>
+            <div id="usuarios-list"></div>
+          </div>
+
+          <!-- TAB TEMPORADA -->
+          <div id="tab-temporada-adm" class="adm-panel-new" style="display:none">
+            <div id="temp-activa-box"></div>
+            <div id="temp-nueva-box" style="display:none">
+              <div class="adm-form-card">
+                <div class="adm-form-title">Crear nueva temporada</div>
+                <label class="f-label">Nombre</label>
+                <input class="f-input" id="temp-nuevo-nombre" type="text" placeholder="Ej: Torneo Clausura ARBA 2026">
+                <label class="f-label">Fecha de inicio</label>
+                <input class="f-input" id="temp-nuevo-inicio" type="date">
+                <button class="adm-btn-primary" onclick="crearTemporada()">🆕 Crear temporada</button>
+              </div>
+            </div>
+            <div style="margin-top:16px"><div class="adm-sec-label">Historial</div><div id="temp-historial"></div></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Editar</div>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="modal-save">Guardar</button>
+      <button class="btn-ghost" id="modal-cancel" style="padding:12px;flex:1">Cancelar</button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+<script>
+const SUPABASE_URL='https://lwsyntjhbcdfuhfjdjqf.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3c3ludGpoYmNkZnVoZmpkanFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMTE3NjYsImV4cCI6MjA5MzY4Nzc2Nn0.32ihjXlVZbepHLac7J83Gaiawqg7as8DAyG224i2U2Y';
+const NETLIFY_FN='/.netlify/functions/admin';
+const CACHE_TTL=2*60*1000;
+const _supa=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+var D={ligas:[],equipos:[],partidos:[],sanciones:[],noticias:[],personas:[],stats:[],temporadas:[]};
+var adminPass='',_currentUser=null,confirmCb=null,modalSaveCb=null;
+var _cache={data:null,ts:0};
+
+async function fetchAllData(){
+  if(_cache.data&&Date.now()-_cache.ts<CACHE_TTL)return _cache.data;
+  const[rL,rE,rP,rS,rN,rPer,rSt,rTemp]=await Promise.all([
+    _supa.from('ligas').select('*').order('created_at'),
+    _supa.from('equipos').select('*').order('nombre_equipo'),
+    _supa.from('encuentros').select('*').order('partidos'),
+    _supa.from('sanciones').select('*').order('created_at',{ascending:false}),
+    _supa.from('noticias').select('*').order('fecha',{ascending:false}),
+    _supa.from('personas').select('*').order('nombre_completo'),
+    _supa.from('stats_carrera').select('*'),
+    _supa.from('temporadas').select('*').order('created_at'),
+  ]);
+  const norm={
+    ligas:(rL.data||[]).map(r=>({ID:r.id,NombreDeporte:r.nombre_deporte,Categoria:r.categoria,NombreFantasia:r.nombre_fantasia,PuntosVictoria:r.puntos_victoria,PuntosEmpate:r.puntos_empate,PuntosDerrota:r.puntos_derrota,EstadoTorneo:r.estado_torneo,id_temporada:r.id_temporada})),
+    equipos:(rE.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,NombreEquipo:r.nombre_equipo,ColorUniformeLocal:r.color_uniforme_local,ColorUniformeVisita:r.color_uniforme_visita})),
+    partidos:(rP.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,Partidos:r.partidos,Fecha:r.fecha,Hora:r.hora,Cancha:r.cancha,Fase:r.fase,ID_EquipoLocal:r.id_equipo_local,GolesLocal:r.goles_local!==null?r.goles_local:'',GolesVisita:r.goles_visita!==null?r.goles_visita:'',ID_EquipoVisita:r.id_equipo_visita,Estado:r.estado,YoutubeURL:r.youtube_url})),
+    sanciones:(rS.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,ID_Equipo:r.id_equipo,NombreJugador:r.nombre_jugador,TipoFalta:r.tipo_falta,Sancion:r.sancion,TerminoSancion:r.termino_sancion})),
+    noticias:(rN.data||[]).map(r=>({ID:r.id,Fecha:r.fecha,Titulo:r.titulo,Descripcion:r.descripcion,ImagenURL:r.imagen_url,foto_url:r.foto_url,Enlace:r.enlace,me_gusta:r.me_gusta||0})),
+    personas:(rPer.data||[]),stats:(rSt.data||[]),temporadas:(rTemp.data||[]),
+  };
+  _cache={data:norm,ts:Date.now()};
+  return norm;
+}
+function invalidateCache(){_cache={data:null,ts:0};}
+async function callGAS(action,data){
+  const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,adminPassword:adminPass,...data})});
+  const text=await res.text();
+  try{return JSON.parse(text);}catch(e){throw new Error('Respuesta inválida');}
+}
+document.addEventListener('DOMContentLoaded',function(){setupAdmin();loadData();});
+async function loadData(){
+  try{D=await fetchAllData();renderAll();if(adminPass)renderAdmin();initLanding();}
+  catch(e){toast('Error al cargar: '+e.message,'err');}
+}
+async function refreshData(){invalidateCache();await loadData();}
+
+function ligaObj(id){return D.ligas.find(l=>l.ID===id);}
+function teamName(id){const t=D.equipos.find(e=>e.ID===id);return t?t.NombreEquipo:'?';}
+function teamColor(id,tipo){const t=D.equipos.find(e=>e.ID===id);if(!t)return'#cbd5e1';return tipo==='local'?(t.ColorUniformeLocal||'#cbd5e1'):(t.ColorUniformeVisita||'#cbd5e1');}
+function cleanFecha(raw){if(!raw)return'';const s=String(raw).trim();const dmy=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);if(dmy)return dmy[3]+'-'+dmy[2].padStart(2,'0')+'-'+dmy[1].padStart(2,'0');const ymd=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(ymd)return ymd[1]+'-'+ymd[2]+'-'+ymd[3];return s.split('T')[0];}
+function fmtDate(raw){if(!raw)return'';const c=cleanFecha(raw);if(!c)return'';const d=new Date(c+'T12:00:00');if(isNaN(d))return raw;return d.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+function fmtTime(t){if(!t)return'';const s=String(t).trim();if(s.includes('T')||s.match(/^\d{4}-/))return'';const m=s.match(/(\d{1,2}):(\d{2})/);return m?m[1].padStart(2,'0')+':'+m[2]+' hrs':s;}
+function toast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='show '+(type||'');el.id='toast';setTimeout(()=>{el.className='';el.id='toast';},2800);}
+function openDrawer(){document.getElementById('drawer-overlay').classList.add('open');}
+function closeDrawer(){document.getElementById('drawer-overlay').classList.remove('open');}
+function showSectionDrawer(secId){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById(secId).classList.add('active');closeDrawer();}
+function closeNoticiaModal(){document.getElementById('noticia-modal-overlay').classList.remove('open');}
+function toggleLikeModal(){}
+
+function calcStandings(ligaId){
+  const liga=ligaObj(ligaId);if(!liga)return[];
+  const equipos=D.equipos.filter(e=>e.ID_Liga===ligaId);
+  const partidos=D.partidos.filter(p=>p.ID_Liga===ligaId&&p.Estado==='Finalizado');
+  const st={};
+  equipos.forEach(t=>{st[t.ID]={ID:t.ID,NombreEquipo:t.NombreEquipo,PJ:0,PG:0,PE:0,PP:0,GF:0,GC:0,DG:0,Puntos:0};});
+  partidos.forEach(m=>{
+    const loc=st[m.ID_EquipoLocal],vis=st[m.ID_EquipoVisita];
+    if(!loc||!vis)return;
+    const gl=parseInt(m.GolesLocal)||0,gv=parseInt(m.GolesVisita)||0;
+    loc.PJ++;vis.PJ++;loc.GF+=gl;loc.GC+=gv;loc.DG=loc.GF-loc.GC;vis.GF+=gv;vis.GC+=gl;vis.DG=vis.GF-vis.GC;
+    const pV=parseInt(liga.PuntosVictoria)||2,pE=parseInt(liga.PuntosEmpate)||0,pD=parseInt(liga.PuntosDerrota)||1;
+    if(gl>gv){loc.PG++;loc.Puntos+=pV;vis.PP++;vis.Puntos+=pD;}
+    else if(gl<gv){vis.PG++;vis.Puntos+=pV;loc.PP++;loc.Puntos+=pD;}
+    else{loc.PE++;loc.Puntos+=pE;vis.PE++;vis.Puntos+=pE;}
+  });
+  return Object.values(st).sort((a,b)=>b.Puntos-a.Puntos||b.DG-a.DG||b.GF-a.GF);
+}
+
+function buildMatchCard(p){
+  const isCuarto=['1° Cuarto','2° Cuarto','3° Cuarto','4° Cuarto'].indexOf(p.Estado)>=0;
+  const isFinal=p.Estado==='Finalizado';
+  const gl=parseInt(p.GolesLocal)||0,gv=parseInt(p.GolesVisita)||0;
+  const lWin=isFinal&&gl>gv,vWin=isFinal&&gv>gl;
+  const liga=ligaObj(p.ID_Liga);
+  const statusCls=isCuarto?'status-cuarto':(isFinal?'status-final':'status-prog');
+  const statusTxt=isCuarto?('<span class="live-dot"></span>'+p.Estado):(isFinal?'Final':'Programado');
+  const cardCls=isCuarto?'live':(isFinal?'final':'prog');
+  const scoreBlock=p.Estado==='Programado'?'<div class="score-vs">VS</div>':`<div class="score-nums"><span class="score-n${isCuarto?' live':lWin?' winner':''}">${gl}</span><span class="score-sep">-</span><span class="score-n${isCuarto?' live':vWin?' winner':''}">${gv}</span></div>`;
+  const faseBadge=(p.Fase&&p.Fase!=='Regular')?` · <span style="color:var(--orange);font-weight:700">${p.Fase}</span>`:'';
+  return`<div class="match-card ${cardCls}">
+    <div style="background:var(--primary-light);padding:6px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);margin:-12px -14px 10px">
+      <span style="font-size:11px;font-weight:700;color:var(--primary)">${fmtDate(p.Fecha)}${fmtTime(p.Hora)?' · '+fmtTime(p.Hora):''}</span>
+      <span class="match-status ${statusCls}">${statusTxt}</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.3px;text-transform:uppercase">${liga?liga.NombreFantasia:''}${faseBadge}</span></div>
+    <div class="match-body">
+      <div class="team-side"><div class="team-color" style="background:${teamColor(p.ID_EquipoLocal,'local')}"></div><div class="team-name${lWin?' winner':''}">${teamName(p.ID_EquipoLocal)}</div></div>
+      <div class="score-block">${scoreBlock}</div>
+      <div class="team-side right"><div class="team-color" style="background:${teamColor(p.ID_EquipoVisita,'visita')};margin-left:auto"></div><div class="team-name${vWin?' winner':''}">${teamName(p.ID_EquipoVisita)}</div></div>
+    </div>
+    <div class="match-footer">
+      <div class="match-info"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="11" height="11"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>${p.Cancha||'Cancha no definida'}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${p.YoutubeURL?`<a style="font-size:10px;font-weight:700;color:var(--red);text-decoration:none" href="${p.YoutubeURL}" target="_blank">📺 Ver</a>`:''}
+        <span class="chevron" data-id="${p.ID}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></span>
+      </div>
+    </div>
+    <div class="match-expand" id="exp-${p.ID}">
+      <div class="exp-row"><span>Fecha</span><span>${fmtDate(p.Fecha)}</span></div>
+      <div class="exp-row"><span>Hora</span><span>${fmtTime(p.Hora)||'Por confirmar'}</span></div>
+      <div class="exp-row"><span>Fase</span><span>${p.Fase||'Regular'}</span></div>
+      <div class="exp-row"><span>Categoría</span><span>${liga?liga.Categoria:'—'}</span></div>
+    </div>
+  </div>`;
+}
+function attachChevrons(){
+  document.querySelectorAll('.chevron[data-id]').forEach(ch=>{
+    ch.addEventListener('click',e=>{e.stopPropagation();document.getElementById('exp-'+ch.dataset.id).classList.toggle('open');ch.classList.toggle('open');});
+  });
+}
+
+function renderAll(){populateReporteSelects();}
+function populateReporteSelects(){
+  const lo='<option value="">Todas las ligas</option>'+D.ligas.map(l=>`<option value="${l.ID}">${l.NombreFantasia}</option>`).join('');
+  ['rep-liga-fixture','rep-liga-res','rep-liga-pts'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=lo;});
+  ['rep-eq-fixture','rep-eq-res'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">Todos los equipos</option>';});
+}
+window.updateRepEquipos=function(tipo){
+  const ligaEl=document.getElementById('rep-liga-'+tipo);
+  const eqEl=document.getElementById('rep-eq-'+tipo);
+  if(!ligaEl||!eqEl)return;
+  eqEl.innerHTML='<option value="">Todos los equipos</option>'+D.equipos.filter(e=>!ligaEl.value||e.ID_Liga===ligaEl.value).map(e=>`<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');
+};
+function pdfHeader(doc,titulo,sub){doc.setFillColor(30,58,138);doc.rect(0,0,297,22,'F');doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');doc.text('ARBA ARICA',14,10);doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text('Asociación Regional de Básquetbol',14,15);doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text(titulo,148,10,{align:'center'});doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text(sub,148,16,{align:'center'});doc.text('Generado: '+new Date().toLocaleDateString('es-CL'),283,10,{align:'right'});doc.setTextColor(30,58,138);}
+window.downloadPDF=function(tipo){
+  const sufMap={fixture:'fixture',resultados:'res',puntaje:'pts'};const suf=sufMap[tipo]||tipo;
+  const ligaEl=document.getElementById('rep-liga-'+suf);const eqEl=tipo==='puntaje'?null:document.getElementById('rep-eq-'+suf);
+  const ligaId=ligaEl?.value||'';const eqId=eqEl?.value||'';
+  const liga=ligaId?D.ligas.find(l=>l.ID===ligaId):null;const equipo=eqId?D.equipos.find(e=>e.ID===eqId):null;
+  const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const sub=[liga?.NombreFantasia,equipo?.NombreEquipo].filter(Boolean).join(' · ')||'Todas las categorías';
+  if(tipo==='fixture'){
+    pdfHeader(doc,'FIXTURE',sub);
+    let pts=D.partidos.filter(p=>p.Estado==='Programado');
+    if(ligaId)pts=pts.filter(p=>p.ID_Liga===ligaId);if(eqId)pts=pts.filter(p=>p.ID_EquipoLocal===eqId||p.ID_EquipoVisita===eqId);
+    doc.autoTable({startY:26,head:[['Fecha','Hora','Local','','Visita','Cancha','Fase']],body:pts.length?pts.map(p=>[fmtDate(p.Fecha),p.Hora||'—',teamName(p.ID_EquipoLocal),'vs',teamName(p.ID_EquipoVisita),p.Cancha||'—',p.Fase||'—']):[['Sin partidos','','','','','','']],styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[239,246,255]},columnStyles:{3:{halign:'center',fontStyle:'bold'}}});
+  }else if(tipo==='resultados'){
+    pdfHeader(doc,'RESULTADOS',sub);
+    let pts=D.partidos.filter(p=>p.Estado==='Finalizado');
+    if(ligaId)pts=pts.filter(p=>p.ID_Liga===ligaId);if(eqId)pts=pts.filter(p=>p.ID_EquipoLocal===eqId||p.ID_EquipoVisita===eqId);
+    doc.autoTable({startY:26,head:[['Fecha','Local','Pts','—','Pts','Visita','Fase']],body:pts.length?pts.map(p=>[fmtDate(p.Fecha),teamName(p.ID_EquipoLocal),String(p.GolesLocal??'—'),'-',String(p.GolesVisita??'—'),teamName(p.ID_EquipoVisita),p.Fase||'—']):[['Sin resultados','','','','','','']],styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[239,246,255]},columnStyles:{2:{halign:'right',fontStyle:'bold'},3:{halign:'center'},4:{halign:'left',fontStyle:'bold'}}});
+  }else if(tipo==='puntaje'){
+    pdfHeader(doc,'TABLA DE POSICIONES',sub);
+    const ligas=ligaId?D.ligas.filter(l=>l.ID===ligaId):D.ligas;let y=26;
+    ligas.forEach(l=>{
+      const st=calcStandings(l.ID);if(!st.length)return;
+      doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(30,58,138);doc.text(l.NombreFantasia+' — '+l.Categoria,14,y+4);
+      doc.autoTable({startY:y+7,head:[['Pos','Equipo','PJ','G','P','Pts','PF','PC','Dif']],body:st.map((s,i)=>[i+1,s.NombreEquipo,s.PJ,s.PG,s.PP,s.Puntos,s.GF,s.GC,(s.DG>0?'+':'')+s.DG]),styles:{fontSize:9,cellPadding:2.5},headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[239,246,255]},columnStyles:{0:{halign:'center',cellWidth:12},2:{halign:'center'},3:{halign:'center'},4:{halign:'center'},5:{halign:'center',fontStyle:'bold'},6:{halign:'center'},7:{halign:'center'},8:{halign:'center'}}});
+      y=doc.lastAutoTable.finalY+10;if(y>170){doc.addPage();y=14;}
+    });
+  }
+  doc.save('ARBA_'+tipo+'_'+new Date().toISOString().split('T')[0]+'.pdf');toast('✓ PDF descargado','ok');
+};
+
+function setupAdmin(){
+  const ab=document.getElementById('admin-btn');if(ab)ab.addEventListener('click',openAdmin);
+  const dl=document.getElementById('do-login');if(dl)dl.addEventListener('click',doLogin);
+  const ap=document.getElementById('admin-pass');if(ap)ap.addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
+  const mc=document.getElementById('modal-cancel');if(mc)mc.addEventListener('click',()=>document.getElementById('modal-overlay').classList.remove('open'));
+  const ms=document.getElementById('modal-save');if(ms)ms.addEventListener('click',()=>{if(modalSaveCb)modalSaveCb();});
+  document.getElementById('confirm-v3-overlay')?.addEventListener('click',e=>{if(e.target===document.getElementById('confirm-v3-overlay'))closeConfirmV3();});
+  document.getElementById('noticia-modal-overlay')?.addEventListener('click',e=>{if(e.target===document.getElementById('noticia-modal-overlay'))closeNoticiaModal();});
+}
+function openAdmin(){const s=document.getElementById('splash-screen');if(s)s.style.display='none';document.getElementById('admin-overlay').classList.add('open');document.getElementById('admin-login-screen').style.display='flex';document.getElementById('admin-panel-full').style.display='none';}
+function closeAdmin(){document.getElementById('admin-overlay').classList.remove('open');if(!adminPass||!_currentUser){const s=document.getElementById('splash-screen');if(s)s.style.display='flex';}}
+async function doLogin(){
+  const email=(document.getElementById('admin-email').value||'').trim().toLowerCase();
+  const pass=document.getElementById('admin-pass').value;
+  if(!email||!pass)return;
+  const btn=document.getElementById('do-login'),txt=document.getElementById('login-btn-txt');
+  txt.innerHTML='<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block"></div> Ingresando...';btn.disabled=true;
+  try{
+    const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'checkLogin',email,password:pass})});
+    const json=JSON.parse(await res.text());
+    if(json&&json.success){
+      adminPass=pass;_currentUser=json.usuario;
+      document.getElementById('admin-login-screen').style.display='none';
+      document.getElementById('admin-panel-full').style.display='flex';
+      if(window.innerWidth<=640){
+        const main=document.getElementById('adm-main');
+        main.classList.remove('panel-mode');
+        main.classList.add('grid-mode');
+      } else {
+        admSetSection('torneo',document.querySelector('.adm-icon-btn[data-sec="torneo"]'));
+      }
+      const n=document.getElementById('adm-user-nombre');if(n)n.textContent=json.usuario.nombre;
+      const ta=(D.temporadas||[]).find(t=>t.estado==='activa');
+      const tb=document.getElementById('adm-temporada-badge');if(tb&&ta){tb.textContent=ta.nombre;tb.style.display='block';}
+      renderAdmin();
+      toast('Bienvenido, '+json.usuario.nombre,'ok');
+      // En mobile → mostrar grid; en desktop → sidebar normal
+      if(window.innerWidth<=640){
+        admShowGrid();
+      } else {
+        admSetSection('torneo',document.querySelector('.adm-icon-btn[data-sec="torneo"]'));
+      }
+    }else{document.getElementById('login-error').style.display='block';setTimeout(()=>document.getElementById('login-error').style.display='none',2500);}
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{txt.textContent='Ingresar →';btn.disabled=false;}
+}
+async function doLogout(){adminPass='';_currentUser=null;document.getElementById('admin-panel-full').style.display='none';document.getElementById('admin-login-screen').style.display='flex';document.getElementById('admin-email').value='';document.getElementById('admin-pass').value='';closeAdmin();toast('Sesión cerrada','ok');}
+function renderAdmin(){populateAdminSelects();}
+function populateAdminSelects(){
+  const lo=D.ligas.map(l=>`<option value="${l.ID}">${l.NombreFantasia} (${l.Categoria})</option>`).join('');
+  ['eq-liga','pt-liga','sa-liga'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">— Seleccionar liga —</option>'+lo;});
+  ['pt-local','pt-visita','sa-equipo'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">— Seleccionar equipo —</option>'+D.equipos.map(e=>`<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');});
+}
+function populateEqForLiga(ligaId,sel1,sel2){
+  const opts='<option value="">— Seleccionar equipo —</option>'+D.equipos.filter(e=>!ligaId||e.ID_Liga===ligaId).map(e=>`<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');
+  [sel1,sel2].forEach(id=>{if(id){const el=document.getElementById(id);if(el)el.innerHTML=opts;}});
+}
+function admToggleSection(sec,btn){
+  const subEl=document.getElementById('sub-'+sec);if(!subEl)return;
+  const isMobile=window.innerWidth<=640;
+  if(isMobile){document.querySelectorAll('.adm-icon-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const fi=subEl.querySelector('.adm-sub-item');if(fi)fi.click();return;}
+  const isOpen=subEl.classList.contains('open');
+  document.querySelectorAll('.adm-submenu-inner').forEach(el=>el.classList.remove('open'));document.querySelectorAll('.adm-icon-btn').forEach(b=>b.classList.remove('active'));
+  if(!isOpen){subEl.classList.add('open');btn.classList.add('active');const fi=subEl.querySelector('.adm-sub-item');if(fi)fi.click();}
+}
+function admSetSection(sec,btn){admToggleSection(sec,btn);}
+function admSetTab(tabId,btn){
+  document.querySelectorAll('.adm-sub-item').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');
+  document.querySelectorAll('.adm-panel-new').forEach(p=>p.style.display='none');const panel=document.getElementById(tabId);if(panel)panel.style.display='block';
+  // En desktop: también activar el botón del sidebar correspondiente
+  if(window.innerWidth>640&&!btn){
+    document.querySelectorAll('.adm-sub-item').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+tabId+"'"))b.classList.add('active');});
+  }
+  const titles={'tab-ligas':['Ligas','Gestión de ligas'],'tab-equipos':['Equipos','Equipos participantes'],'tab-partidos':['Partidos','Fixture del torneo'],'tab-res-adm':['Resultados','Cargar resultados'],'tab-sanciones-adm':['Sanciones','Registrar sanciones'],'tab-usuarios-adm':['Usuarios','Accesos del sistema'],'tab-temporada-adm':['Temporada','Gestión de temporada']};
+  const t=titles[tabId]||[tabId,''];document.getElementById('adm-main-title').textContent=t[0];document.getElementById('adm-main-sub').textContent=t[1];
+  if(tabId==='tab-ligas'){populateAdminSelects();renderLigasAdm();}
+  if(tabId==='tab-equipos'){populateAdminSelects();renderEquiposAdm();}
+  if(tabId==='tab-partidos'){populateAdminSelects();renderPartidosAdm();}
+  if(tabId==='tab-res-adm')renderResAdm();
+  if(tabId==='tab-sanciones-adm'){populateAdminSelects();renderSancionesAdm();}
+  if(tabId==='tab-usuarios-adm')renderUsuariosAdm();
+  if(tabId==='tab-temporada-adm')setupTemporadaTab();
+}
+function renderLigasAdm(){document.getElementById('ligas-adm-list').innerHTML=D.ligas.length?D.ligas.map(l=>`<div class="adm-list-item"><div><div class="adm-list-name">${l.NombreFantasia}</div><div class="adm-list-sub">${l.Categoria} · ${l.EstadoTorneo||'Activo'}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditLiga('${l.ID}')">Editar</button><button class="del-btn" onclick="delLiga('${l.ID}')">Eliminar</button></div></div>`).join(''):'<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay ligas creadas.</div>';}
+function renderEquiposAdm(){const el=document.getElementById('equipos-adm-list');if(!el)return;const ligaId=document.getElementById('eq-liga').value;const eqs=ligaId?D.equipos.filter(e=>e.ID_Liga===ligaId):D.equipos;el.innerHTML=eqs.length?eqs.map(e=>{const liga=D.ligas.find(l=>l.ID===e.ID_Liga);return`<div class="adm-list-item"><div><div class="adm-list-name">${e.NombreEquipo}</div><div class="adm-list-sub">${liga?liga.NombreFantasia:''}</div></div><button class="del-btn" onclick="delItem('${e.ID}','Equipos')">Eliminar</button></div>`;}).join(''):'<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay equipos registrados.</div>';}
+function renderSancionesAdm(){document.getElementById('sanciones-adm-list').innerHTML=D.sanciones.length?D.sanciones.map(s=>{const eq=D.equipos.find(e=>e.ID===s.ID_Equipo);return`<div class="adm-list-item"><div><div class="adm-list-name">${s.NombreJugador}</div><div class="adm-list-sub">${eq?eq.NombreEquipo:''}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditSancion('${s.ID}')">Editar</button><button class="del-btn" onclick="delItem('${s.ID}','Sanciones')">Eliminar</button></div></div>`;}).join(''):'';}
+function renderPartidosAdm(){const el=document.getElementById('partidos-adm-list');if(!el)return;const pts=[...D.partidos].sort((a,b)=>(parseInt(a.Partidos)||9999)-(parseInt(b.Partidos)||9999));if(!pts.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay partidos registrados.</div>';return;}el.innerHTML=pts.map(p=>{const liga=ligaObj(p.ID_Liga);return`<div class="adm-list-item"><div><div class="adm-list-name">${teamName(p.ID_EquipoLocal)} vs ${teamName(p.ID_EquipoVisita)}</div><div class="adm-list-sub">${fmtDate(p.Fecha)}${fmtTime(p.Hora)?' · '+fmtTime(p.Hora):''} · ${liga?liga.NombreFantasia:''}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditPartido('${p.ID}')">Editar</button><button class="del-btn" onclick="delPartido('${p.ID}')">Eliminar</button></div></div>`;}).join('');}
+// === CAMBIO 2: RESULTADOS sin cuartos ===
+function renderResAdm(){
+  const el=document.getElementById('res-adm-list');if(!el)return;
+  const todos=[...D.partidos].sort((a,b)=>new Date((a.Fecha||'')+'T12:00:00')-new Date((b.Fecha||'')+'T12:00:00'));
+  if(!todos.length){el.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.4);padding:16px 0;text-align:center">Sin partidos cargados</div>';return;}
+  const prog=todos.filter(p=>p.Estado!=='Finalizado'),fin=todos.filter(p=>p.Estado==='Finalizado');
+  const cs='background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;margin-bottom:8px';
+  let html='';
+  if(prog.length){
+    html+='<div class="adm-sec-label" style="margin-top:0">Pendientes / En curso</div>';
+    html+=prog.map(p=>{const liga=ligaObj(p.ID_Liga);return`<div style="${cs}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">N° ${p.Partidos||''} · ${liga?liga.NombreFantasia:''}</span>
+        <span style="font-size:10px;color:rgba(255,255,255,.35)">${fmtDate(p.Fecha)}</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px">
+        <span style="font-size:13px;font-weight:700;color:#fff;flex:1;text-align:right;line-height:1.3">${teamName(p.ID_EquipoLocal)}</span>
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+          <input class="score-in" type="number" id="gl-${p.ID}" value="${p.GolesLocal??''}" placeholder="0" min="0" style="width:64px;font-size:24px;text-align:center">
+          <span style="color:rgba(255,255,255,.3);font-size:22px;font-weight:700">—</span>
+          <input class="score-in" type="number" id="gv-${p.ID}" value="${p.GolesVisita??''}" placeholder="0" min="0" style="width:64px;font-size:24px;text-align:center">
+        </div>
+        <span style="font-size:13px;font-weight:700;color:#fff;flex:1;text-align:left;line-height:1.3">${teamName(p.ID_EquipoVisita)}</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="f-select" id="st-${p.ID}" style="flex:1;margin-bottom:0;background:#1e2332;color:#fff;border-color:rgba(255,255,255,.1)">
+          <option value="Programado"${p.Estado==='Programado'?' selected':''}>Programado</option>
+          <option value="En curso"${p.Estado==='En curso'?' selected':''}>En curso</option>
+          <option value="Finalizado"${p.Estado==='Finalizado'?' selected':''}>Finalizado</option>
+        </select>
+        <button onclick="saveResult('${p.ID}')" style="padding:10px 18px;background:#1e3a8a;color:#fff;border:none;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap">💾 Guardar</button>
+      </div>
+    </div>`;}).join('');
+  }
+  if(fin.length){
+    html+=`<div style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:14px 0 8px" onclick="toggleFinAdm()"><div class="adm-sec-label" style="margin:0;border:none;padding:0">Finalizados (${fin.length})</div><svg id="fin-adm-chv" width="14" height="14" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2" viewBox="0 0 24 24" style="transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg></div><div id="fin-adm-list" style="display:none">`;
+    html+=fin.map(p=>{const liga=ligaObj(p.ID_Liga);return`<div style="${cs}"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:10px;color:rgba(255,255,255,.35)">N° ${p.Partidos||''} · ${liga?.NombreFantasia||''} · ${fmtDate(p.Fecha)}</span><div style="display:flex;gap:6px"><button onclick="openEditResultado('${p.ID}')" style="padding:5px 10px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">Editar</button><button onclick="delPartido('${p.ID}')" class="adm-btn-danger" style="padding:5px 10px">Eliminar</button></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:13px;font-weight:700;color:#fff;flex:1;text-align:right">${teamName(p.ID_EquipoLocal)}</span><span style="font-size:18px;font-weight:700;color:#f97316;background:rgba(249,115,22,.15);padding:4px 12px;border-radius:8px">${p.GolesLocal??'—'}–${p.GolesVisita??'—'}</span><span style="font-size:13px;font-weight:700;color:#fff;flex:1">${teamName(p.ID_EquipoVisita)}</span></div></div>`;}).join('');
+    html+='</div>';
+  }
+  el.innerHTML=html;
+}
+window.toggleFinAdm=function(){const l=document.getElementById('fin-adm-list'),c=document.getElementById('fin-adm-chv');const o=l.style.display==='block';l.style.display=o?'none':'block';c.style.transform=o?'':'rotate(180deg)';};
+
+window.openEditResultado=function(id){
+  const p=D.partidos.find(x=>x.ID===id);if(!p)return;
+  document.getElementById('modal-title').textContent='Editar Resultado';
+  document.getElementById('modal-body').innerHTML=`<div style="text-align:center;font-weight:700;margin-bottom:14px">${teamName(p.ID_EquipoLocal)} vs ${teamName(p.ID_EquipoVisita)}</div><label class="f-label">Puntos Local</label><input class="f-input" id="er-gl" type="number" value="${p.GolesLocal||0}"><label class="f-label">Puntos Visita</label><input class="f-input" id="er-gv" type="number" value="${p.GolesVisita||0}"><label class="f-label">Estado</label><select class="f-select" id="er-st"><option value="Finalizado"${p.Estado==='Finalizado'?' selected':''}>Finalizado</option><option value="Programado"${p.Estado==='Programado'?' selected':''}>Programado</option><option value="En curso"${p.Estado==='En curso'?' selected':''}>En curso</option></select>`;
+  document.getElementById('modal-overlay').classList.add('open');
+  modalSaveCb=()=>{gasCall('updateMatchResult',{matchId:id,golesLocal:document.getElementById('er-gl').value,golesVisita:document.getElementById('er-gv').value,estado:document.getElementById('er-st').value});document.getElementById('modal-overlay').classList.remove('open');};
+};
+window.openEditLiga=function(id){
+  const l=D.ligas.find(x=>x.ID===id);if(!l)return;
+  document.getElementById('modal-title').textContent='Editar Liga';
+  document.getElementById('modal-body').innerHTML=`<label class="f-label">Categoría</label><select class="f-select" id="m-cat"><option>Varones</option><option>Damas</option><option>Mixto</option></select><label class="f-label">Nombre</label><input class="f-input" id="m-nombre" type="text" value="${l.NombreFantasia}"><label class="f-label">Estado</label><select class="f-select" id="m-estado"><option value="Activo">Activo</option><option value="Finalizado">Finalizado</option></select>`;
+  document.getElementById('m-cat').value=l.Categoria;document.getElementById('m-estado').value=l.EstadoTorneo||'Activo';
+  document.getElementById('modal-overlay').classList.add('open');
+  modalSaveCb=()=>{gasCall('updateLeague',{leagueId:id,nombreDeporte:'Básquetbol',categoria:document.getElementById('m-cat').value,nombreFantasia:document.getElementById('m-nombre').value.trim(),estadoTorneo:document.getElementById('m-estado').value});document.getElementById('modal-overlay').classList.remove('open');};
+};
+window.openEditSancion=function(id){
+  const s=D.sanciones.find(x=>x.ID===id);if(!s)return;
+  const lo=D.ligas.map(l=>`<option value="${l.ID}"${l.ID===s.ID_Liga?' selected':''}>${l.NombreFantasia}</option>`).join('');
+  const eo=D.equipos.map(e=>`<option value="${e.ID}"${e.ID===s.ID_Equipo?' selected':''}>${e.NombreEquipo}</option>`).join('');
+  document.getElementById('modal-title').textContent='Editar Sanción';
+  document.getElementById('modal-body').innerHTML=`<label class="f-label">Liga</label><select class="f-select" id="ms-liga">${lo}</select><label class="f-label">Equipo</label><select class="f-select" id="ms-equipo">${eo}</select><label class="f-label">Jugador</label><input class="f-input" id="ms-jugador" type="text" value="${s.NombreJugador}"><label class="f-label">Tipo de falta</label><input class="f-input" id="ms-tipo" type="text" value="${s.TipoFalta||''}"><label class="f-label">Sanción</label><textarea class="f-input" id="ms-sancion" rows="2">${s.Sancion}</textarea><label class="f-label">Término</label><input class="f-input" id="ms-termino" type="text" value="${s.TerminoSancion||''}">`;
+  document.getElementById('modal-overlay').classList.add('open');
+  modalSaveCb=()=>{gasCall('updateSanction',{sanctionId:id,idLiga:document.getElementById('ms-liga').value,idEquipo:document.getElementById('ms-equipo').value,nombreJugador:document.getElementById('ms-jugador').value.trim(),tipoFalta:document.getElementById('ms-tipo').value,sancion:document.getElementById('ms-sancion').value.trim(),termino:document.getElementById('ms-termino').value.trim()});document.getElementById('modal-overlay').classList.remove('open');};
+};
+window.openEditPartido=function(id){
+  const p=D.partidos.find(x=>x.ID===id);if(!p)return;
+  const lo=D.ligas.map(l=>`<option value="${l.ID}"${l.ID===p.ID_Liga?' selected':''}>${l.NombreFantasia}</option>`).join('');
+  document.getElementById('modal-title').textContent='Editar Partido';
+  document.getElementById('modal-body').innerHTML=`<label class="f-label">N° Partido</label><input class="f-input" id="ep-num" type="number" value="${p.Partidos||''}"><label class="f-label">Liga</label><select class="f-select" id="ep-liga">${lo}</select><label class="f-label">Fecha</label><input class="f-input" id="ep-fecha" type="date" value="${p.Fecha||''}"><label class="f-label">Hora</label><input class="f-input" id="ep-hora" type="time" value="${p.Hora||''}"><label class="f-label">Cancha</label><input class="f-input" id="ep-cancha" type="text" value="${p.Cancha||''}"><label class="f-label">Fase</label><select class="f-select" id="ep-fase"><option${p.Fase==='Regular'?' selected':''}>Regular</option><option${p.Fase==='Grupo A'?' selected':''}>Grupo A</option><option${p.Fase==='Grupo B'?' selected':''}>Grupo B</option><option${p.Fase==='Semifinales'?' selected':''}>Semifinales</option><option${p.Fase==='Tercer Lugar'?' selected':''}>Tercer Lugar</option><option${p.Fase==='Final'?' selected':''}>Final</option></select>`;
+  document.getElementById('modal-overlay').classList.add('open');
+  modalSaveCb=()=>{gasCall('updateMatch',{matchId:id,partidos:document.getElementById('ep-num').value,idLiga:document.getElementById('ep-liga').value,fecha:document.getElementById('ep-fecha').value,hora:document.getElementById('ep-hora').value,cancha:document.getElementById('ep-cancha').value.trim(),fase:document.getElementById('ep-fase').value});document.getElementById('modal-overlay').classList.remove('open');};
+};
+async function renderUsuariosAdm(){
+  const el=document.getElementById('usuarios-list');if(!el)return;
+  try{const{data}=await _supa.from('usuarios').select('*').order('created_at');const users=data||[];
+    if(!users.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin usuarios.</div>';return;}
+    el.innerHTML=`<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:0 14px">`+users.map(u=>{const initials=u.nombre.split(' ').map(s=>s[0]||'').join('').toUpperCase().substring(0,2);const eq=u.id_equipo?D.equipos.find(e=>e.ID===u.id_equipo):null;return`<div class="usr-row"><div class="usr-av" style="background:${u.rol==='admin'?'var(--primary-light)':'#fdf4ff'};color:${u.rol==='admin'?'var(--primary)':'#9333ea'}">${initials}</div><div style="flex:1;min-width:0"><div class="usr-nombre">${u.nombre}</div><div class="usr-meta">${u.email}${eq?' · '+eq.NombreEquipo:''}</div></div><span class="usr-rol ${u.rol==='admin'?'rol-admin':'rol-delegado'}" style="margin-right:6px">${u.rol==='admin'?'Admin':'Delegado'}</span><div style="display:flex;gap:5px"><button class="btn-edit-sm" onclick="openEditUsuario('${u.id}')">✎</button><button class="btn-del-sm" onclick="delUsuario('${u.id}','${u.nombre}')">✕</button></div></div>`;}).join('')+'</div>';
+  }catch(e){el.innerHTML='<div style="font-size:13px;color:var(--red);padding:8px 0">Error al cargar</div>';}
+}
+function generarClave(){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';return Array.from({length:8},()=>c[Math.floor(Math.random()*c.length)]).join('');}
+window.openCrearUsuario=function(){
+  const clave=generarClave();
+  const ligasH=D.ligas.map(l=>{const eqs=D.equipos.filter(e=>e.ID_Liga===l.ID);if(!eqs.length)return'';return`<div style="margin-bottom:10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden"><div style="padding:8px 12px;background:var(--primary-light);border-bottom:1px solid #bfdbfe"><div style="font-family:'Archivo Black',sans-serif;font-size:12px;color:var(--primary)">${l.NombreFantasia}</div></div>${eqs.map(eq=>`<label style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;background:var(--surface)"><input type="checkbox" class="nu-eq-chk" value="${eq.ID}" style="width:16px;height:16px;accent-color:var(--primary);flex-shrink:0">${eq.NombreEquipo}</label>`).join('')}</div>`;}).join('');
+  document.getElementById('modal-title').textContent='Nuevo delegado';
+  document.getElementById('modal-body').innerHTML=`<label class="f-label">Nombre</label><input class="f-input" id="nu-nombre" type="text" placeholder="Apellido, Nombre"><label class="f-label">Email</label><input class="f-input" id="nu-email" type="email" placeholder="delegado@email.com"><label class="f-label">Nombre del club</label><input class="f-input" id="nu-club" type="text" placeholder="Ej: Toros FC"><label class="f-label">Equipos a cargo</label><div style="margin-bottom:14px;max-height:240px;overflow-y:auto;border-radius:var(--r)">${ligasH||'<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin equipos registrados.</div>'}</div><label class="f-label">Contraseña</label><div style="display:flex;gap:8px;align-items:center;margin-bottom:14px"><input class="f-input" id="nu-clave" type="text" value="${clave}" style="margin-bottom:0;font-family:monospace;letter-spacing:2px;font-size:16px;font-weight:700;color:var(--primary)"><button onclick="document.getElementById('nu-clave').value=generarClave()" style="flex-shrink:0;padding:11px 12px;border-radius:10px;background:var(--bg);border:1.5px solid var(--border);cursor:pointer;font-size:18px">🔄</button><button onclick="navigator.clipboard?.writeText(document.getElementById('nu-clave').value);toast('✓ Clave copiada','ok')" style="flex-shrink:0;padding:11px 12px;border-radius:10px;background:var(--bg);border:1.5px solid var(--border);cursor:pointer;font-size:18px">📋</button></div><div style="background:var(--orange-light);border:1px solid #fed7aa;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--orange);font-weight:600">⚠ Copia la clave antes de guardar</div>`;
+  document.getElementById('modal-overlay').classList.add('open');
+  modalSaveCb=()=>{
+    const nombre=document.getElementById('nu-nombre').value.trim(),email=document.getElementById('nu-email').value.trim(),club=document.getElementById('nu-club').value.trim(),clave2=document.getElementById('nu-clave').value.trim();
+    const equipos=[...document.querySelectorAll('.nu-eq-chk:checked')].map(c=>c.value);
+    if(!nombre||!email)return toast('Nombre y email obligatorios','err');
+    if(!club)return toast('Ingresa el nombre del club','err');
+    if(!equipos.length)return toast('Selecciona al menos un equipo','err');
+    showConfirmV3(`¿Crear delegado ${nombre}?`,'¿Ya copiaste la clave?',async()=>{const res=await gasCall('createUsuario',{nombre,email,password:clave2,rol:'delegado',nombreClub:club,equiposIds:equipos});document.getElementById('modal-overlay').classList.remove('open');if(res?.success){toast('✓ Delegado creado','ok');renderUsuariosAdm();}else toast(res?.message||'Error','err');},'ok');
+  };
+};
+window.openEditUsuario=function(id){
+  document.getElementById('modal-title').textContent='Editar usuario';
+  document.getElementById('modal-body').innerHTML=`<label class="f-label">Nombre</label><input class="f-input" id="eu-nombre" type="text"><label class="f-label">Email</label><input class="f-input" id="eu-email" type="email"><label class="f-label">Nombre del club</label><input class="f-input" id="eu-club" type="text">`;
+  document.getElementById('modal-overlay').classList.add('open');
+  modalSaveCb=()=>{showConfirmV3('¿Guardar cambios?','',async()=>{const res=await gasCall('updateUsuario',{usuarioId:id,nombre:document.getElementById('eu-nombre').value.trim(),email:document.getElementById('eu-email').value.trim(),nombreClub:document.getElementById('eu-club').value.trim()});document.getElementById('modal-overlay').classList.remove('open');if(res?.success){toast('✓ Actualizado','ok');renderUsuariosAdm();}else toast(res?.message||'Error','err');},'ok');};
+};
+window.delUsuario=function(id,nombre){showConfirmV3(`¿Eliminar a ${nombre}?`,'Perderá acceso al sistema.',async()=>{const res=await gasCall('deleteUsuario',{usuarioId:id});closeConfirmV3();if(res&&res.success){toast('✓ Eliminado','ok');renderUsuariosAdm();}else toast(res?.message||'Error','err');},'danger');};
+
+function setupTemporadaTab(){renderTemporadaActiva();renderHistorialTemporadas();}
+function renderTemporadaActiva(){
+  const activa=(D.temporadas||[]).find(t=>t.estado==='activa');
+  const box=document.getElementById('temp-activa-box'),nb=document.getElementById('temp-nueva-box');if(!box)return;
+  if(!activa){box.innerHTML=`<div style="background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.25);border-radius:12px;padding:16px;margin-bottom:16px;text-align:center"><div style="font-size:24px;margin-bottom:8px">🏀</div><div style="font-size:14px;font-weight:700;color:#f97316;margin-bottom:4px">Sin temporada activa</div><div style="font-size:12px;color:rgba(255,255,255,.4)">Crea una temporada para comenzar</div></div>`;if(nb)nb.style.display='block';return;}
+  const ligasIds=D.ligas.map(l=>l.ID);const pts=D.partidos.filter(p=>ligasIds.includes(p.ID_Liga));
+  const fin=pts.filter(p=>p.Estado==='Finalizado').length,prog=pts.filter(p=>p.Estado!=='Finalizado').length;
+  const total=fin+prog,pct=total>0?Math.round(fin/total*100):0;
+  const fi=activa.fecha_inicio?new Date(activa.fecha_inicio).toLocaleDateString('es-CL'):'—';
+  box.innerHTML=`<div style="background:#111827;border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:16px;margin-bottom:16px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div><div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:#fff">${activa.nombre}</div><div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px">Desde ${fi}</div></div><span style="background:rgba(34,197,94,.15);color:#86efac;font-size:10px;font-weight:700;padding:4px 10px;border-radius:100px">🟢 ACTIVA</span></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px"><div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#86efac">${fin}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.3);margin-top:2px">JUGADOS</div></div><div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#f97316">${prog}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.3);margin-top:2px">PENDIENTES</div></div><div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#fca5a5">${D.sanciones.length}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.3);margin-top:2px">SANCIONES</div></div></div><div style="background:rgba(255,255,255,.06);border-radius:6px;height:6px;margin-bottom:6px"><div style="background:#86efac;height:6px;border-radius:6px;width:${pct}%"></div></div><div style="font-size:10px;color:rgba(255,255,255,.3);text-align:right">${pct}% completado</div></div>
+  <button class="adm-btn-primary" onclick="generarReporteTemporada('${activa.id}','${activa.nombre}')" style="margin-bottom:8px">📄 Descargar reporte PDF</button>
+  <div style="border-top:1px solid rgba(255,255,255,.06);margin-top:16px;padding-top:16px"><div style="font-size:12px;font-weight:700;color:#fca5a5;margin-bottom:6px">Cerrar temporada</div><div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:10px">Al cerrar, la temporada queda en solo lectura.</div><button onclick="cerrarTemporada('${activa.id}','${activa.nombre}')" style="width:100%;padding:12px;border-radius:10px;background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.2);font-family:'Archivo',sans-serif;font-weight:700;font-size:13px;cursor:pointer">🔒 Cerrar temporada</button></div>`;
+  if(nb)nb.style.display='none';
+}
+function renderHistorialTemporadas(){
+  const el=document.getElementById('temp-historial');if(!el)return;
+  const cerradas=(D.temporadas||[]).filter(t=>t.estado==='cerrada');
+  if(!cerradas.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:4px 0">Sin temporadas anteriores.</div>';return;}
+  el.innerHTML=cerradas.map(t=>{const f=t.fecha_cierre?new Date(t.fecha_cierre).toLocaleDateString('es-CL'):'—';return`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px"><div><div style="font-size:13px;font-weight:700">${t.nombre}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Cerrada el ${f}</div></div><button class="pdf-btn" onclick="generarReporteTemporada('${t.id}','${t.nombre}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button></div>`;}).join('');
+}
+async function crearTemporada(){
+  const nombre=document.getElementById('temp-nuevo-nombre')?.value.trim(),inicio=document.getElementById('temp-nuevo-inicio')?.value;
+  if(!nombre)return toast('Ingresa el nombre de la temporada','err');
+  showConfirmV3(`¿Crear temporada "${nombre}"?`,'Se activará inmediatamente.',async()=>{
+    const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'createTemporada',adminPassword:adminPass,nombre,fechaInicio:inicio||null})});
+    const json=JSON.parse(await res.text());
+    if(json?.success){toast('✓ Temporada creada','ok');await refreshData();renderAdmin();setupTemporadaTab();}else toast(json?.message||'Error','err');
+  },'ok');
+}
+async function cerrarTemporada(id,nombre){
+  showConfirmV3(`¿Cerrar "${nombre}"?`,'La temporada quedará en solo lectura.',async()=>{
+    const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'cerrarTemporada',adminPassword:adminPass,temporadaId:id})});
+    const json=JSON.parse(await res.text());
+    if(json?.success){toast('✓ Temporada cerrada','ok');await refreshData();renderAdmin();setupTemporadaTab();document.getElementById('temp-nueva-box').style.display='block';}else toast(json?.message||'Error','err');
+  },'danger');
+}
+// === CAMBIO 3: PDF TEMPORADA — fix querySelector ===
+function generarReporteTemporada(tempId,tempNombre){
+  const nombre=tempNombre||'Temporada ARBA 2026';
+  const ligasSel=D.ligas.filter(l=>l.id_temporada===tempId||!l.id_temporada);
+  const ligasSelIds=ligasSel.map(l=>l.ID);
+  if(!ligasSelIds.length)return toast('Sin ligas en esta temporada','err');
+  const btn=document.querySelector('[onclick*="generarReporteTemporada(\''+tempId+'\'"]');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Generando...';}
+  toast('Generando PDF...','ok');
+  try{
+    const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const fecha=new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'});
+    doc.setFillColor(30,58,138);doc.rect(0,0,210,80,'F');doc.setTextColor(255,255,255);
+    doc.setFontSize(11);doc.setFont('helvetica','normal');doc.text('ASOCIACIÓN DEPORTIVA REGIONAL DE BÁSQUETBOL ARICA',105,20,{align:'center'});
+    doc.setFontSize(22);doc.setFont('helvetica','bold');doc.text('ARBA',105,32,{align:'center'});
+    doc.setFontSize(14);doc.setFont('helvetica','normal');doc.text('Reporte de Temporada',105,43,{align:'center'});
+    doc.setFontSize(18);doc.setFont('helvetica','bold');doc.text(nombre,105,58,{align:'center'});
+    doc.setFontSize(10);doc.setFont('helvetica','normal');doc.text('Generado: '+fecha,105,70,{align:'center'});
+    doc.setTextColor(30,58,138);doc.setFontSize(13);doc.setFont('helvetica','bold');doc.text('RESUMEN GENERAL',14,95);
+    doc.setDrawColor(30,58,138);doc.setLineWidth(0.5);doc.line(14,97,196,97);
+    const totalPts=D.partidos.filter(p=>ligasSelIds.includes(p.ID_Liga)&&p.Estado==='Finalizado').length;
+    doc.autoTable({startY:100,body:[['Ligas disputadas',ligasSel.length],['Equipos participantes',D.equipos.filter(e=>ligasSelIds.includes(e.ID_Liga)).length],['Partidos finalizados',totalPts],['Sanciones aplicadas',D.sanciones.filter(s=>ligasSelIds.includes(s.ID_Liga)).length]],styles:{fontSize:11,cellPadding:4},columnStyles:{0:{fontStyle:'bold',cellWidth:120},1:{halign:'center',fontStyle:'bold',fontSize:13,textColor:[30,58,138]}},alternateRowStyles:{fillColor:[239,246,255]}});
+    doc.addPage();let y=14;
+    doc.setTextColor(30,58,138);doc.setFontSize(13);doc.setFont('helvetica','bold');doc.text('TABLA DE POSICIONES',14,y);y+=4;doc.setLineWidth(0.5);doc.line(14,y,196,y);y+=6;
+    ligasSel.forEach(l=>{const st=calcStandings(l.ID);if(!st.length)return;doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(30,58,138);doc.text(l.NombreFantasia+' — '+l.Categoria,14,y+4);doc.autoTable({startY:y+7,head:[['#','Equipo','PJ','G','P','Pts','PF','PC','Dif']],body:st.map((s,i)=>[i+1,s.NombreEquipo,s.PJ,s.PG,s.PP,s.Puntos,s.GF,s.GC,(s.DG>0?'+':'')+s.DG]),styles:{fontSize:9,cellPadding:2.5},headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[239,246,255]},columnStyles:{0:{halign:'center',cellWidth:12},2:{halign:'center'},3:{halign:'center'},4:{halign:'center'},5:{halign:'center',fontStyle:'bold'},6:{halign:'center'},7:{halign:'center'},8:{halign:'center'}}});y=doc.lastAutoTable.finalY+8;if(y>260){doc.addPage();y=14;}});
+    doc.addPage();y=14;
+    doc.setTextColor(30,58,138);doc.setFontSize(13);doc.setFont('helvetica','bold');doc.text('RESULTADOS',14,y);y+=4;doc.setLineWidth(0.5);doc.line(14,y,196,y);y+=6;
+    ligasSel.forEach(l=>{const pts=D.partidos.filter(p=>p.ID_Liga===l.ID&&p.Estado==='Finalizado');if(!pts.length)return;doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(30,58,138);doc.text(l.NombreFantasia+' — '+l.Categoria,14,y+4);doc.autoTable({startY:y+7,head:[['Fecha','Local','Pts','—','Pts','Visita','Fase']],body:pts.map(p=>[fmtDate(p.Fecha),teamName(p.ID_EquipoLocal),String(p.GolesLocal??''),'-',String(p.GolesVisita??''),teamName(p.ID_EquipoVisita),p.Fase||'—']),styles:{fontSize:8.5,cellPadding:2},headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[239,246,255]},columnStyles:{2:{halign:'right',fontStyle:'bold'},3:{halign:'center'},4:{halign:'left',fontStyle:'bold'}}});y=doc.lastAutoTable.finalY+8;if(y>260){doc.addPage();y=14;}});
+    const sancs=D.sanciones.filter(s=>ligasSelIds.includes(s.ID_Liga));
+    if(sancs.length){doc.addPage();y=14;doc.setTextColor(30,58,138);doc.setFontSize(13);doc.setFont('helvetica','bold');doc.text('SANCIONES',14,y);y+=4;doc.setLineWidth(0.5);doc.line(14,y,196,y);y+=6;doc.autoTable({startY:y,head:[['Jugador','Equipo','Liga','Tipo','Sanción']],body:sancs.map(s=>{const eq=D.equipos.find(e=>e.ID===s.ID_Equipo);const lg=D.ligas.find(l=>l.ID===s.ID_Liga);return[s.NombreJugador,eq?.NombreEquipo||'—',lg?.NombreFantasia||'—',s.TipoFalta||'—',s.Sancion||'—'];}),styles:{fontSize:9,cellPadding:2.5},headStyles:{fillColor:[220,38,38],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[254,242,242]}});}
+    const tp=doc.getNumberOfPages();for(let i=1;i<=tp;i++){doc.setPage(i);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.text('ARBA Arica · '+nombre,14,290);doc.text('Pág. '+i+' / '+tp,196,290,{align:'right'});doc.setDrawColor(200,200,200);doc.setLineWidth(0.3);doc.line(14,287,196,287);}
+    doc.save('ARBA_Reporte_'+nombre.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'')+'_'+new Date().getFullYear()+'.pdf');
+    toast('✓ Reporte descargado','ok');
+  }catch(e){console.error('PDF error:',e);toast('Error al generar PDF: '+e.message,'err');}
+  finally{if(btn){btn.disabled=false;btn.textContent='📄 Descargar reporte PDF';}}
+}
+
+var _cv3Cb=null;
+function showConfirmV3(title,desc,cb,type){_cv3Cb=cb;document.getElementById('cv3-title').textContent=title;document.getElementById('cv3-desc').textContent=desc;document.getElementById('cv3-icon').textContent=(type==='danger')?'⚠️':'✅';const btn=document.getElementById('cv3-ok');btn.className='conf-v3-ok'+(type==='danger'?' danger':' ok-green');btn.textContent='Confirmar';btn.disabled=false;document.getElementById('confirm-v3-overlay').classList.add('open');}
+function closeConfirmV3(){document.getElementById('confirm-v3-overlay').classList.remove('open');_cv3Cb=null;const btn=document.getElementById('cv3-ok');if(btn){btn.textContent='Confirmar';btn.disabled=false;}}
+async function executeConfirmV3(){const btn=document.getElementById('cv3-ok');btn.innerHTML='<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block"></div> Guardando...';btn.disabled=true;try{if(_cv3Cb)await _cv3Cb();}catch(e){toast('Error: '+e.message,'err');}finally{closeConfirmV3();}}
+
+async function gasCall(action,data){
+  try{const res=await callGAS(action,data);if(res&&res.success){await refreshData();renderAll();if(adminPass)renderAdmin();closeConfirmV3();toast(res.message||'✓ Guardado','ok');}else{toast(res?.message||'Error','err');closeConfirmV3();}return res;}
+  catch(e){toast('Error: '+e.message,'err');closeConfirmV3();}
+}
+// === CAMBIO 2b: saveResult sin cuartos ===
+window.saveResult=async function(id){
+  const gl=document.getElementById('gl-'+id)?.value??'';
+  const gv=document.getElementById('gv-'+id)?.value??'';
+  const estado=document.getElementById('st-'+id)?.value||'Programado';
+  if(estado==='Finalizado'&&(gl===''||gv===''))return toast('Ingresa el resultado antes de marcar como Finalizado','err');
+  await gasCall('updateMatchResult',{matchId:id,golesLocal:gl,golesVisita:gv,estado});
+};
+window.createLiga=function(){const nombre=document.getElementById('lg-nombre').value.trim();if(!nombre)return toast('El nombre es obligatorio','err');showConfirmV3(`¿Crear liga "${nombre}"?`,'',async()=>{await gasCall('createLeague',{nombreDeporte:'Básquetbol',categoria:document.getElementById('lg-cat').value,nombreFantasia:nombre,estadoTorneo:document.getElementById('lg-estado').value});document.getElementById('lg-nombre').value='';},'ok');};
+window.createEquipo=function(){const nombre=document.getElementById('eq-nombre').value.trim();if(!nombre)return toast('El nombre es obligatorio','err');showConfirmV3(`¿Registrar equipo "${nombre}"?`,'',async()=>{await gasCall('createTeam',{idLiga:document.getElementById('eq-liga').value,nombreEquipo:nombre,colorLocal:document.getElementById('eq-cl').value,colorVisita:document.getElementById('eq-cv').value});document.getElementById('eq-nombre').value='';},'ok');};
+window.createPartido=function(){const local=document.getElementById('pt-local').value,visita=document.getElementById('pt-visita').value;if(!local||!visita)return toast('Selecciona los equipos','err');showConfirmV3('¿Programar este partido?','',async()=>{await gasCall('createMatch',{idLiga:document.getElementById('pt-liga').value,jornada:document.getElementById('pt-jornada').value,fase:document.getElementById('pt-fase').value,fecha:document.getElementById('pt-fecha').value,hora:document.getElementById('pt-hora').value,cancha:document.getElementById('pt-cancha').value,idLocal:local,idVisita:visita,youtubeUrl:''});},'ok');};
+window.createSancion=function(){const jugador=document.getElementById('sa-jugador').value.trim();if(!jugador)return toast('El nombre del jugador es obligatorio','err');showConfirmV3(`¿Registrar sanción para ${jugador}?`,'',async()=>{await gasCall('createSanction',{idLiga:document.getElementById('sa-liga').value,idEquipo:document.getElementById('sa-equipo').value,nombreJugador:jugador,tipoFalta:document.getElementById('sa-tipo').value,sancion:document.getElementById('sa-sancion').value.trim(),termino:document.getElementById('sa-termino').value.trim()});document.getElementById('sa-jugador').value='';document.getElementById('sa-sancion').value='';},'ok');};
+window.delLiga=function(id){showConfirmV3('¿Eliminar esta liga?','Se eliminarán también los equipos y partidos asociados.',async()=>{await gasCall('deleteLeague',{leagueId:id});},'danger');};
+window.delPartido=function(id){showConfirmV3('¿Eliminar este partido?','',async()=>{await gasCall('deleteMatch',{matchId:id});},'danger');};
+window.delItem=function(id,sheet){showConfirmV3('¿Eliminar este elemento?','Esta acción no se puede deshacer.',async()=>{await gasCall('deleteItem',{id,sheet});},'danger');};
+// === CAMBIO 4: XLSX IMPORT/EXPORT ===
+window.exportPartidosXLSX=function(){
+  if(!window.XLSX)return toast('SheetJS no disponible','err');
+  const rows=[['Partido','Liga','Fecha','Hora','Cancha','Fase','Local','Visita','ID Liga','ID Local','ID Visita','Estado','Pts L','Pts V']];
+  [...D.partidos].sort((a,b)=>(parseInt(a.Partidos)||9999)-(parseInt(b.Partidos)||9999)).forEach(p=>{const liga=ligaObj(p.ID_Liga);rows.push([p.Partidos||'',liga?liga.NombreFantasia:p.ID_Liga,p.Fecha||'',p.Hora||'',p.Cancha||'',p.Fase||'Regular',teamName(p.ID_EquipoLocal),teamName(p.ID_EquipoVisita),p.ID_Liga||'',p.ID_EquipoLocal||'',p.ID_EquipoVisita||'',p.Estado||'Programado',p.GolesLocal!==''?p.GolesLocal:'',p.GolesVisita!==''?p.GolesVisita:'']);});
+  const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:8},{wch:24},{wch:12},{wch:8},{wch:22},{wch:13},{wch:22},{wch:22},{wch:10},{wch:10},{wch:10},{wch:12},{wch:8},{wch:8}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Partidos');
+  XLSX.writeFile(wb,'ARBA_Fixture_'+new Date().toISOString().split('T')[0]+'.xlsx');toast('✓ Exportado','ok');
+};
+window.descargarPlantillaXLSX=function(){
+  if(!window.XLSX)return toast('SheetJS no disponible','err');
+  const ligaNombre=D.ligas[0]?.NombreFantasia||'Liga Varones';
+  const rows=[['Partido','Liga','Fecha','Hora','Cancha','Fase','Local','Visita'],['1',ligaNombre,'2026-07-05','10:00','Gimnasio Municipal','Regular','Equipo A','Equipo B'],['2',ligaNombre,'2026-07-05','11:30','Gimnasio Municipal','Regular','Equipo C','Equipo D'],['','','','','','Fases: Regular|Grupo A|Grupo B|Semifinales|Tercer Lugar|Final','','']];
+  const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:8},{wch:24},{wch:12},{wch:8},{wch:22},{wch:45},{wch:22},{wch:22}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Partidos');
+  XLSX.writeFile(wb,'ARBA_Plantilla_Partidos.xlsx');toast('✓ Plantilla descargada','ok');
+};
+window.importPartidosXLSX=async function(input){
+  if(!window.XLSX)return toast('SheetJS no disponible','err');
+  const file=input.files[0];if(!file)return;
+  const log=document.getElementById('import-log');log.style.display='block';log.innerHTML='<span style="color:#93c5fd">⏳ Leyendo archivo...</span>';
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+      const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      if(!rows.length){log.innerHTML='<span style="color:#fca5a5">❌ Archivo vacío</span>';return;}
+      const getVal=(row,names)=>{for(const k of Object.keys(row)){const kn=k.trim().toLowerCase().replace(/[^a-z]/g,'');if(names.some(n=>kn.includes(n)||n.includes(kn)))return String(row[k]).trim();}return'';};
+      const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+      let ok=0,skip=0;const lines=[];
+      for(let i=0;i<rows.length;i++){
+        const row=rows[i];
+        const numP=getVal(row,['partido','num','n']);const ligaNom=getVal(row,['liga','torneo']);
+        const fecha=getVal(row,['fecha','date']);const hora=getVal(row,['hora','hour','time']);
+        const cancha=getVal(row,['cancha','recinto','lugar']);const faseRaw=getVal(row,['fase','phase'])||'Regular';
+        const localN=getVal(row,['local','home','equipo1']);const visN=getVal(row,['visita','away','equipo2']);
+        if(!localN||!visN){lines.push('<span style="color:#fbbf24">⚠ Fila '+(i+2)+': sin equipos</span>');skip++;continue;}
+        let liga=D.ligas.find(l=>ligaNom&&(norm(l.NombreFantasia).includes(norm(ligaNom))||norm(ligaNom).includes(norm(l.NombreFantasia))));
+        if(!liga&&D.ligas.length)liga=D.ligas[0];
+        if(!liga){lines.push('<span style="color:#fca5a5">❌ Sin ligas creadas</span>');skip++;continue;}
+        const findEq=(nom,ligaId)=>{const eqs=D.equipos.filter(e=>e.ID_Liga===ligaId);return eqs.find(e=>norm(e.NombreEquipo)===norm(nom))||eqs.find(e=>norm(e.NombreEquipo).includes(norm(nom))||norm(nom).includes(norm(e.NombreEquipo)))||D.equipos.find(e=>norm(e.NombreEquipo)===norm(nom))||null;};
+        const eqL=findEq(localN,liga.ID),eqV=findEq(visN,liga.ID);
+        if(!eqL||!eqV){lines.push('<span style="color:#fca5a5">❌ Fila '+(i+2)+': equipo no encontrado ("'+localN+'" o "'+visN+'")</span>');skip++;continue;}
+        let fechaFinal=fecha;if(fecha&&fecha.includes('/')){const[d,m,y]=fecha.split('/');fechaFinal=(y||'').padStart(4,'0')+'-'+(m||'').padStart(2,'0')+'-'+(d||'').padStart(2,'0');}
+        const fasesOk=['Regular','Grupo A','Grupo B','Grupo C','Grupo D','Semifinales','Tercer Lugar','Final'];
+        const fase=fasesOk.includes(faseRaw)?faseRaw:'Regular';
+        try{
+          const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'createMatch',adminPassword:adminPass,idLiga:liga.ID,jornada:numP,fecha:fechaFinal,hora,cancha,fase,idLocal:eqL.ID,idVisita:eqV.ID,youtubeUrl:''})});
+          const json=JSON.parse(await res.text());
+          if(json.success){ok++;lines.push('<span style="color:#86efac">✓ N°'+numP+': '+eqL.NombreEquipo+' vs '+eqV.NombreEquipo+' · '+fechaFinal+'</span>');}
+          else{lines.push('<span style="color:#fca5a5">❌ '+json.message+'</span>');skip++;}
+        }catch(err){lines.push('<span style="color:#fca5a5">❌ Red: '+err.message+'</span>');skip++;}
+      }
+      log.innerHTML=lines.join('')+'<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);font-weight:700;color:#fff">✅ '+ok+' importado'+(ok!==1?'s':'')+' &nbsp;|&nbsp; ⚠ '+skip+' omitido'+(skip!==1?'s':'')+'</div>';
+      if(ok>0){await refreshData();renderAll();if(adminPass)renderAdmin();renderPartidosAdm();toast('✓ '+ok+' partido'+(ok!==1?'s':'')+' importados','ok');}
+    }catch(err){log.innerHTML='<span style="color:#fca5a5">❌ Error: '+err.message+'</span>';console.error(err);}
+    input.value='';
+  };
+  reader.readAsArrayBuffer(file);
+};
+
+// === LANDING SPLASH ===
+var _splashLigaActual=null;
+
+// === ROUTING (URL por liga, sin recarga) ===
+function slugify(str){
+  return (str||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'') // quita tildes
+    .toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+function ligaSlug(liga){return slugify(liga.NombreFantasia)||liga.ID;}
+function findLigaBySlug(slug){return D.ligas.find(l=>ligaSlug(l)===slug);}
+function urlParaLiga(ligaId){
+  if(ligaId==='TODAS')return'/liga/todas';
+  const liga=ligaObj(ligaId);
+  return liga?('/liga/'+ligaSlug(liga)):'/';
+}
+function ligaIdDesdeURL(){
+  const m=location.pathname.match(/^\/liga\/([^/]+)\/?$/);
+  if(!m)return null;
+  const slug=decodeURIComponent(m[1]);
+  if(slug==='todas')return'TODAS';
+  const liga=findLigaBySlug(slug);
+  return liga?liga.ID:null;
+}
+window.addEventListener('popstate',function(){
+  const ligaId=ligaIdDesdeURL();
+  if(ligaId)selectSplashLiga(ligaId,{skipPush:true});
+  else if(D.ligas.length)selectSplashLiga(D.ligas[0].ID,{skipPush:true});
+});
+
+async function initLanding(){if(!D.ligas||!D.ligas.length)await refreshData();renderSplashLigas();}
+function renderSplashLigas(){
+  const grid=document.getElementById('splash-ligas-grid');if(!grid)return;
+  if(!D.ligas.length){grid.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:12px;padding:8px">Sin ligas registradas</div>';return;}
+  grid.innerHTML=D.ligas.map(l=>`<button onclick="selectSplashLiga('${l.ID}')" id="splbtn-${l.ID}" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px;cursor:pointer;text-align:left;width:100%"><div style="font-size:12px;font-weight:700;color:#fff;line-height:1.3">${l.NombreFantasia.replace('Apertura ','')}</div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px">${l.Categoria}</div></button>`).join('');
+  // Si la URL ya trae una liga válida, abrir esa; si no, la primera por defecto
+  const ligaDesdeURL=ligaIdDesdeURL();
+  if(ligaDesdeURL)selectSplashLiga(ligaDesdeURL,{skipPush:true});
+  else if(D.ligas.length)selectSplashLiga(D.ligas[0].ID,{skipPush:true});
+}
+function selectSplashLiga(ligaId,opts){
+  opts=opts||{};
+  _splashLigaActual=ligaId;
+  document.querySelectorAll('[id^="splbtn-"]').forEach(b=>{const active=b.id==='splbtn-'+ligaId;if(b.id==='splbtn-TODAS'){b.style.background=active?'rgba(249,115,22,.25)':'rgba(249,115,22,.12)';b.style.border=active?'1.5px solid #f97316':'1.5px solid rgba(249,115,22,.3)';}else{b.style.background=active?'rgba(255,255,255,.18)':'rgba(255,255,255,.06)';b.style.border=active?'1.5px solid #f97316':'1px solid rgba(255,255,255,.12)';}});
+  renderSplashContent(ligaId);
+  if(!opts.skipPush){
+    const url=urlParaLiga(ligaId);
+    if(location.pathname!==url)history.pushState({ligaId},'',url);
+  }
+}
+function renderSplashContent(ligaId){
+  const el=document.getElementById('splash-content');if(!el)return;
+  const todosModos=ligaId==='TODAS';
+  const partidos=todosModos?D.partidos:D.partidos.filter(p=>p.ID_Liga===ligaId);
+  const standings=todosModos?[]:calcStandings(ligaId);
+  const sanciones=todosModos?D.sanciones:D.sanciones.filter(s=>s.ID_Liga===ligaId);
+  const proximos=partidos.filter(p=>p.Estado==='Programado').sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha));
+  const resultados=partidos.filter(p=>p.Estado==='Finalizado').sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
+  const fmtD=(f)=>{if(!f)return{dia:'—',mes:'—',dow:'—'};const d=new Date(f+'T12:00:00');const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return{dia:d.getDate(),mes:meses[d.getMonth()],dow:dias[d.getDay()]};};
+  const card='background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;margin-bottom:6px';
+  const secT=(txt,mt='0')=>`<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:${mt} 0 8px">${txt}</div>`;
+  let html='';
+  if(todosModos)html+=`<div style="background:rgba(249,115,22,.1);border:0.5px solid rgba(249,115,22,.3);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#f97316;font-weight:700">📋 Toda la programación — ${proximos.length} partidos pendientes</div>`;
+  if(proximos.length){
+    html+=secT('PRÓXIMOS PARTIDOS');
+    html+=proximos.map(p=>{
+      const{dia,mes,dow}=fmtD(p.Fecha);const liga=D.ligas.find(l=>l.ID===p.ID_Liga);
+      const txt='🏀 *ARBA Arica'+(liga?' - '+liga.NombreFantasia:'')+'*\n\n'+teamName(p.ID_EquipoLocal)+' vs '+teamName(p.ID_EquipoVisita)+'\n\n📅 '+dow+' '+dia+' '+mes+'\n⏰ '+(p.Hora||'—')+'\n📍 '+(p.Cancha||'—')+'\n\n🔗 arba-arica.cl';
+      return`<div style="${card}"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">N° ${p.Partidos||''}${todosModos?' · '+liga?.NombreFantasia:''}</span><div style="display:flex;gap:6px;align-items:center"><a href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" style="display:flex;align-items:center;gap:4px;background:rgba(37,211,102,.15);color:#25d366;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;text-decoration:none">Compartir</a><span style="background:rgba(59,130,246,.2);color:#93c5fd;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px">Próximo</span></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px"><span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:right">${teamName(p.ID_EquipoLocal)}</span><span style="font-size:11px;color:rgba(255,255,255,.4);padding:0 8px">vs</span><span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:left">${teamName(p.ID_EquipoVisita)}</span></div><div style="display:flex;align-items:center;justify-content:center;gap:12px;border-top:0.5px solid rgba(255,255,255,.08);padding-top:8px"><span style="font-size:10px;color:rgba(255,255,255,.6)">${dow} ${dia} ${mes}</span><span style="font-size:10px;color:rgba(255,255,255,.4)">·</span><span style="font-size:10px;color:rgba(255,255,255,.6)">${p.Hora||'—'}</span><span style="font-size:10px;color:rgba(255,255,255,.4)">·</span><span style="font-size:10px;color:rgba(255,255,255,.6)">${p.Cancha||'—'}</span></div></div>`;
+    }).join('');
+  }
+  if(resultados.length){
+    html+=secT('RESULTADOS','14px');
+    html+=resultados.map(p=>{const{dia,mes,dow}=fmtD(p.Fecha);const liga=D.ligas.find(l=>l.ID===p.ID_Liga);return`<div style="${card}"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">N° ${p.Partidos||''}${todosModos?' · '+liga?.NombreFantasia:''}</span><span style="background:rgba(34,197,94,.15);color:#86efac;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">Final</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px"><span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:right">${teamName(p.ID_EquipoLocal)}</span><span style="font-size:18px;font-weight:700;color:#f97316;background:rgba(249,115,22,.15);padding:3px 12px;border-radius:8px">${p.GolesLocal??'—'}–${p.GolesVisita??'—'}</span><span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:left">${teamName(p.ID_EquipoVisita)}</span></div><div style="display:flex;align-items:center;justify-content:center;gap:12px;border-top:0.5px solid rgba(255,255,255,.08);padding-top:8px"><span style="font-size:10px;color:rgba(255,255,255,.6)">${dow} ${dia} ${mes}</span><span style="font-size:10px;color:rgba(255,255,255,.4)">·</span><span style="font-size:10px;color:rgba(255,255,255,.6)">${p.Cancha||'—'}</span></div></div>`;}).join('');
+  }
+  if(!todosModos&&standings.length){
+    html+=secT('TABLA DE POSICIONES','14px');
+    html+=`<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;margin-bottom:6px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:280px"><thead><tr style="border-bottom:0.5px solid rgba(255,255,255,.1)"><th style="padding:8px 10px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:left">#</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:left">Equipo</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">PJ</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">G</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">P</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">PF</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">PC</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">Dif</th><th style="padding:8px 10px;font-size:10px;color:#f97316;font-weight:700;text-align:center">Pts</th></tr></thead><tbody>${standings.map((s,i)=>{const dif=s.GF-s.GC;return`<tr style="border-bottom:0.5px solid rgba(255,255,255,.05)"><td style="padding:10px 10px;font-size:13px;font-weight:700;color:${i<2?'#f97316':'rgba(255,255,255,.35)'}">${i+1}</td><td style="padding:10px 6px;font-size:13px;font-weight:${i<2?'700':'400'};color:#fff">${s.NombreEquipo}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PJ}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PG}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PP}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.GF}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.GC}</td><td style="padding:10px 6px;font-size:12px;color:${dif>0?'#86efac':dif<0?'#fca5a5':'rgba(255,255,255,.5)'};text-align:center">${dif>0?'+':''}${dif}</td><td style="padding:10px 10px;font-size:14px;font-weight:700;color:#f97316;text-align:center">${s.Puntos}</td></tr>`;}).join('')}</tbody></table></div>`;
+  }
+  html+=secT('REPORTES','14px');
+  html+=`<button onclick="splashPDF('fixture')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:#1e3a8a;border:none;border-radius:10px;cursor:pointer;margin-bottom:6px"><svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span style="font-size:13px;font-weight:700;color:#fff">Fixture PDF</span></button>
+  <button onclick="splashPDF('resultados')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:#1e3a8a;border:none;border-radius:10px;cursor:pointer;margin-bottom:6px"><svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span style="font-size:13px;font-weight:700;color:#fff">Resultados PDF</span></button>
+  <button onclick="splashPDF('puntaje')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:#1e3a8a;border:none;border-radius:10px;cursor:pointer;margin-bottom:6px"><svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span style="font-size:13px;font-weight:700;color:#fff">Posiciones PDF</span></button>
+  <button onclick="abrirReglamento()" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(255,255,255,.06);border:0.5px solid rgba(255,255,255,.15);border-radius:10px;cursor:pointer;margin-bottom:6px"><svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span style="font-size:13px;font-weight:700;color:#fff">Ver reglamento</span></button>`;
+  html+=secT('SANCIONES','14px');
+  if(!sanciones.length)html+=`<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;text-align:center;font-size:13px;color:rgba(255,255,255,.35);margin-bottom:6px">Sin sanciones registradas</div>`;
+  else html+=sanciones.map((s,i)=>`<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;margin-bottom:6px;overflow:hidden"><button onclick="toggleSancAcc(${i})" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:none;border:none;cursor:pointer;gap:10px"><div style="text-align:left"><div style="font-size:13px;font-weight:700;color:#fff">${s.NombreJugador}</div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">${teamName(s.ID_Equipo)} · ${s.TipoFalta||''}</div></div><span style="background:rgba(239,68,68,.2);color:#fca5a5;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;flex-shrink:0">Sancionado</span></button><div id="sacc-body-${i}" style="display:none;padding:0 14px 14px;border-top:0.5px solid rgba(255,255,255,.08)"><div style="padding-top:10px"><div style="font-size:11px;color:rgba(255,255,255,.4)">Sanción</div><div style="font-size:12px;color:#fff;margin-top:4px">${s.Sancion||'—'}</div><div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">Término</div><div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px">${s.TerminoSancion||'—'}</div></div></div></div>`).join('');
+  html+=`<div style="margin-top:20px;padding-top:16px;border-top:0.5px solid rgba(255,255,255,.1);text-align:center"><button onclick="openAdmin()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:100px;cursor:pointer;font-size:12px;font-weight:700;color:rgba(255,255,255,.5)"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Acceso administrador</button><div style="font-size:10px;color:rgba(255,255,255,.2);margin-top:10px">arba.arica@gmail.com · Arica, Chile · Temporada 2026</div></div>`;
+  el.innerHTML=html;
+  window.toggleSancAcc=function(i){const b=document.getElementById('sacc-body-'+i);b.style.display=b.style.display==='none'?'block':'none';};
+}
+function splashPDF(tipo){
+  if(!_splashLigaActual)return toast('Selecciona una liga primero','err');
+  const sufMap={fixture:'fixture',resultados:'res',puntaje:'pts'};const suf=sufMap[tipo]||tipo;
+  const el=document.getElementById('rep-liga-'+suf);if(el)el.value=_splashLigaActual;
+  downloadPDF(tipo);
+}
+
+// === ADMIN MOBILE GRID ===
+function admIsGridMode(){return window.innerWidth<=640;}
+
+function admShowGrid(){
+  if(!admIsGridMode())return;
+  const main=document.getElementById('adm-main');
+  main.classList.remove('panel-mode');
+  main.classList.add('grid-mode');
+  document.querySelectorAll('.adm-panel-new').forEach(p=>p.style.display='none');
+}
+
+function admGridGo(tabId){
+  if(!admIsGridMode()){admSetTab(tabId,null);return;}
+  const main=document.getElementById('adm-main');
+  main.classList.remove('grid-mode');
+  main.classList.add('panel-mode');
+  admSetTab(tabId,null);
+}
+
+// Sobrescribir doLogin para mostrar grid en mobile al entrar
+const _origDoLoginGrid = doLogin;
+
+</script>
+</body>
+</html>
