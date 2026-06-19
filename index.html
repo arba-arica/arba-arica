@@ -414,11 +414,11 @@ textarea.f-input{resize:none}
         <div class="adm-submenu-inner" id="sub-reportes">
           <button class="adm-sub-item" onclick="admSetTab('tab-temporada-adm',this)">Temporada</button>
         </div>
-        <button class="adm-icon-btn" data-sec="usuarios" onclick="admToggleSection('usuarios',this)">
+        <button class="adm-icon-btn" data-sec="usuarios" onclick="admToggleSection('usuarios',this)" style="display:none">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
           Usuarios<svg class="chv" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <div class="adm-submenu-inner" id="sub-usuarios">
+        <div class="adm-submenu-inner" id="sub-usuarios" style="display:none">
           <button class="adm-sub-item" onclick="admSetTab('tab-usuarios-adm',this)">Accesos</button>
         </div>
       </div>
@@ -462,7 +462,7 @@ textarea.f-input{resize:none}
             <div class="adm-grid-card-title">Temporada</div>
             <div class="adm-grid-card-sub">Reporte y cierre</div>
           </button>
-          <button class="adm-grid-card" onclick="admGridGo('tab-usuarios-adm')">
+          <button class="adm-grid-card" onclick="admGridGo('tab-usuarios-adm')" style="display:none">
             <div class="adm-grid-card-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
             <div class="adm-grid-card-title">Usuarios</div>
             <div class="adm-grid-card-sub">Delegados y accesos</div>
@@ -871,7 +871,26 @@ function admSetTab(tabId,btn){
 function renderLigasAdm(){document.getElementById('ligas-adm-list').innerHTML=D.ligas.length?D.ligas.map(l=>`<div class="adm-list-item"><div><div class="adm-list-name">${l.NombreFantasia}</div><div class="adm-list-sub">${l.Categoria} · ${l.EstadoTorneo||'Activo'}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditLiga('${l.ID}')">Editar</button><button class="del-btn" onclick="delLiga('${l.ID}')">Eliminar</button></div></div>`).join(''):'<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay ligas creadas.</div>';}
 function renderEquiposAdm(){const el=document.getElementById('equipos-adm-list');if(!el)return;const ligaId=document.getElementById('eq-liga').value;const eqs=ligaId?D.equipos.filter(e=>e.ID_Liga===ligaId):D.equipos;el.innerHTML=eqs.length?eqs.map(e=>{const liga=D.ligas.find(l=>l.ID===e.ID_Liga);return`<div class="adm-list-item"><div><div class="adm-list-name">${e.NombreEquipo}</div><div class="adm-list-sub">${liga?liga.NombreFantasia:''}</div></div><button class="del-btn" onclick="delItem('${e.ID}','Equipos')">Eliminar</button></div>`;}).join(''):'<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay equipos registrados.</div>';}
 function renderSancionesAdm(){document.getElementById('sanciones-adm-list').innerHTML=D.sanciones.length?D.sanciones.map(s=>{const eq=D.equipos.find(e=>e.ID===s.ID_Equipo);return`<div class="adm-list-item"><div><div class="adm-list-name">${s.NombreJugador}</div><div class="adm-list-sub">${eq?eq.NombreEquipo:''}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditSancion('${s.ID}')">Editar</button><button class="del-btn" onclick="delItem('${s.ID}','Sanciones')">Eliminar</button></div></div>`;}).join(''):'';}
-function renderPartidosAdm(){const el=document.getElementById('partidos-adm-list');if(!el)return;const pts=[...D.partidos].sort((a,b)=>(parseInt(a.Partidos)||9999)-(parseInt(b.Partidos)||9999));if(!pts.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay partidos registrados.</div>';return;}el.innerHTML=pts.map(p=>{const liga=ligaObj(p.ID_Liga);return`<div class="adm-list-item"><div><div class="adm-list-name">${teamName(p.ID_EquipoLocal)} vs ${teamName(p.ID_EquipoVisita)}</div><div class="adm-list-sub">${fmtDate(p.Fecha)}${fmtTime(p.Hora)?' · '+fmtTime(p.Hora):''} · ${liga?liga.NombreFantasia:''}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditPartido('${p.ID}')">Editar</button><button class="del-btn" onclick="delPartido('${p.ID}')">Eliminar</button></div></div>`;}).join('');}
+function renderPartidosAdm(){
+  const el=document.getElementById('partidos-adm-list');if(!el)return;
+  const todos=[...D.partidos].sort((a,b)=>(parseInt(a.Partidos)||9999)-(parseInt(b.Partidos)||9999));
+  if(!todos.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay partidos registrados.</div>';return;}
+  const prog=todos.filter(p=>p.Estado!=='Finalizado'),fin=todos.filter(p=>p.Estado==='Finalizado');
+  const itemHtml=p=>{const liga=ligaObj(p.ID_Liga);return`<div class="adm-list-item"><div><div class="adm-list-name">${teamName(p.ID_EquipoLocal)} vs ${teamName(p.ID_EquipoVisita)}</div><div class="adm-list-sub">${fmtDate(p.Fecha)}${fmtTime(p.Hora)?' · '+fmtTime(p.Hora):''} · ${liga?liga.NombreFantasia:''}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditPartido('${p.ID}')">Editar</button><button class="del-btn" onclick="delPartido('${p.ID}')">Eliminar</button></div></div>`;};
+  let html='';
+  if(prog.length){
+    html+='<div class="adm-sec-label" style="margin-top:0">Pendientes / En curso</div>';
+    html+=prog.map(itemHtml).join('');
+  }
+  if(fin.length){
+    html+=`<div style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:14px 0 8px" onclick="togglePartFinAdm()"><div class="adm-sec-label" style="margin:0;border:none;padding:0">Finalizados (${fin.length})</div><svg id="part-fin-adm-chv" width="14" height="14" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2" viewBox="0 0 24 24" style="transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg></div><div id="part-fin-adm-list" style="display:none">`;
+    html+=fin.map(itemHtml).join('');
+    html+='</div>';
+  }
+  if(!prog.length&&!fin.length)html='<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay partidos registrados.</div>';
+  el.innerHTML=html;
+}
+window.togglePartFinAdm=function(){const l=document.getElementById('part-fin-adm-list'),c=document.getElementById('part-fin-adm-chv');const o=l.style.display==='block';l.style.display=o?'none':'block';c.style.transform=o?'':'rotate(180deg)';};
 // === CAMBIO 2: RESULTADOS sin cuartos ===
 function renderResAdm(){
   const el=document.getElementById('res-adm-list');if(!el)return;
