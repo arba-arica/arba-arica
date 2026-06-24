@@ -755,8 +755,8 @@ body.pub-themed #content .match-card{background:var(--pub-card);border-color:var
 
 <!-- FOOTER PÚBLICO: franja blanca full-bleed (banner auspiciadores) + archivo de temporadas cerradas -->
 <footer id="pub-footer">
-  <div class="pf-banner-strip">
-    <img src="https://lwsyntjhbcdfuhfjdjqf.supabase.co/storage/v1/object/public/imagenes/banner_auspiciadores.png" alt="Mesa Regional Basquetbol XV Región · ABA · ARBA Arica · Municipalidad de Arica · SEREMI del Deporte" loading="lazy">
+  <div class="pf-banner-strip" id="pf-banner-strip">
+    <img src="https://lwsyntjhbcdfuhfjdjqf.supabase.co/storage/v1/object/public/imagenes/banner_auspiciadores.png" alt="Mesa Regional Basquetbol XV Región · ABA · ARBA Arica · Municipalidad de Arica · SEREMI del Deporte" loading="lazy" onerror="document.getElementById('pf-banner-strip').style.display='none'" onload="document.getElementById('pf-banner-strip').style.display='flex'">
   </div>
   <div class="pf-archive">
     <div class="pf-archive-inner">
@@ -1427,11 +1427,27 @@ async function initLanding(){if(!D.ligas||!D.ligas.length)await refreshData();re
 function renderSplashLigas(){
   const grid=document.getElementById('splash-ligas-grid');if(!grid)return;
   const ligasPub=ligasVisiblesPublico();
-  if(!ligasPub.length){grid.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:12px;padding:8px">Sin ligas registradas en la temporada activa</div>';return;}
+  if(!ligasPub.length){
+    grid.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:12px;padding:8px">Sin ligas registradas en la temporada activa</div>';
+    renderSplashEmptyState();
+    return;
+  }
   grid.innerHTML=ligasPub.map(l=>`<button onclick="selectSplashLiga('${l.ID}')" id="splbtn-${l.ID}" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px;cursor:pointer;text-align:left;width:100%"><div style="font-size:12px;font-weight:700;color:#fff;line-height:1.3">${l.NombreFantasia.replace('Apertura ','')}</div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px">${l.Categoria}</div></button>`).join('');
   const ligaDesdeURL=ligaIdDesdeURL();
   if(ligaDesdeURL)selectSplashLiga(ligaDesdeURL,{skipPush:true});
   else if(ligasPub.length)selectSplashLiga(ligasPub[0].ID,{skipPush:true});
+}
+// Cuando la temporada activa todavía no tiene ligas (recién creada en blanco), el splash no tiene
+// contenido de liga que renderizar — pero igual debe ofrecer la forma de volver a entrar al admin
+// para empezar a cargar ligas. Sin esto, el botón de acceso admin desaparecía junto con el contenido.
+function renderSplashEmptyState(){
+  const el=document.getElementById('splash-content');if(!el)return;
+  el.innerHTML=`<div style="text-align:center;padding:50px 16px 20px">
+    <div style="font-size:32px;margin-bottom:12px">🏀</div>
+    <div style="font-family:'Archivo Black',sans-serif;font-size:15px;color:#fff;margin-bottom:6px">Aún no hay ligas cargadas</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.5;margin-bottom:24px">La temporada está activa, pero todavía no tiene ligas, equipos ni partidos registrados.</div>
+    <button onclick="openAdmin()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:100px;cursor:pointer;font-size:12px;font-weight:700;color:rgba(255,255,255,.5)"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Acceso administrador</button>
+  </div>`;
 }
 function selectSplashLiga(ligaId,opts){
   opts=opts||{};
