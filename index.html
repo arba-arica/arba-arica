@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>ARBA — Competencias</title>
+<title>Mesa Regional Basquetbol XV Region</title>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -214,6 +214,88 @@ textarea.f-input{resize:none}
   #adm-sidebar{display:flex!important}
   #adm-main-content{flex:1;overflow-y:auto;min-height:0}
 }
+
+/* ===================================================================
+   v3.2 — TEMA CLARO/OSCURO + HEADER PÚBLICO + FOOTER + MODAL PERÍODO
+   =================================================================== */
+:root[data-theme="dark"]{
+  --pub-bg:#0a0e1f;--pub-card:#111827;--pub-card2:#1e2332;
+  --pub-border:rgba(255,255,255,.1);--pub-border2:rgba(255,255,255,.18);
+  --pub-text:#ffffff;--pub-muted:rgba(255,255,255,.55);--pub-muted2:rgba(255,255,255,.35);
+  --pub-header-bg:#0f172a;--pub-footer-bg:#070a14;
+  --pub-primary-soft:rgba(30,58,138,.5);--pub-primary-text:#93c5fd;
+  --pub-orange-soft:rgba(249,115,22,.15);--pub-green:#86efac;--pub-red:#fca5a5;
+}
+:root[data-theme="light"]{
+  --pub-bg:#f4f7fb;--pub-card:#ffffff;--pub-card2:#f8fafc;
+  --pub-border:#e2e8f0;--pub-border2:#cbd5e1;
+  --pub-text:#0f172a;--pub-muted:#64748b;--pub-muted2:#94a3b8;
+  --pub-header-bg:#ffffff;--pub-footer-bg:#0f172a;
+  --pub-primary-soft:#eff6ff;--pub-primary-text:#1e3a8a;
+  --pub-orange-soft:#fff7ed;--pub-green:#16a34a;--pub-red:#dc2626;
+}
+#pub-header{background:var(--pub-header-bg);border-bottom:1px solid var(--pub-border);padding:9px 12px;min-height:60px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;position:sticky;top:0;z-index:100;transition:background .25s,border-color .25s}
+#pub-header .ph-spacer{display:flex;justify-content:flex-start}
+#pub-header .ph-brand{display:flex;flex-direction:column;align-items:center;line-height:1.15;text-align:center}
+#pub-header .ph-name{font-family:'Archivo Black',sans-serif;font-size:12.5px;letter-spacing:1.3px;color:var(--pub-text);white-space:nowrap}
+#pub-header .ph-sub2{font-size:8px;font-weight:700;letter-spacing:1.3px;color:var(--pub-muted);margin-top:1px;white-space:nowrap}
+#pub-header .ph-sub{font-size:9px;font-weight:700;letter-spacing:1.2px;color:var(--orange);margin-top:2px;white-space:nowrap}
+#pub-header .ph-actions{display:flex;align-items:center;gap:7px;justify-content:flex-end}
+.ph-icon-btn{width:36px;height:36px;border-radius:10px;background:var(--pub-card2);border:1px solid var(--pub-border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--pub-muted);transition:all .2s}
+.ph-icon-btn:hover{color:var(--pub-text);border-color:var(--pub-border2)}
+.ph-icon-btn svg{width:17px;height:17px}
+#theme-toggle-btn .ic-sun{display:none}
+:root[data-theme="light"] #theme-toggle-btn .ic-moon{display:none}
+:root[data-theme="light"] #theme-toggle-btn .ic-sun{display:block}
+@media(max-width:380px){
+  #pub-header{grid-template-columns:auto 1fr auto;padding:9px 10px}
+  #pub-header .ph-spacer{display:none}
+  #pub-header .ph-name{font-size:11px}
+}
+/* Body público hereda paleta del tema mientras el panel admin sigue siempre oscuro */
+body.pub-themed{background:var(--pub-bg);color:var(--pub-text)}
+body.pub-themed #content .reporte-card,
+body.pub-themed #content .match-card{background:var(--pub-card);border-color:var(--pub-border);color:var(--pub-text)}
+
+/* FOOTER PÚBLICO: franja blanca full-bleed + archivo de temporadas */
+#pub-footer{margin-top:10px}
+.pf-banner-strip{background:#fff;width:100%;padding:14px 16px;display:flex;justify-content:center}
+.pf-banner-strip img{display:block;width:100%;height:auto;max-width:560px}
+.pf-archive{background:var(--pub-footer-bg);padding:22px 14px 90px}
+.pf-archive-inner{max-width:640px;margin:0 auto}
+.pf-archive-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:10px}
+.pf-archive-item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:13px 14px;margin-bottom:8px;flex-wrap:wrap}
+.pf-archive-name{font-size:13px;font-weight:700;color:#fff}
+.pf-archive-date{font-size:10.5px;color:rgba(255,255,255,.4);margin-top:2px}
+.pf-pdf-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:100px;background:rgba(249,115,22,.12);color:#f97316;border:1px solid rgba(249,115,22,.25);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;flex-shrink:0}
+.pf-pdf-btn svg{width:12px;height:12px}
+@media(max-width:380px){
+  .pf-banner-strip{padding:10px 12px}
+  .pf-archive-item{padding:11px 12px}
+}
+
+/* Match card centrado (próximo partido / resultado). Viven dentro del splash/listado que
+   siempre usa fondo oscuro tipo "tarjeta deportiva" — por diseño no cambian con el switch
+   de tema claro/oscuro del header (ese switch solo afecta header y footer públicos). */
+.mc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.mc-teams{display:flex;align-items:center;justify-content:center;gap:14px;text-align:center}
+.mc-team{font-family:'Archivo Black',sans-serif;font-size:14.5px;flex:1;line-height:1.25;color:#fff}
+.mc-team.mc-muted{color:rgba(255,255,255,.4);font-weight:400}
+.mc-vs{font-size:11px;color:rgba(255,255,255,.35);font-weight:700;flex-shrink:0}
+.mc-score{font-size:19px;font-weight:700;color:rgba(255,255,255,.4);background:rgba(255,255,255,.06);padding:5px 14px;border-radius:8px;font-family:'Archivo Black',sans-serif;flex-shrink:0;border:1px solid rgba(255,255,255,.1)}
+.mc-score b{color:#f97316}
+.mc-meta{font-size:10.5px;color:rgba(255,255,255,.4);margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);text-align:center;display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap}
+.mc-meta .mc-sep{color:rgba(255,255,255,.25)}
+
+/* MODAL: configurar período de temporada (panel admin) */
+#periodo-modal-overlay{position:fixed;inset:0;z-index:700;background:rgba(10,14,31,.75);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
+#periodo-modal-overlay.open{display:flex}
+.periodo-modal-box{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;width:100%;max-width:380px;padding:22px}
+.periodo-modal-title{font-family:'Archivo Black',sans-serif;font-size:16px;color:#fff;margin-bottom:4px}
+.periodo-modal-sub{font-size:11.5px;color:rgba(255,255,255,.4);margin-bottom:18px;line-height:1.5}
+.pm-preview{background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2);border-radius:10px;padding:10px 12px;font-size:12px;color:#f97316;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.pm-preview b{font-family:'Archivo Black',sans-serif;letter-spacing:.5px}
+.pm-actions{display:flex;gap:8px}
 </style>
 </head>
 <body>
@@ -223,8 +305,8 @@ textarea.f-input{resize:none}
     <div style="font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:3px;color:#fff">BASQUET XV REGIÓN</div>
     <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:2px;margin-top:2px">ARICA · CHILE</div>
     <div style="width:100%;height:1px;background:rgba(255,255,255,.1);margin:14px 0 12px"></div>
-    <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#f97316;margin-bottom:4px">TEMPORADA 2026</div>
-    <div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#fff;letter-spacing:1px;margin-bottom:18px">TORNEO APERTURA</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#f97316;margin-bottom:4px" id="splash-temporada-label">TEMPORADA 2026</div>
+    <div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#fff;letter-spacing:1px;margin-bottom:18px" id="splash-temporada-nombre">TORNEO APERTURA</div>
     <div style="text-align:left;margin-bottom:6px">
       <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin-bottom:10px">SELECCIONA UNA LIGA</div>
       <div style="grid-column:1/-1;margin-bottom:4px">
@@ -243,16 +325,29 @@ textarea.f-input{resize:none}
   </div>
 </div>
 
-<header id="app-header" style="background:var(--primary);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100">
-  <button id="hamburger-btn" onclick="openDrawer()" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.8)">
-    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-  </button>
-  <div style="position:absolute;left:50%;transform:translateX(-50%);font-family:'Archivo Black',sans-serif;font-size:13px;letter-spacing:1.5px;color:#fff">BASQUET XV REGIÓN</div>
-  <div style="display:flex;align-items:center;gap:8px">
-    <button onclick="forceRefresh()" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.8)">
-      <svg id="refresh-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+<!-- HEADER PÚBLICO: título fijo centrado + período dinámico debajo. Sin logo (se quitó por feedback de diseño). -->
+<header id="pub-header">
+  <div class="ph-spacer ph-actions" style="visibility:hidden" aria-hidden="true">
+    <button class="ph-icon-btn"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/></svg></button>
+    <button class="ph-icon-btn"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/></svg></button>
+    <button class="ph-icon-btn"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/></svg></button>
+  </div>
+  <div class="ph-brand">
+    <div class="ph-name">BASQUET XV REGIÓN</div>
+    <div class="ph-sub2">ARICA · CHILE</div>
+    <div class="ph-sub" id="ph-periodo-label">TORNEO APERTURA 2026</div>
+  </div>
+  <div class="ph-actions">
+    <button class="ph-icon-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
+      <svg class="ic-moon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      <svg class="ic-sun" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
     </button>
-    <button id="admin-btn"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 20v-2a6 6 0 0112 0v2"/></svg></button>
+    <button class="ph-icon-btn" onclick="forceRefresh()" title="Actualizar">
+      <svg id="refresh-icon-pub" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </button>
+    <button class="ph-icon-btn" onclick="openAdmin()" title="Admin">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6 20v-2a6 6 0 0112 0v2"/></svg>
+    </button>
   </div>
 </header>
 
@@ -526,7 +621,7 @@ textarea.f-input{resize:none}
               </div>
               <button class="adm-btn-primary" onclick="createPartido()">+ Programar partido</button>
             </div>
-            <!-- CAMBIO 4: CARGA MASIVA XLSX -->
+            <!-- CARGA MASIVA XLSX -->
             <div style="background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;margin-bottom:16px">
               <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">📂 Carga masiva</div>
               <div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:12px">Columnas: <span style="color:#93c5fd;font-family:monospace">Partido · Liga · Fecha · Hora · Cancha · Fase · Local · Visita</span></div>
@@ -548,7 +643,7 @@ textarea.f-input{resize:none}
             <div id="partidos-adm-list"></div>
           </div>
 
-          <!-- TAB RESULTADOS — CAMBIO 2: solo puntaje final, sin cuartos -->
+          <!-- TAB RESULTADOS — solo puntaje final, sin cuartos -->
           <div id="tab-res-adm" class="adm-panel-new" style="display:none">
             <div class="adm-sec-label" style="margin-top:0">Cargar resultados</div>
             <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:#93c5fd;margin-bottom:14px">
@@ -594,10 +689,28 @@ textarea.f-input{resize:none}
             <div id="temp-nueva-box" style="display:none">
               <div class="adm-form-card">
                 <div class="adm-form-title">Crear nueva temporada</div>
-                <label class="f-label">Nombre</label>
-                <input class="f-input" id="temp-nuevo-nombre" type="text" placeholder="Ej: Torneo Clausura ARBA 2026">
+                <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:10px 12px;font-size:11.5px;color:#86efac;margin-bottom:14px;line-height:1.5">
+                  🆕 La nueva temporada nace en blanco: no se copian ligas, equipos ni partidos de la temporada anterior. Esa información queda guardada en el historial, disponible solo como descarga en PDF.
+                </div>
+                <label class="f-label">Período</label>
+                <select class="f-select" id="temp-nuevo-periodo" onchange="updateNuevaTempPreview()">
+                  <option value="Apertura">Apertura</option>
+                  <option value="Clausura">Clausura</option>
+                  <option value="Verano">Torneo de Verano</option>
+                  <option value="Invierno">Torneo de Invierno</option>
+                  <option value="Otro">Otro (personalizado)</option>
+                </select>
+                <div id="temp-nuevo-otro-wrap" style="display:none">
+                  <label class="f-label">Nombre personalizado</label>
+                  <input class="f-input" id="temp-nuevo-personalizado" type="text" placeholder="Ej: Copa Aniversario" oninput="updateNuevaTempPreview()">
+                </div>
+                <label class="f-label">Año</label>
+                <input class="f-input" id="temp-nuevo-anio" type="number" min="2020" max="2099" oninput="updateNuevaTempPreview()">
                 <label class="f-label">Fecha de inicio</label>
                 <input class="f-input" id="temp-nuevo-inicio" type="date">
+                <div class="pm-preview" style="margin-bottom:14px">
+                  🏀 Se mostrará como: <b id="temp-nuevo-preview">TORNEO APERTURA 2026</b>
+                </div>
                 <button class="adm-btn-primary" onclick="crearTemporada()">🆕 Crear temporada</button>
               </div>
             </div>
@@ -609,6 +722,49 @@ textarea.f-input{resize:none}
     </div>
   </div>
 </div>
+
+<!-- MODAL: Configurar período de la temporada activa -->
+<div id="periodo-modal-overlay">
+  <div class="periodo-modal-box">
+    <div class="periodo-modal-title">Configurar período</div>
+    <div class="periodo-modal-sub">Define manualmente cómo se llama esta temporada. Este texto aparece en el header del panel público.</div>
+    <input type="hidden" id="pm-temporada-id">
+    <label class="f-label">Período</label>
+    <select class="f-select" id="pm-periodo" onchange="updatePeriodoPreview()">
+      <option value="Apertura">Apertura</option>
+      <option value="Clausura">Clausura</option>
+      <option value="Verano">Torneo de Verano</option>
+      <option value="Invierno">Torneo de Invierno</option>
+      <option value="Otro">Otro (personalizado)</option>
+    </select>
+    <div id="pm-otro-wrap" style="display:none">
+      <label class="f-label">Nombre personalizado</label>
+      <input class="f-input" id="pm-otro" type="text" placeholder="Ej: Copa Aniversario" oninput="updatePeriodoPreview()">
+    </div>
+    <label class="f-label">Año</label>
+    <input class="f-input" id="pm-anio" type="number" min="2020" max="2099" oninput="updatePeriodoPreview()">
+    <div class="pm-preview">
+      🏀 Se mostrará como: <b id="pm-preview-text">TORNEO APERTURA 2026</b>
+    </div>
+    <div class="pm-actions">
+      <button class="adm-btn-secondary" style="flex:1" onclick="closePeriodoModal()">Cancelar</button>
+      <button class="adm-btn-primary" style="flex:1;margin-top:0" onclick="savePeriodoModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER PÚBLICO: franja blanca full-bleed (banner auspiciadores) + archivo de temporadas cerradas -->
+<footer id="pub-footer">
+  <div class="pf-banner-strip">
+    <img src="https://lwsyntjhbcdfuhfjdjqf.supabase.co/storage/v1/object/public/imagenes/banner_auspiciadores.png" alt="Mesa Regional Basquetbol XV Región · ABA · ARBA Arica · Municipalidad de Arica · SEREMI del Deporte" loading="lazy">
+  </div>
+  <div class="pf-archive">
+    <div class="pf-archive-inner">
+      <div class="pf-archive-title" id="pf-archive-title" style="display:none">Temporadas anteriores</div>
+      <div id="pf-archive-list"></div>
+    </div>
+  </div>
+</footer>
 
 <div id="modal-overlay">
   <div class="modal-box">
@@ -631,6 +787,32 @@ var D={ligas:[],equipos:[],partidos:[],sanciones:[],noticias:[],personas:[],stat
 var adminPass='',_currentUser=null,confirmCb=null,modalSaveCb=null;
 var _cache={data:null,ts:0};
 
+// ===== TEMA CLARO/OSCURO (panel público) =====
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('arba-theme',t);}catch(e){}}
+function toggleTheme(){const cur=document.documentElement.getAttribute('data-theme');applyTheme(cur==='light'?'dark':'light');}
+(function initTheme(){
+  let saved=null;try{saved=localStorage.getItem('arba-theme');}catch(e){}
+  if(saved){applyTheme(saved);}
+  else{applyTheme(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');}
+})();
+
+// ===== TEMPORADAS: helpers =====
+function temporadaActiva(){return (D.temporadas||[]).find(t=>t.estado==='activa')||null;}
+function temporadasCerradas(){return (D.temporadas||[]).filter(t=>t.estado==='cerrada').sort((a,b)=>new Date(b.fecha_cierre||0)-new Date(a.fecha_cierre||0));}
+// Las ligas "huérfanas" (id_temporada null, datos previos a esta actualización) se muestran junto a la
+// temporada activa para no perder información existente. Una vez asignadas a una temporada explícita
+// (al crearse después de este cambio) dejan de mezclarse y quedan amarradas a su propia temporada.
+function ligasVisiblesPublico(){const act=temporadaActiva();if(!act)return D.ligas;return D.ligas.filter(l=>l.id_temporada===act.id||!l.id_temporada);}
+function periodoLabel(t){if(!t)return'';const nombrePeriodo=t.periodo==='Otro'?(t.nombre_personalizado||'Torneo'):('Torneo '+(t.periodo||'Apertura'));return (nombrePeriodo+' '+(t.anio||'')).toUpperCase().trim();}
+function updateHeaderPeriodo(){
+  const act=temporadaActiva();
+  const txt=act?periodoLabel(act):'TEMPORADA 2026';
+  const el=document.getElementById('ph-periodo-label');if(el)el.textContent=txt;
+  const sEl=document.getElementById('splash-temporada-nombre');if(sEl)sEl.textContent=txt;
+  const sLbl=document.getElementById('splash-temporada-label');if(sLbl)sLbl.textContent=act?('DESDE '+fmtDateShort(act.fecha_inicio)):'TEMPORADA';
+}
+function fmtDateShort(raw){if(!raw)return'';const d=new Date(raw+'T12:00:00');if(isNaN(d))return'';return d.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();}
+
 async function fetchAllData(){
   if(_cache.data&&Date.now()-_cache.ts<CACHE_TTL)return _cache.data;
   const[rL,rE,rP,rS,rN,rPer,rSt,rTemp]=await Promise.all([
@@ -649,7 +831,8 @@ async function fetchAllData(){
     partidos:(rP.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,Partidos:r.partidos,Fecha:r.fecha,Hora:r.hora,Cancha:r.cancha,Fase:r.fase,ID_EquipoLocal:r.id_equipo_local,GolesLocal:r.goles_local!==null?r.goles_local:'',GolesVisita:r.goles_visita!==null?r.goles_visita:'',ID_EquipoVisita:r.id_equipo_visita,Estado:r.estado,YoutubeURL:r.youtube_url})),
     sanciones:(rS.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,ID_Equipo:r.id_equipo,NombreJugador:r.nombre_jugador,TipoFalta:r.tipo_falta,Sancion:r.sancion,TerminoSancion:r.termino_sancion})),
     noticias:(rN.data||[]).map(r=>({ID:r.id,Fecha:r.fecha,Titulo:r.titulo,Descripcion:r.descripcion,ImagenURL:r.imagen_url,foto_url:r.foto_url,Enlace:r.enlace,me_gusta:r.me_gusta||0})),
-    personas:(rPer.data||[]),stats:(rSt.data||[]),temporadas:(rTemp.data||[]),
+    personas:(rPer.data||[]),stats:(rSt.data||[]),
+    temporadas:(rTemp.data||[]).map(r=>({id:r.id,nombre:r.nombre,estado:r.estado,fecha_inicio:r.fecha_inicio,fecha_cierre:r.fecha_cierre,periodo:r.periodo,anio:r.anio,nombre_personalizado:r.nombre_personalizado})),
   };
   _cache={data:norm,ts:Date.now()};
   return norm;
@@ -662,7 +845,7 @@ async function callGAS(action,data){
 }
 document.addEventListener('DOMContentLoaded',function(){setupAdmin();loadData();});
 async function loadData(){
-  try{D=await fetchAllData();renderAll();if(adminPass)renderAdmin();initLanding();}
+  try{D=await fetchAllData();renderAll();if(adminPass)renderAdmin();initLanding();updateHeaderPeriodo();renderFooterArchive();}
   catch(e){toast('Error al cargar: '+e.message,'err');}
 }
 async function refreshData(){invalidateCache();await loadData();}
@@ -675,7 +858,7 @@ function fmtDate(raw){if(!raw)return'';const c=cleanFecha(raw);if(!c)return'';co
 function fmtTime(t){if(!t)return'';const s=String(t).trim();if(s.includes('T')||s.match(/^\d{4}-/))return'';const m=s.match(/(\d{1,2}):(\d{2})/);return m?m[1].padStart(2,'0')+':'+m[2]+' hrs':s;}
 function toast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='show '+(type||'');el.id='toast';setTimeout(()=>{el.className='';el.id='toast';},2800);}
 function openDrawer(){document.getElementById('drawer-overlay').classList.add('open');}
-function closeDrawer(){document.getElementById('drawer-overlay').classList.remove('open');}
+function closeDrawer(){const d=document.getElementById('drawer-overlay');if(d)d.classList.remove('open');}
 function showSectionDrawer(secId){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById(secId).classList.add('active');closeDrawer();}
 function closeNoticiaModal(){document.getElementById('noticia-modal-overlay').classList.remove('open');}
 function toggleLikeModal(){}
@@ -697,49 +880,6 @@ function calcStandings(ligaId){
     else{loc.PE++;loc.Puntos+=pE;vis.PE++;vis.Puntos+=pE;}
   });
   return Object.values(st).sort((a,b)=>b.Puntos-a.Puntos||b.DG-a.DG||b.GF-a.GF);
-}
-
-function buildMatchCard(p){
-  const isCuarto=['1° Cuarto','2° Cuarto','3° Cuarto','4° Cuarto'].indexOf(p.Estado)>=0;
-  const isFinal=p.Estado==='Finalizado';
-  const gl=parseInt(p.GolesLocal)||0,gv=parseInt(p.GolesVisita)||0;
-  const lWin=isFinal&&gl>gv,vWin=isFinal&&gv>gl;
-  const liga=ligaObj(p.ID_Liga);
-  const statusCls=isCuarto?'status-cuarto':(isFinal?'status-final':'status-prog');
-  const statusTxt=isCuarto?('<span class="live-dot"></span>'+p.Estado):(isFinal?'Final':'Programado');
-  const cardCls=isCuarto?'live':(isFinal?'final':'prog');
-  const scoreBlock=p.Estado==='Programado'?'<div class="score-vs">VS</div>':`<div class="score-nums"><span class="score-n${isCuarto?' live':lWin?' winner':''}">${gl}</span><span class="score-sep">-</span><span class="score-n${isCuarto?' live':vWin?' winner':''}">${gv}</span></div>`;
-  const faseBadge=(p.Fase&&p.Fase!=='Regular')?` · <span style="color:var(--orange);font-weight:700">${p.Fase}</span>`:'';
-  return`<div class="match-card ${cardCls}">
-    <div style="background:var(--primary-light);padding:6px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);margin:-12px -14px 10px">
-      <span style="font-size:11px;font-weight:700;color:var(--primary)">${fmtDate(p.Fecha)}${fmtTime(p.Hora)?' · '+fmtTime(p.Hora):''}</span>
-      <span class="match-status ${statusCls}">${statusTxt}</span>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.3px;text-transform:uppercase">${liga?liga.NombreFantasia:''}${faseBadge}</span></div>
-    <div class="match-body">
-      <div class="team-side"><div class="team-color" style="background:${teamColor(p.ID_EquipoLocal,'local')}"></div><div class="team-name${lWin?' winner':''}">${teamName(p.ID_EquipoLocal)}</div></div>
-      <div class="score-block">${scoreBlock}</div>
-      <div class="team-side right"><div class="team-color" style="background:${teamColor(p.ID_EquipoVisita,'visita')};margin-left:auto"></div><div class="team-name${vWin?' winner':''}">${teamName(p.ID_EquipoVisita)}</div></div>
-    </div>
-    <div class="match-footer">
-      <div class="match-info"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="11" height="11"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>${p.Cancha||'Cancha no definida'}</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        ${p.YoutubeURL?`<a style="font-size:10px;font-weight:700;color:var(--red);text-decoration:none" href="${p.YoutubeURL}" target="_blank">📺 Ver</a>`:''}
-        <span class="chevron" data-id="${p.ID}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></span>
-      </div>
-    </div>
-    <div class="match-expand" id="exp-${p.ID}">
-      <div class="exp-row"><span>Fecha</span><span>${fmtDate(p.Fecha)}</span></div>
-      <div class="exp-row"><span>Hora</span><span>${fmtTime(p.Hora)||'Por confirmar'}</span></div>
-      <div class="exp-row"><span>Fase</span><span>${p.Fase||'Regular'}</span></div>
-      <div class="exp-row"><span>Categoría</span><span>${liga?liga.Categoria:'—'}</span></div>
-    </div>
-  </div>`;
-}
-function attachChevrons(){
-  document.querySelectorAll('.chevron[data-id]').forEach(ch=>{
-    ch.addEventListener('click',e=>{e.stopPropagation();document.getElementById('exp-'+ch.dataset.id).classList.toggle('open');ch.classList.toggle('open');});
-  });
 }
 
 function renderAll(){populateReporteSelects();}
@@ -793,8 +933,9 @@ function setupAdmin(){
   const ms=document.getElementById('modal-save');if(ms)ms.addEventListener('click',()=>{if(modalSaveCb)modalSaveCb();});
   document.getElementById('confirm-v3-overlay')?.addEventListener('click',e=>{if(e.target===document.getElementById('confirm-v3-overlay'))closeConfirmV3();});
   document.getElementById('noticia-modal-overlay')?.addEventListener('click',e=>{if(e.target===document.getElementById('noticia-modal-overlay'))closeNoticiaModal();});
+  document.getElementById('periodo-modal-overlay')?.addEventListener('click',e=>{if(e.target===document.getElementById('periodo-modal-overlay'))closePeriodoModal();});
 }
-function openAdmin(){const s=document.getElementById('splash-screen');if(s)s.style.display='none';document.getElementById('admin-overlay').classList.add('open');document.getElementById('admin-login-screen').style.display='flex';document.getElementById('admin-panel-full').style.display='none';}
+window.openAdmin=function(){const s=document.getElementById('splash-screen');if(s)s.style.display='none';document.getElementById('admin-overlay').classList.add('open');document.getElementById('admin-login-screen').style.display='flex';document.getElementById('admin-panel-full').style.display='none';};
 function closeAdmin(){document.getElementById('admin-overlay').classList.remove('open');if(!adminPass||!_currentUser){const s=document.getElementById('splash-screen');if(s)s.style.display='flex';}}
 async function doLogin(){
   const email=(document.getElementById('admin-email').value||'').trim().toLowerCase();
@@ -817,11 +958,10 @@ async function doLogin(){
         admSetSection('torneo',document.querySelector('.adm-icon-btn[data-sec="torneo"]'));
       }
       const n=document.getElementById('adm-user-nombre');if(n)n.textContent=json.usuario.nombre;
-      const ta=(D.temporadas||[]).find(t=>t.estado==='activa');
-      const tb=document.getElementById('adm-temporada-badge');if(tb&&ta){tb.textContent=ta.nombre;tb.style.display='block';}
+      const ta=temporadaActiva();
+      const tb=document.getElementById('adm-temporada-badge');if(tb&&ta){tb.textContent=periodoLabel(ta);tb.style.display='block';}
       renderAdmin();
       toast('Bienvenido, '+json.usuario.nombre,'ok');
-      // En mobile → mostrar grid; en desktop → sidebar normal
       if(window.innerWidth<=640){
         admShowGrid();
       } else {
@@ -834,7 +974,11 @@ async function doLogin(){
 async function doLogout(){adminPass='';_currentUser=null;document.getElementById('admin-panel-full').style.display='none';document.getElementById('admin-login-screen').style.display='flex';document.getElementById('admin-email').value='';document.getElementById('admin-pass').value='';closeAdmin();toast('Sesión cerrada','ok');}
 function renderAdmin(){populateAdminSelects();}
 function populateAdminSelects(){
-  const lo=D.ligas.map(l=>`<option value="${l.ID}">${l.NombreFantasia} (${l.Categoria})</option>`).join('');
+  // En el panel admin, las ligas de la temporada activa van primero; las de temporadas cerradas no se muestran
+  // como opción al crear contenido nuevo (evita programar partidos sobre una temporada ya cerrada).
+  const act=temporadaActiva();
+  const ligasDisponibles=act?D.ligas.filter(l=>l.id_temporada===act.id||!l.id_temporada):D.ligas;
+  const lo=ligasDisponibles.map(l=>`<option value="${l.ID}">${l.NombreFantasia} (${l.Categoria})</option>`).join('');
   ['eq-liga','pt-liga','sa-liga'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">— Seleccionar liga —</option>'+lo;});
   ['pt-local','pt-visita','sa-equipo'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">— Seleccionar equipo —</option>'+D.equipos.map(e=>`<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');});
 }
@@ -854,7 +998,6 @@ function admSetSection(sec,btn){admToggleSection(sec,btn);}
 function admSetTab(tabId,btn){
   document.querySelectorAll('.adm-sub-item').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');
   document.querySelectorAll('.adm-panel-new').forEach(p=>p.style.display='none');const panel=document.getElementById(tabId);if(panel)panel.style.display='block';
-  // En desktop: también activar el botón del sidebar correspondiente
   if(window.innerWidth>640&&!btn){
     document.querySelectorAll('.adm-sub-item').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+tabId+"'"))b.classList.add('active');});
   }
@@ -868,7 +1011,11 @@ function admSetTab(tabId,btn){
   if(tabId==='tab-usuarios-adm')renderUsuariosAdm();
   if(tabId==='tab-temporada-adm')setupTemporadaTab();
 }
-function renderLigasAdm(){document.getElementById('ligas-adm-list').innerHTML=D.ligas.length?D.ligas.map(l=>`<div class="adm-list-item"><div><div class="adm-list-name">${l.NombreFantasia}</div><div class="adm-list-sub">${l.Categoria} · ${l.EstadoTorneo||'Activo'}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditLiga('${l.ID}')">Editar</button><button class="del-btn" onclick="delLiga('${l.ID}')">Eliminar</button></div></div>`).join(''):'<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay ligas creadas.</div>';}
+function renderLigasAdm(){
+  const act=temporadaActiva();
+  const ligas=act?D.ligas.filter(l=>l.id_temporada===act.id||!l.id_temporada):D.ligas;
+  document.getElementById('ligas-adm-list').innerHTML=ligas.length?ligas.map(l=>`<div class="adm-list-item"><div><div class="adm-list-name">${l.NombreFantasia}</div><div class="adm-list-sub">${l.Categoria} · ${l.EstadoTorneo||'Activo'}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditLiga('${l.ID}')">Editar</button><button class="del-btn" onclick="delLiga('${l.ID}')">Eliminar</button></div></div>`).join(''):'<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay ligas creadas todavía en esta temporada.</div>';
+}
 function renderEquiposAdm(){const el=document.getElementById('equipos-adm-list');if(!el)return;const ligaId=document.getElementById('eq-liga').value;const eqs=ligaId?D.equipos.filter(e=>e.ID_Liga===ligaId):D.equipos;el.innerHTML=eqs.length?eqs.map(e=>{const liga=D.ligas.find(l=>l.ID===e.ID_Liga);return`<div class="adm-list-item"><div><div class="adm-list-name">${e.NombreEquipo}</div><div class="adm-list-sub">${liga?liga.NombreFantasia:''}</div></div><button class="del-btn" onclick="delItem('${e.ID}','Equipos')">Eliminar</button></div>`;}).join(''):'<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay equipos registrados.</div>';}
 function renderSancionesAdm(){document.getElementById('sanciones-adm-list').innerHTML=D.sanciones.length?D.sanciones.map(s=>{const eq=D.equipos.find(e=>e.ID===s.ID_Equipo);return`<div class="adm-list-item"><div><div class="adm-list-name">${s.NombreJugador}</div><div class="adm-list-sub">${eq?eq.NombreEquipo:''}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditSancion('${s.ID}')">Editar</button><button class="del-btn" onclick="delItem('${s.ID}','Sanciones')">Eliminar</button></div></div>`;}).join(''):'';}
 function renderPartidosAdm(){
@@ -891,7 +1038,6 @@ function renderPartidosAdm(){
   el.innerHTML=html;
 }
 window.togglePartFinAdm=function(){const l=document.getElementById('part-fin-adm-list'),c=document.getElementById('part-fin-adm-chv');const o=l.style.display==='block';l.style.display=o?'none':'block';c.style.transform=o?'':'rotate(180deg)';};
-// === CAMBIO 2: RESULTADOS sin cuartos ===
 function renderResAdm(){
   const el=document.getElementById('res-adm-list');if(!el)return;
   const todos=[...D.partidos].sort((a,b)=>new Date((a.Fecha||'')+'T12:00:00')-new Date((b.Fecha||'')+'T12:00:00'));
@@ -997,50 +1143,137 @@ window.openEditUsuario=function(id){
 };
 window.delUsuario=function(id,nombre){showConfirmV3(`¿Eliminar a ${nombre}?`,'Perderá acceso al sistema.',async()=>{const res=await gasCall('deleteUsuario',{usuarioId:id});closeConfirmV3();if(res&&res.success){toast('✓ Eliminado','ok');renderUsuariosAdm();}else toast(res?.message||'Error','err');},'danger');};
 
+// ============================================================
+// TEMPORADAS — v3.2
+// Cada liga queda amarrada a una temporada (id_temporada) desde que se crea.
+// La temporada activa es la única visible en el panel público; al cerrarla,
+// sus ligas/equipos/partidos quedan guardados pero solo accesibles vía PDF.
+// Al crear una temporada nueva, no se copia nada de la anterior: nace en blanco.
+// ============================================================
 function setupTemporadaTab(){renderTemporadaActiva();renderHistorialTemporadas();}
+
 function renderTemporadaActiva(){
-  const activa=(D.temporadas||[]).find(t=>t.estado==='activa');
+  const activa=temporadaActiva();
   const box=document.getElementById('temp-activa-box'),nb=document.getElementById('temp-nueva-box');if(!box)return;
-  if(!activa){box.innerHTML=`<div style="background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.25);border-radius:12px;padding:16px;margin-bottom:16px;text-align:center"><div style="font-size:24px;margin-bottom:8px">🏀</div><div style="font-size:14px;font-weight:700;color:#f97316;margin-bottom:4px">Sin temporada activa</div><div style="font-size:12px;color:rgba(255,255,255,.4)">Crea una temporada para comenzar</div></div>`;if(nb)nb.style.display='block';return;}
-  const ligasIds=D.ligas.map(l=>l.ID);const pts=D.partidos.filter(p=>ligasIds.includes(p.ID_Liga));
+  if(!activa){
+    box.innerHTML=`<div style="background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.25);border-radius:12px;padding:16px;margin-bottom:16px;text-align:center"><div style="font-size:24px;margin-bottom:8px">🏀</div><div style="font-size:14px;font-weight:700;color:#f97316;margin-bottom:4px">Sin temporada activa</div><div style="font-size:12px;color:rgba(255,255,255,.4)">Crea una temporada para comenzar</div></div>`;
+    if(nb){nb.style.display='block';prepNuevaTempForm();}
+    return;
+  }
+  // Solo ligas/partidos/sanciones de ESTA temporada (más las huérfanas sin id_temporada, datos previos a v3.2)
+  const ligasIds=D.ligas.filter(l=>l.id_temporada===activa.id||!l.id_temporada).map(l=>l.ID);
+  const pts=D.partidos.filter(p=>ligasIds.includes(p.ID_Liga));
   const fin=pts.filter(p=>p.Estado==='Finalizado').length,prog=pts.filter(p=>p.Estado!=='Finalizado').length;
   const total=fin+prog,pct=total>0?Math.round(fin/total*100):0;
   const fi=activa.fecha_inicio?new Date(activa.fecha_inicio).toLocaleDateString('es-CL'):'—';
-  box.innerHTML=`<div style="background:#111827;border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:16px;margin-bottom:16px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div><div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:#fff">${activa.nombre}</div><div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px">Desde ${fi}</div></div><span style="background:rgba(34,197,94,.15);color:#86efac;font-size:10px;font-weight:700;padding:4px 10px;border-radius:100px">🟢 ACTIVA</span></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px"><div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#86efac">${fin}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.3);margin-top:2px">JUGADOS</div></div><div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#f97316">${prog}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.3);margin-top:2px">PENDIENTES</div></div><div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#fca5a5">${D.sanciones.length}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.3);margin-top:2px">SANCIONES</div></div></div><div style="background:rgba(255,255,255,.06);border-radius:6px;height:6px;margin-bottom:6px"><div style="background:#86efac;height:6px;border-radius:6px;width:${pct}%"></div></div><div style="font-size:10px;color:rgba(255,255,255,.3);text-align:right">${pct}% completado</div></div>
-  <button class="adm-btn-primary" onclick="generarReporteTemporada('${activa.id}','${activa.nombre}')" style="margin-bottom:8px">📄 Descargar reporte PDF</button>
-  <div style="border-top:1px solid rgba(255,255,255,.06);margin-top:16px;padding-top:16px"><div style="font-size:12px;font-weight:700;color:#fca5a5;margin-bottom:6px">Cerrar temporada</div><div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:10px">Al cerrar, la temporada queda en solo lectura.</div><button onclick="cerrarTemporada('${activa.id}','${activa.nombre}')" style="width:100%;padding:12px;border-radius:10px;background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.2);font-family:'Archivo',sans-serif;font-weight:700;font-size:13px;cursor:pointer">🔒 Cerrar temporada</button></div>`;
+  const sancionesTemp=D.sanciones.filter(s=>ligasIds.includes(s.ID_Liga));
+  box.innerHTML=`<div style="background:#111827;border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
+      <div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:16px;color:#fff">${periodoLabel(activa)}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px">Desde ${fi}</div>
+      </div>
+      <span style="background:rgba(34,197,94,.15);color:#86efac;font-size:10px;font-weight:700;padding:4px 10px;border-radius:100px;flex-shrink:0">🟢 ACTIVA</span>
+    </div>
+    <button onclick="openPeriodoModal('${activa.id}')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#93c5fd;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:14px">✎ Configurar período</button>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px"><div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#86efac">${fin}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.3);margin-top:2px">JUGADOS</div></div><div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#f97316">${prog}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.3);margin-top:2px">PENDIENTES</div></div><div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#fca5a5">${sancionesTemp.length}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.3);margin-top:2px">SANCIONES</div></div></div>
+    <div style="background:rgba(255,255,255,.06);border-radius:6px;height:6px;margin-bottom:6px"><div style="background:#86efac;height:6px;border-radius:6px;width:${pct}%"></div></div>
+    <div style="font-size:10px;color:rgba(255,255,255,.3);text-align:right">${pct}% completado</div>
+  </div>
+  <button class="adm-btn-primary" onclick="generarReporteTemporada('${activa.id}')" style="margin-bottom:8px">📄 Descargar reporte PDF</button>
+  <div style="border-top:1px solid rgba(255,255,255,.06);margin-top:16px;padding-top:16px"><div style="font-size:12px;font-weight:700;color:#fca5a5;margin-bottom:6px">Cerrar temporada</div><div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:10px">Al cerrar, la temporada deja de mostrarse en el panel público y queda disponible solo como descarga PDF en el historial.</div><button onclick="cerrarTemporada('${activa.id}')" style="width:100%;padding:12px;border-radius:10px;background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.2);font-family:'Archivo',sans-serif;font-weight:700;font-size:13px;cursor:pointer">🔒 Cerrar temporada</button></div>`;
   if(nb)nb.style.display='none';
 }
+
+// Historial: SOLO nombre + fecha de cierre + botón PDF. Sin tablas ni datos expuestos en pantalla —
+// si se necesita el detalle, se solicita y se entrega el PDF descargado desde aquí.
 function renderHistorialTemporadas(){
   const el=document.getElementById('temp-historial');if(!el)return;
-  const cerradas=(D.temporadas||[]).filter(t=>t.estado==='cerrada');
+  const cerradas=temporadasCerradas();
   if(!cerradas.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:4px 0">Sin temporadas anteriores.</div>';return;}
-  el.innerHTML=cerradas.map(t=>{const f=t.fecha_cierre?new Date(t.fecha_cierre).toLocaleDateString('es-CL'):'—';return`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px"><div><div style="font-size:13px;font-weight:700">${t.nombre}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Cerrada el ${f}</div></div><button class="pdf-btn" onclick="generarReporteTemporada('${t.id}','${t.nombre}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button></div>`;}).join('');
+  el.innerHTML=cerradas.map(t=>{const f=t.fecha_cierre?new Date(t.fecha_cierre).toLocaleDateString('es-CL'):'—';return`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;flex-wrap:wrap"><div><div style="font-size:13px;font-weight:700">${periodoLabel(t)}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Cerrada el ${f}</div></div><button class="pdf-btn" onclick="generarReporteTemporada('${t.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button></div>`;}).join('');
 }
-async function crearTemporada(){
-  const nombre=document.getElementById('temp-nuevo-nombre')?.value.trim(),inicio=document.getElementById('temp-nuevo-inicio')?.value;
-  if(!nombre)return toast('Ingresa el nombre de la temporada','err');
-  showConfirmV3(`¿Crear temporada "${nombre}"?`,'Se activará inmediatamente.',async()=>{
-    const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'createTemporada',adminPassword:adminPass,nombre,fechaInicio:inicio||null})});
+
+// Footer público: mismo principio que el historial admin — solo nombre + fecha + botón PDF, nada más.
+function renderFooterArchive(){
+  const titleEl=document.getElementById('pf-archive-title'),listEl=document.getElementById('pf-archive-list');
+  if(!listEl)return;
+  const cerradas=temporadasCerradas();
+  if(!cerradas.length){if(titleEl)titleEl.style.display='none';listEl.innerHTML='';return;}
+  if(titleEl)titleEl.style.display='block';
+  listEl.innerHTML=cerradas.map(t=>{const f=t.fecha_cierre?new Date(t.fecha_cierre).toLocaleDateString('es-CL'):'—';return`<div class="pf-archive-item"><div><div class="pf-archive-name">${periodoLabel(t)}</div><div class="pf-archive-date">Cerrada el ${f}</div></div><button class="pf-pdf-btn" onclick="generarReporteTemporada('${t.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Reporte PDF</button></div>`;}).join('');
+}
+
+function prepNuevaTempForm(){
+  const anioEl=document.getElementById('temp-nuevo-anio');if(anioEl&&!anioEl.value)anioEl.value=new Date().getFullYear();
+  updateNuevaTempPreview();
+}
+window.updateNuevaTempPreview=function(){
+  const sel=document.getElementById('temp-nuevo-periodo').value;
+  document.getElementById('temp-nuevo-otro-wrap').style.display=sel==='Otro'?'block':'none';
+  const nombre=sel==='Otro'?(document.getElementById('temp-nuevo-personalizado').value||'Torneo'):('Torneo '+sel);
+  const anio=document.getElementById('temp-nuevo-anio').value||'';
+  document.getElementById('temp-nuevo-preview').textContent=(nombre+' '+anio).toUpperCase().trim();
+};
+window.crearTemporada=function(){
+  const periodo=document.getElementById('temp-nuevo-periodo').value;
+  const personalizado=document.getElementById('temp-nuevo-personalizado').value.trim();
+  const anio=document.getElementById('temp-nuevo-anio').value||new Date().getFullYear();
+  const inicio=document.getElementById('temp-nuevo-inicio').value;
+  if(periodo==='Otro'&&!personalizado)return toast('Ingresa el nombre personalizado','err');
+  const nombrePreview=document.getElementById('temp-nuevo-preview').textContent;
+  showConfirmV3(`¿Crear "${nombrePreview}"?`,'Se activará de inmediato y partirá en blanco, sin ligas ni partidos.',async()=>{
+    const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'createTemporada',adminPassword:adminPass,periodo,nombrePersonalizado:personalizado,anio,fechaInicio:inicio||null})});
     const json=JSON.parse(await res.text());
-    if(json?.success){toast('✓ Temporada creada','ok');await refreshData();renderAdmin();setupTemporadaTab();}else toast(json?.message||'Error','err');
+    if(json?.success){toast('✓ Temporada creada','ok');await refreshData();renderAdmin();setupTemporadaTab();updateHeaderPeriodo();renderFooterArchive();}else toast(json?.message||'Error','err');
   },'ok');
-}
-async function cerrarTemporada(id,nombre){
-  showConfirmV3(`¿Cerrar "${nombre}"?`,'La temporada quedará en solo lectura.',async()=>{
+};
+window.cerrarTemporada=function(id){
+  const t=(D.temporadas||[]).find(x=>x.id===id);
+  showConfirmV3(`¿Cerrar "${t?periodoLabel(t):'esta temporada'}"?`,'Dejará de mostrarse en el panel público; quedará disponible solo como descarga PDF.',async()=>{
     const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'cerrarTemporada',adminPassword:adminPass,temporadaId:id})});
     const json=JSON.parse(await res.text());
-    if(json?.success){toast('✓ Temporada cerrada','ok');await refreshData();renderAdmin();setupTemporadaTab();document.getElementById('temp-nueva-box').style.display='block';}else toast(json?.message||'Error','err');
+    if(json?.success){toast('✓ Temporada cerrada','ok');await refreshData();renderAdmin();setupTemporadaTab();updateHeaderPeriodo();renderFooterArchive();document.getElementById('temp-nueva-box').style.display='block';}else toast(json?.message||'Error','err');
   },'danger');
-}
-// === CAMBIO 3: PDF TEMPORADA — fix querySelector ===
-function generarReporteTemporada(tempId,tempNombre){
-  const nombre=tempNombre||'Temporada ARBA 2026';
+};
+
+// MODAL: configurar período/año de una temporada existente (sin recrearla)
+window.openPeriodoModal=function(temporadaId){
+  const t=(D.temporadas||[]).find(x=>x.id===temporadaId)||temporadaActiva();
+  if(!t)return toast('No hay temporada para configurar','err');
+  document.getElementById('pm-temporada-id').value=t.id;
+  document.getElementById('pm-periodo').value=t.periodo||'Apertura';
+  document.getElementById('pm-anio').value=t.anio||new Date().getFullYear();
+  document.getElementById('pm-otro').value=t.nombre_personalizado||'';
+  document.getElementById('periodo-modal-overlay').classList.add('open');
+  updatePeriodoPreview();
+};
+function closePeriodoModal(){document.getElementById('periodo-modal-overlay').classList.remove('open');}
+window.updatePeriodoPreview=function(){
+  const sel=document.getElementById('pm-periodo').value;
+  document.getElementById('pm-otro-wrap').style.display=sel==='Otro'?'block':'none';
+  const nombre=sel==='Otro'?(document.getElementById('pm-otro').value||'Torneo'):('Torneo '+sel);
+  const anio=document.getElementById('pm-anio').value||'';
+  document.getElementById('pm-preview-text').textContent=(nombre+' '+anio).toUpperCase().trim();
+};
+window.savePeriodoModal=async function(){
+  const temporadaId=document.getElementById('pm-temporada-id').value;
+  const periodo=document.getElementById('pm-periodo').value;
+  const personalizado=document.getElementById('pm-otro').value.trim();
+  const anio=document.getElementById('pm-anio').value||new Date().getFullYear();
+  if(periodo==='Otro'&&!personalizado)return toast('Ingresa el nombre personalizado','err');
+  const res=await gasCall('updateTemporadaPeriodo',{temporadaId,periodo,nombrePersonalizado:personalizado,anio});
+  if(res?.success){closePeriodoModal();updateHeaderPeriodo();setupTemporadaTab();}
+};
+
+function generarReporteTemporada(tempId){
+  const t=(D.temporadas||[]).find(x=>x.id===tempId);
+  const nombre=t?periodoLabel(t):'Temporada ARBA';
   const ligasSel=D.ligas.filter(l=>l.id_temporada===tempId||!l.id_temporada);
   const ligasSelIds=ligasSel.map(l=>l.ID);
   if(!ligasSelIds.length)return toast('Sin ligas en esta temporada','err');
-  const btn=document.querySelector('[onclick*="generarReporteTemporada(\''+tempId+'\'"]');
-  if(btn){btn.disabled=true;btn.textContent='⏳ Generando...';}
+  const btn=document.querySelector('[onclick*="generarReporteTemporada(\''+tempId+'\')"]');
+  if(btn){btn.disabled=true;btn.dataset.origTxt=btn.innerHTML;btn.textContent='⏳ Generando...';}
   toast('Generando PDF...','ok');
   try{
     const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
@@ -1064,10 +1297,10 @@ function generarReporteTemporada(tempId,tempNombre){
     const sancs=D.sanciones.filter(s=>ligasSelIds.includes(s.ID_Liga));
     if(sancs.length){doc.addPage();y=14;doc.setTextColor(30,58,138);doc.setFontSize(13);doc.setFont('helvetica','bold');doc.text('SANCIONES',14,y);y+=4;doc.setLineWidth(0.5);doc.line(14,y,196,y);y+=6;doc.autoTable({startY:y,head:[['Jugador','Equipo','Liga','Tipo','Sanción']],body:sancs.map(s=>{const eq=D.equipos.find(e=>e.ID===s.ID_Equipo);const lg=D.ligas.find(l=>l.ID===s.ID_Liga);return[s.NombreJugador,eq?.NombreEquipo||'—',lg?.NombreFantasia||'—',s.TipoFalta||'—',s.Sancion||'—'];}),styles:{fontSize:9,cellPadding:2.5},headStyles:{fillColor:[220,38,38],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[254,242,242]}});}
     const tp=doc.getNumberOfPages();for(let i=1;i<=tp;i++){doc.setPage(i);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.text('ARBA Arica · '+nombre,14,290);doc.text('Pág. '+i+' / '+tp,196,290,{align:'right'});doc.setDrawColor(200,200,200);doc.setLineWidth(0.3);doc.line(14,287,196,287);}
-    doc.save('ARBA_Reporte_'+nombre.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'')+'_'+new Date().getFullYear()+'.pdf');
+    doc.save('ARBA_Reporte_'+nombre.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'')+'.pdf');
     toast('✓ Reporte descargado','ok');
   }catch(e){console.error('PDF error:',e);toast('Error al generar PDF: '+e.message,'err');}
-  finally{if(btn){btn.disabled=false;btn.textContent='📄 Descargar reporte PDF';}}
+  finally{if(btn){btn.disabled=false;if(btn.dataset.origTxt)btn.innerHTML=btn.dataset.origTxt;}}
 }
 
 var _cv3Cb=null;
@@ -1079,7 +1312,6 @@ async function gasCall(action,data){
   try{const res=await callGAS(action,data);if(res&&res.success){await refreshData();renderAll();if(adminPass)renderAdmin();closeConfirmV3();toast(res.message||'✓ Guardado','ok');}else{toast(res?.message||'Error','err');closeConfirmV3();}return res;}
   catch(e){toast('Error: '+e.message,'err');closeConfirmV3();}
 }
-// === CAMBIO 2b: saveResult sin cuartos ===
 window.saveResult=async function(id){
   const gl=document.getElementById('gl-'+id)?.value??'';
   const gv=document.getElementById('gv-'+id)?.value??'';
@@ -1087,14 +1319,20 @@ window.saveResult=async function(id){
   if(estado==='Finalizado'&&(gl===''||gv===''))return toast('Ingresa el resultado antes de marcar como Finalizado','err');
   await gasCall('updateMatchResult',{matchId:id,golesLocal:gl,golesVisita:gv,estado});
 };
-window.createLiga=function(){const nombre=document.getElementById('lg-nombre').value.trim();if(!nombre)return toast('El nombre es obligatorio','err');showConfirmV3(`¿Crear liga "${nombre}"?`,'',async()=>{await gasCall('createLeague',{nombreDeporte:'Básquetbol',categoria:document.getElementById('lg-cat').value,nombreFantasia:nombre,estadoTorneo:document.getElementById('lg-estado').value});document.getElementById('lg-nombre').value='';},'ok');};
+window.createLiga=function(){
+  const nombre=document.getElementById('lg-nombre').value.trim();if(!nombre)return toast('El nombre es obligatorio','err');
+  const act=temporadaActiva();
+  if(!act)return toast('Crea una temporada activa antes de registrar ligas (pestaña Temporada)','err');
+  showConfirmV3(`¿Crear liga "${nombre}"?`,'',async()=>{await gasCall('createLeague',{nombreDeporte:'Básquetbol',categoria:document.getElementById('lg-cat').value,nombreFantasia:nombre,estadoTorneo:document.getElementById('lg-estado').value,idTemporada:act.id});document.getElementById('lg-nombre').value='';},'ok');
+};
 window.createEquipo=function(){const nombre=document.getElementById('eq-nombre').value.trim();if(!nombre)return toast('El nombre es obligatorio','err');showConfirmV3(`¿Registrar equipo "${nombre}"?`,'',async()=>{await gasCall('createTeam',{idLiga:document.getElementById('eq-liga').value,nombreEquipo:nombre,colorLocal:document.getElementById('eq-cl').value,colorVisita:document.getElementById('eq-cv').value});document.getElementById('eq-nombre').value='';},'ok');};
 window.createPartido=function(){const local=document.getElementById('pt-local').value,visita=document.getElementById('pt-visita').value;if(!local||!visita)return toast('Selecciona los equipos','err');showConfirmV3('¿Programar este partido?','',async()=>{await gasCall('createMatch',{idLiga:document.getElementById('pt-liga').value,jornada:document.getElementById('pt-jornada').value,fase:document.getElementById('pt-fase').value,fecha:document.getElementById('pt-fecha').value,hora:document.getElementById('pt-hora').value,cancha:document.getElementById('pt-cancha').value,idLocal:local,idVisita:visita,youtubeUrl:''});},'ok');};
 window.createSancion=function(){const jugador=document.getElementById('sa-jugador').value.trim();if(!jugador)return toast('El nombre del jugador es obligatorio','err');showConfirmV3(`¿Registrar sanción para ${jugador}?`,'',async()=>{await gasCall('createSanction',{idLiga:document.getElementById('sa-liga').value,idEquipo:document.getElementById('sa-equipo').value,nombreJugador:jugador,tipoFalta:document.getElementById('sa-tipo').value,sancion:document.getElementById('sa-sancion').value.trim(),termino:document.getElementById('sa-termino').value.trim()});document.getElementById('sa-jugador').value='';document.getElementById('sa-sancion').value='';},'ok');};
 window.delLiga=function(id){showConfirmV3('¿Eliminar esta liga?','Se eliminarán también los equipos y partidos asociados.',async()=>{await gasCall('deleteLeague',{leagueId:id});},'danger');};
 window.delPartido=function(id){showConfirmV3('¿Eliminar este partido?','',async()=>{await gasCall('deleteMatch',{matchId:id});},'danger');};
 window.delItem=function(id,sheet){showConfirmV3('¿Eliminar este elemento?','Esta acción no se puede deshacer.',async()=>{await gasCall('deleteItem',{id,sheet});},'danger');};
-// === CAMBIO 4: XLSX IMPORT/EXPORT ===
+
+// === XLSX IMPORT/EXPORT ===
 window.exportPartidosXLSX=function(){
   if(!window.XLSX)return toast('SheetJS no disponible','err');
   const rows=[['Partido','Liga','Fecha','Hora','Cancha','Fase','Local','Visita','ID Liga','ID Local','ID Visita','Estado','Pts L','Pts V']];
@@ -1160,11 +1398,11 @@ var _splashLigaActual=null;
 
 // === ROUTING (URL por liga, sin recarga) ===
 function slugify(str){
-  return (str||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'') // quita tildes
+  return (str||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 }
 function ligaSlug(liga){return slugify(liga.NombreFantasia)||liga.ID;}
-function findLigaBySlug(slug){return D.ligas.find(l=>ligaSlug(l)===slug);}
+function findLigaBySlug(slug){return ligasVisiblesPublico().find(l=>ligaSlug(l)===slug);}
 function urlParaLiga(ligaId){
   if(ligaId==='TODAS')return'/liga/todas';
   const liga=ligaObj(ligaId);
@@ -1180,19 +1418,20 @@ function ligaIdDesdeURL(){
 }
 window.addEventListener('popstate',function(){
   const ligaId=ligaIdDesdeURL();
+  const ligasPub=ligasVisiblesPublico();
   if(ligaId)selectSplashLiga(ligaId,{skipPush:true});
-  else if(D.ligas.length)selectSplashLiga(D.ligas[0].ID,{skipPush:true});
+  else if(ligasPub.length)selectSplashLiga(ligasPub[0].ID,{skipPush:true});
 });
 
 async function initLanding(){if(!D.ligas||!D.ligas.length)await refreshData();renderSplashLigas();}
 function renderSplashLigas(){
   const grid=document.getElementById('splash-ligas-grid');if(!grid)return;
-  if(!D.ligas.length){grid.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:12px;padding:8px">Sin ligas registradas</div>';return;}
-  grid.innerHTML=D.ligas.map(l=>`<button onclick="selectSplashLiga('${l.ID}')" id="splbtn-${l.ID}" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px;cursor:pointer;text-align:left;width:100%"><div style="font-size:12px;font-weight:700;color:#fff;line-height:1.3">${l.NombreFantasia.replace('Apertura ','')}</div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px">${l.Categoria}</div></button>`).join('');
-  // Si la URL ya trae una liga válida, abrir esa; si no, la primera por defecto
+  const ligasPub=ligasVisiblesPublico();
+  if(!ligasPub.length){grid.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:12px;padding:8px">Sin ligas registradas en la temporada activa</div>';return;}
+  grid.innerHTML=ligasPub.map(l=>`<button onclick="selectSplashLiga('${l.ID}')" id="splbtn-${l.ID}" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px;cursor:pointer;text-align:left;width:100%"><div style="font-size:12px;font-weight:700;color:#fff;line-height:1.3">${l.NombreFantasia.replace('Apertura ','')}</div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px">${l.Categoria}</div></button>`).join('');
   const ligaDesdeURL=ligaIdDesdeURL();
   if(ligaDesdeURL)selectSplashLiga(ligaDesdeURL,{skipPush:true});
-  else if(D.ligas.length)selectSplashLiga(D.ligas[0].ID,{skipPush:true});
+  else if(ligasPub.length)selectSplashLiga(ligasPub[0].ID,{skipPush:true});
 }
 function selectSplashLiga(ligaId,opts){
   opts=opts||{};
@@ -1207,27 +1446,47 @@ function selectSplashLiga(ligaId,opts){
 function renderSplashContent(ligaId){
   const el=document.getElementById('splash-content');if(!el)return;
   const todosModos=ligaId==='TODAS';
-  const partidos=todosModos?D.partidos:D.partidos.filter(p=>p.ID_Liga===ligaId);
+  const ligasPub=ligasVisiblesPublico();const ligasPubIds=ligasPub.map(l=>l.ID);
+  const partidosBase=todosModos?D.partidos.filter(p=>ligasPubIds.includes(p.ID_Liga)):D.partidos.filter(p=>p.ID_Liga===ligaId);
   const standings=todosModos?[]:calcStandings(ligaId);
-  const sanciones=todosModos?D.sanciones:D.sanciones.filter(s=>s.ID_Liga===ligaId);
-  const proximos=partidos.filter(p=>p.Estado==='Programado').sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha));
-  const resultados=partidos.filter(p=>p.Estado==='Finalizado').sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
+  const sanciones=todosModos?D.sanciones.filter(s=>ligasPubIds.includes(s.ID_Liga)):D.sanciones.filter(s=>s.ID_Liga===ligaId);
+  const proximos=partidosBase.filter(p=>p.Estado==='Programado').sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha));
+  const resultados=partidosBase.filter(p=>p.Estado==='Finalizado').sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
   const fmtD=(f)=>{if(!f)return{dia:'—',mes:'—',dow:'—'};const d=new Date(f+'T12:00:00');const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return{dia:d.getDate(),mes:meses[d.getMonth()],dow:dias[d.getDay()]};};
-  const card='background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;margin-bottom:6px';
+  const card='background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;margin-bottom:8px';
   const secT=(txt,mt='0')=>`<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:${mt} 0 8px">${txt}</div>`;
   let html='';
   if(todosModos)html+=`<div style="background:rgba(249,115,22,.1);border:0.5px solid rgba(249,115,22,.3);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#f97316;font-weight:700">📋 Toda la programación — ${proximos.length} partidos pendientes</div>`;
+  // --- PRÓXIMOS PARTIDOS: layout centrado (equipo · VS · equipo), cancha+fase debajo, igual que resultados ---
   if(proximos.length){
     html+=secT('PRÓXIMOS PARTIDOS');
     html+=proximos.map(p=>{
       const{dia,mes,dow}=fmtD(p.Fecha);const liga=D.ligas.find(l=>l.ID===p.ID_Liga);
       const txt='🏀 *ARBA Arica'+(liga?' - '+liga.NombreFantasia:'')+'*\n\n'+teamName(p.ID_EquipoLocal)+' vs '+teamName(p.ID_EquipoVisita)+'\n\n📅 '+dow+' '+dia+' '+mes+'\n⏰ '+(p.Hora||'—')+'\n📍 '+(p.Cancha||'—')+'\n\n🔗 arba-arica.cl';
-      return`<div style="${card}"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">N° ${p.Partidos||''}${todosModos?' · '+liga?.NombreFantasia:''}</span><div style="display:flex;gap:6px;align-items:center"><a href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" style="display:flex;align-items:center;gap:4px;background:rgba(37,211,102,.15);color:#25d366;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;text-decoration:none">Compartir</a><span style="background:rgba(59,130,246,.2);color:#93c5fd;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px">Próximo</span></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px"><span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:right">${teamName(p.ID_EquipoLocal)}</span><span style="font-size:11px;color:rgba(255,255,255,.4);padding:0 8px">vs</span><span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:left">${teamName(p.ID_EquipoVisita)}</span></div><div style="display:flex;align-items:center;justify-content:center;gap:12px;border-top:0.5px solid rgba(255,255,255,.08);padding-top:8px"><span style="font-size:10px;color:rgba(255,255,255,.6)">${dow} ${dia} ${mes}</span><span style="font-size:10px;color:rgba(255,255,255,.4)">·</span><span style="font-size:10px;color:rgba(255,255,255,.6)">${p.Hora||'—'}</span><span style="font-size:10px;color:rgba(255,255,255,.4)">·</span><span style="font-size:10px;color:rgba(255,255,255,.6)">${p.Cancha||'—'}</span></div></div>`;
+      return`<div style="${card}">
+        <div class="mc-row"><span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">N° ${p.Partidos||''}${todosModos&&liga?' · '+liga.NombreFantasia:''}</span><div style="display:flex;gap:6px;align-items:center"><a href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" style="display:flex;align-items:center;gap:4px;background:rgba(37,211,102,.15);color:#25d366;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;text-decoration:none">Compartir</a><span style="background:rgba(59,130,246,.2);color:#93c5fd;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px">Próximo</span></div></div>
+        <div class="mc-teams"><div class="mc-team">${teamName(p.ID_EquipoLocal)}</div><div class="mc-vs">VS</div><div class="mc-team">${teamName(p.ID_EquipoVisita)}</div></div>
+        <div class="mc-meta">📍 ${p.Cancha||'Cancha por confirmar'} <span class="mc-sep">·</span> ${p.Fase||'Regular'} <span class="mc-sep">·</span> ${dow} ${dia} ${mes} <span class="mc-sep">·</span> ${p.Hora||'Hora por confirmar'}</div>
+      </div>`;
     }).join('');
   }
+  // --- RESULTADOS: mismo layout centrado; marcador del ganador resaltado, perdedor en gris ---
   if(resultados.length){
     html+=secT('RESULTADOS','14px');
-    html+=resultados.map(p=>{const{dia,mes,dow}=fmtD(p.Fecha);const liga=D.ligas.find(l=>l.ID===p.ID_Liga);return`<div style="${card}"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">N° ${p.Partidos||''}${todosModos?' · '+liga?.NombreFantasia:''}</span><span style="background:rgba(34,197,94,.15);color:#86efac;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">Final</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px"><span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:right">${teamName(p.ID_EquipoLocal)}</span><span style="font-size:18px;font-weight:700;color:#f97316;background:rgba(249,115,22,.15);padding:3px 12px;border-radius:8px">${p.GolesLocal??'—'}–${p.GolesVisita??'—'}</span><span style="font-size:14px;font-weight:700;color:#fff;flex:1;text-align:left">${teamName(p.ID_EquipoVisita)}</span></div><div style="display:flex;align-items:center;justify-content:center;gap:12px;border-top:0.5px solid rgba(255,255,255,.08);padding-top:8px"><span style="font-size:10px;color:rgba(255,255,255,.6)">${dow} ${dia} ${mes}</span><span style="font-size:10px;color:rgba(255,255,255,.4)">·</span><span style="font-size:10px;color:rgba(255,255,255,.6)">${p.Cancha||'—'}</span></div></div>`;}).join('');
+    html+=resultados.map(p=>{
+      const{dia,mes,dow}=fmtD(p.Fecha);const liga=D.ligas.find(l=>l.ID===p.ID_Liga);
+      const gl=parseInt(p.GolesLocal)||0,gv=parseInt(p.GolesVisita)||0;
+      const lWin=gl>gv,vWin=gv>gl;
+      return`<div style="${card}">
+        <div class="mc-row"><span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">N° ${p.Partidos||''}${todosModos&&liga?' · '+liga.NombreFantasia:''}</span><span style="background:rgba(34,197,94,.15);color:#86efac;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">Final</span></div>
+        <div class="mc-teams">
+          <div class="mc-team${vWin?' mc-muted':''}">${teamName(p.ID_EquipoLocal)}</div>
+          <div class="mc-score">${lWin?'<b>'+(p.GolesLocal??'—')+'</b>':(p.GolesLocal??'—')}–${vWin?'<b>'+(p.GolesVisita??'—')+'</b>':(p.GolesVisita??'—')}</div>
+          <div class="mc-team${lWin?' mc-muted':''}">${teamName(p.ID_EquipoVisita)}</div>
+        </div>
+        <div class="mc-meta">📍 ${p.Cancha||'—'} <span class="mc-sep">·</span> ${p.Fase||'Regular'} <span class="mc-sep">·</span> ${dow} ${dia} ${mes}</div>
+      </div>`;
+    }).join('');
   }
   if(!todosModos&&standings.length){
     html+=secT('TABLA DE POSICIONES','14px');
@@ -1241,7 +1500,7 @@ function renderSplashContent(ligaId){
   html+=secT('SANCIONES','14px');
   if(!sanciones.length)html+=`<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;text-align:center;font-size:13px;color:rgba(255,255,255,.35);margin-bottom:6px">Sin sanciones registradas</div>`;
   else html+=sanciones.map((s,i)=>`<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;margin-bottom:6px;overflow:hidden"><button onclick="toggleSancAcc(${i})" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:none;border:none;cursor:pointer;gap:10px"><div style="text-align:left"><div style="font-size:13px;font-weight:700;color:#fff">${s.NombreJugador}</div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">${teamName(s.ID_Equipo)} · ${s.TipoFalta||''}</div></div><span style="background:rgba(239,68,68,.2);color:#fca5a5;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;flex-shrink:0">Sancionado</span></button><div id="sacc-body-${i}" style="display:none;padding:0 14px 14px;border-top:0.5px solid rgba(255,255,255,.08)"><div style="padding-top:10px"><div style="font-size:11px;color:rgba(255,255,255,.4)">Sanción</div><div style="font-size:12px;color:#fff;margin-top:4px">${s.Sancion||'—'}</div><div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">Término</div><div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px">${s.TerminoSancion||'—'}</div></div></div></div>`).join('');
-  html+=`<div style="margin-top:20px;padding-top:16px;border-top:0.5px solid rgba(255,255,255,.1);text-align:center"><button onclick="openAdmin()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:100px;cursor:pointer;font-size:12px;font-weight:700;color:rgba(255,255,255,.5)"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Acceso administrador</button><div style="font-size:10px;color:rgba(255,255,255,.2);margin-top:10px">arba.arica@gmail.com · Arica, Chile · Temporada 2026</div></div>`;
+  html+=`<div style="margin-top:20px;padding-top:16px;border-top:0.5px solid rgba(255,255,255,.1);text-align:center"><button onclick="openAdmin()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:100px;cursor:pointer;font-size:12px;font-weight:700;color:rgba(255,255,255,.5)"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Acceso administrador</button></div>`;
   el.innerHTML=html;
   window.toggleSancAcc=function(i){const b=document.getElementById('sacc-body-'+i);b.style.display=b.style.display==='none'?'block':'none';};
 }
@@ -1270,10 +1529,6 @@ function admGridGo(tabId){
   main.classList.add('panel-mode');
   admSetTab(tabId,null);
 }
-
-// Sobrescribir doLogin para mostrar grid en mobile al entrar
-const _origDoLoginGrid = doLogin;
-
 </script>
 </body>
 </html>
