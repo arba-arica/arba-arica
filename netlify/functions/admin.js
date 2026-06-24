@@ -1,9 +1,19 @@
 /**
- * netlify/functions/admin.js — v3.1
+ * netlify/functions/admin.js — v3.2
  * Variables de entorno en Netlify:
  *   SUPABASE_URL        = https://lwsyntjhbcdfuhfjdjqf.supabase.co
  *   SUPABASE_SERVICE_KEY = eyJ...service_role...
  *   ADMIN_PASSWORD      = Arba26*XXL
+ *
+ * Cambios v3.2 (temporadas):
+ *   - tabla `ligas` necesita columna  id_temporada uuid null (FK -> temporadas.id)
+ *   - tabla `temporadas` necesita columnas:
+ *       periodo               text   (Apertura | Clausura | Verano | Invierno | Otro)
+ *       anio                  int4
+ *       nombre_personalizado  text   (solo si periodo = 'Otro')
+ *   - createLeague ahora recibe `idTemporada` y lo guarda en la liga.
+ *   - nueva acción `updateTemporadaPeriodo` para fijar el período/año manualmente
+ *     desde el modal del panel admin, sin tener que recrear la temporada.
  */
 const { createClient } = require('@supabase/supabase-js');
 
@@ -99,6 +109,7 @@ exports.handler = async (event) => {
           nombre_fantasia:  data.nombreFantasia || '',
           puntos_victoria:  pts.v, puntos_empate: pts.e, puntos_derrota: pts.d,
           estado_torneo:    data.estadoTorneo === 'Finalizado' ? 'Finalizado' : 'Activo',
+          id_temporada:     data.idTemporada || null,
         });
         result = error ? fail(error) : { success:true, message:'Liga creada' };
         break;
@@ -408,12 +419,33 @@ exports.handler = async (event) => {
 
       // ─── TEMPORADAS ──────────────────────────────────────────
       case 'createTemporada': {
+        const periodosOk = ['Apertura','Clausura','Verano','Invierno','Otro'];
+        const periodo = periodosOk.includes(data.periodo) ? data.periodo : 'Apertura';
+        const anio = parseInt(data.anio) || new Date().getFullYear();
+        const nombrePeriodo = periodo === 'Otro' ? (data.nombrePersonalizado || data.nombre || 'Torneo') : ('Torneo ' + periodo);
         const { error } = await db.from('temporadas').insert({
-          nombre:       data.nombre      || '',
-          estado:       'activa',
-          fecha_inicio: data.fechaInicio || null,
+          nombre:               data.nombre || (nombrePeriodo + ' ' + anio),
+          estado:               'activa',
+          fecha_inicio:         data.fechaInicio || null,
+          periodo:              periodo,
+          anio:                 anio,
+          nombre_personalizado: periodo === 'Otro' ? (data.nombrePersonalizado || '') : '',
         });
         result = error ? fail(error) : { success: true, message: 'Temporada creada' };
+        break;
+      }
+      case 'updateTemporadaPeriodo': {
+        const periodosOk = ['Apertura','Clausura','Verano','Invierno','Otro'];
+        const periodo = periodosOk.includes(data.periodo) ? data.periodo : 'Apertura';
+        const anio = parseInt(data.anio) || new Date().getFullYear();
+        const nombrePeriodo = periodo === 'Otro' ? (data.nombrePersonalizado || 'Torneo') : ('Torneo ' + periodo);
+        const { error } = await db.from('temporadas').update({
+          periodo:              periodo,
+          anio:                 anio,
+          nombre_personalizado: periodo === 'Otro' ? (data.nombrePersonalizado || '') : '',
+          nombre:               nombrePeriodo + ' ' + anio,
+        }).eq('id', data.temporadaId);
+        result = error ? fail(error) : { success: true, message: 'Período actualizado' };
         break;
       }
       case 'cerrarTemporada': {
