@@ -140,12 +140,6 @@ exports.handler = async (event) => {
           nombre_equipo:         data.nombreEquipo      || '',
           color_uniforme_local:  data.colorLocal        || '',
           color_uniforme_visita: data.colorVisita       || '',
-          logo_url:              data.logoUrl           || '',
-          delegado_nombre:       data.delegadoNombre    || '',
-          delegado_email:        data.delegadoEmail     || '',
-          delegado_telefono:     data.delegadoTelefono  || '',
-          limite_jugadores:      parseInt(data.limiteJugadores) || 15,
-          estado_validacion:     'pendiente',
         });
         result = error ? fail(error) : { success:true, message:'Equipo registrado' };
         break;
@@ -155,25 +149,11 @@ exports.handler = async (event) => {
           nombre_equipo:         data.nombreEquipo      || '',
           color_uniforme_local:  data.colorLocal        || '',
           color_uniforme_visita: data.colorVisita       || '',
-          logo_url:              data.logoUrl           || '',
-          delegado_nombre:       data.delegadoNombre    || '',
-          delegado_email:        data.delegadoEmail     || '',
-          delegado_telefono:     data.delegadoTelefono  || '',
-          limite_jugadores:      parseInt(data.limiteJugadores) || 15,
           updated_at:            new Date().toISOString(),
         }).eq('id', data.teamId);
         result = error ? fail(error) : { success:true, message:'Equipo actualizado' };
         break;
       }
-      case 'validateTeam': {
-        const update = data.accion === 'aprobar'
-          ? { estado_validacion: 'validado', motivo_rechazo: null, updated_at: new Date().toISOString() }
-          : { estado_validacion: 'rechazado', motivo_rechazo: data.motivo || '', updated_at: new Date().toISOString() };
-        const { error } = await db.from('equipos').update(update).eq('id', data.teamId);
-        result = error ? fail(error) : { success:true, message: data.accion === 'aprobar' ? 'Equipo aprobado' : 'Equipo rechazado' };
-        break;
-      }
-
       // ─── ENCUENTROS ──────────────────────────────────────────
       case 'createMatch': {
         const fasesOk = ['Regular','Grupo A','Grupo B','Grupo C','Grupo D','Semifinales','Tercer Lugar','Final'];
