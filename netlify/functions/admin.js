@@ -167,8 +167,11 @@ exports.handler = async (event) => {
           hora:             data.hora    || '',
           cancha:           data.cancha  || '',
           fase:             fasesOk.includes(data.fase) ? data.fase : 'Regular',
-          id_equipo_local:  data.idLocal,
-          id_equipo_visita: data.idVisita,
+          fase_codigo:      data.faseCodigo || null,
+          id_equipo_local:  data.idLocal  || null,
+          id_equipo_visita: data.idVisita || null,
+          regla_local:      data.reglaLocal  || null,
+          regla_visita:     data.reglaVisita || null,
           goles_local:      null,
           goles_visita:     null,
           estado:           'Programado',
@@ -187,6 +190,17 @@ exports.handler = async (event) => {
           fase:     data.fase   || 'Regular',
         }).eq('id', data.matchId);
         result = error ? fail(error) : { success:true, message:'Partido actualizado' };
+        break;
+      }
+
+      case 'resolverPartido': {
+        const { error } = await db.from('encuentros').update({
+          id_equipo_local:  data.idLocal,
+          id_equipo_visita: data.idVisita,
+          regla_local:      null,
+          regla_visita:     null,
+        }).eq('id', data.matchId);
+        result = error ? fail(error) : { success:true, message:'Equipos asignados' };
         break;
       }
 
