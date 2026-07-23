@@ -12,7 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 function enterApp(){const s=document.getElementById('splash-screen');s.style.transition='opacity .5s';s.style.opacity='0';setTimeout(()=>s.style.display='none',500);}
-function abrirReglamento(){closeDrawer();window.open('https://lwsyntjhbcdfuhfjdjqf.supabase.co/storage/v1/object/public/documentos/Bases_Torneo_Apertura_ARBA_2026_v3.pdf','_blank');}
+function abrirReglamento(){closeDrawer();window.open('https://drive.google.com/drive/folders/1GwHlJ58jNB4UpcEXlSojAWbYQSh6u3CG?usp=drive_link','_blank');}
 function volverInicio(){document.getElementById('splash-screen').style.display='flex';}
 function forceRefresh(){const i=document.getElementById('refresh-icon');i.style.animation='spin .7s linear infinite';invalidateCache();fetchAllData().then(d=>{Object.assign(D,d);renderAll();if(typeof adminPass!=='undefined'&&adminPass)renderAdmin();i.style.animation='';toast('✓ Datos actualizados','ok');}).catch(()=>{i.style.animation='';toast('Error al actualizar','err');});}
 </script>
@@ -301,9 +301,8 @@ body.pub-themed #content .match-card{background:var(--pub-card);border-color:var
 <body>
 <!-- SPLASH -->
 <div id="splash-screen" style="position:fixed;inset:0;z-index:999;background:#0a0e1f;display:flex;flex-direction:column;overflow-y:auto">
-  <div style="background:#1e3a8a;padding:28px 18px 22px;text-align:center;flex-shrink:0">
-    <div style="font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:3px;color:#fff">BASQUET XV REGIÓN</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:2px;margin-top:2px">ARICA · CHILE</div>
+  <div style="background:#0a1628;padding:28px 18px 22px;text-align:center;flex-shrink:0">
+    <div style="font-family:'Archivo Black',sans-serif;font-size:20px;letter-spacing:2px;color:#fff">PROGRAMACIÓN</div>
     <div style="width:100%;height:1px;background:rgba(255,255,255,.1);margin:14px 0 12px"></div>
     <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#f97316;margin-bottom:4px" id="splash-temporada-label">TEMPORADA 2026</div>
     <div style="font-family:'Archivo Black',sans-serif;font-size:20px;color:#fff;letter-spacing:1px;margin-bottom:18px" id="splash-temporada-nombre">TORNEO APERTURA</div>
@@ -333,7 +332,7 @@ body.pub-themed #content .match-card{background:var(--pub-card);border-color:var
     <button class="ph-icon-btn"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/></svg></button>
   </div>
   <div class="ph-brand">
-    <div class="ph-name">BASQUET XV REGIÓN</div>
+    <div class="ph-name">PROGRAMACIÓN</div>
     <div class="ph-sub2">ARICA · CHILE</div>
     <div class="ph-sub" id="ph-periodo-label">TORNEO APERTURA 2026</div>
   </div>
@@ -1359,34 +1358,60 @@ window.importPartidosXLSX=async function(input){
       const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
       const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
       if(!rows.length){log.innerHTML='<span style="color:#fca5a5">❌ Archivo vacío</span>';return;}
-      const getVal=(row,names)=>{for(const k of Object.keys(row)){const kn=k.trim().toLowerCase().replace(/[^a-z]/g,'');if(names.some(n=>kn.includes(n)||n.includes(kn)))return String(row[k]).trim();}return'';};
+      const getVal=(row,names)=>{for(const k of Object.keys(row)){const kn=k.trim().toLowerCase().replace(/[^a-z]/g,'');if(names.some(n=>kn.includes(n)||n.includes(kn))){const v=row[k];return(v instanceof Date)?v:String(v).trim();}}return'';};
       const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
-      let ok=0,skip=0;const lines=[];
+      const teamCache={}; // key: ligaId+'|'+norm(nombre) -> equipo ya existente o recién creado en este import
+      const findOrCreateEq=async(nomRaw,ligaId)=>{
+        const nom=(nomRaw||'DISPONIBLE').trim()||'DISPONIBLE';
+        const key=ligaId+'|'+norm(nom);
+        if(teamCache[key])return{eq:teamCache[key],creado:false};
+        const eqs=D.equipos.filter(e=>e.ID_Liga===ligaId);
+        let eq=eqs.find(e=>norm(e.NombreEquipo)===norm(nom))||eqs.find(e=>norm(e.NombreEquipo).includes(norm(nom))||norm(nom).includes(norm(e.NombreEquipo)));
+        if(eq){teamCache[key]=eq;return{eq,creado:false};}
+        try{
+          const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'createTeam',adminPassword:adminPass,idLiga:ligaId,nombreEquipo:nom,colorLocal:'',colorVisita:''})});
+          const json=JSON.parse(await res.text());
+          if(json.success&&json.equipo){
+            const nuevo={ID:json.equipo.id,ID_Liga:json.equipo.id_liga,NombreEquipo:json.equipo.nombre_equipo,ColorUniformeLocal:json.equipo.color_uniforme_local,ColorUniformeVisita:json.equipo.color_uniforme_visita};
+            D.equipos.push(nuevo);teamCache[key]=nuevo;return{eq:nuevo,creado:true};
+          }
+        }catch(err){}
+        return{eq:null,creado:false};
+      };
+      let ok=0,skip=0,creados=0;const lines=[];
       for(let i=0;i<rows.length;i++){
         const row=rows[i];
         const numP=getVal(row,['partido','num','n']);const ligaNom=getVal(row,['liga','torneo']);
         const fecha=getVal(row,['fecha','date']);const hora=getVal(row,['hora','hour','time']);
         const cancha=getVal(row,['cancha','recinto','lugar']);const faseRaw=getVal(row,['fase','phase'])||'Regular';
         const localN=getVal(row,['local','home','equipo1']);const visN=getVal(row,['visita','away','equipo2']);
-        if(!localN||!visN){lines.push('<span style="color:#fbbf24">⚠ Fila '+(i+2)+': sin equipos</span>');skip++;continue;}
+        if(!localN&&!visN){lines.push('<span style="color:#fbbf24">⚠ Fila '+(i+2)+': fila vacía</span>');skip++;continue;}
         let liga=D.ligas.find(l=>ligaNom&&(norm(l.NombreFantasia).includes(norm(ligaNom))||norm(ligaNom).includes(norm(l.NombreFantasia))));
         if(!liga&&D.ligas.length)liga=D.ligas[0];
         if(!liga){lines.push('<span style="color:#fca5a5">❌ Sin ligas creadas</span>');skip++;continue;}
-        const findEq=(nom,ligaId)=>{const eqs=D.equipos.filter(e=>e.ID_Liga===ligaId);return eqs.find(e=>norm(e.NombreEquipo)===norm(nom))||eqs.find(e=>norm(e.NombreEquipo).includes(norm(nom))||norm(nom).includes(norm(e.NombreEquipo)))||D.equipos.find(e=>norm(e.NombreEquipo)===norm(nom))||null;};
-        const eqL=findEq(localN,liga.ID),eqV=findEq(visN,liga.ID);
-        if(!eqL||!eqV){lines.push('<span style="color:#fca5a5">❌ Fila '+(i+2)+': equipo no encontrado ("'+localN+'" o "'+visN+'")</span>');skip++;continue;}
-        let fechaFinal=fecha;if(fecha&&fecha.includes('/')){const[d,m,y]=fecha.split('/');fechaFinal=(y||'').padStart(4,'0')+'-'+(m||'').padStart(2,'0')+'-'+(d||'').padStart(2,'0');}
+        const{eq:eqL,creado:creadoL}=await findOrCreateEq(localN,liga.ID);
+        const{eq:eqV,creado:creadoV}=await findOrCreateEq(visN,liga.ID);
+        if(creadoL)creados++;if(creadoV)creados++;
+        if(!eqL||!eqV){lines.push('<span style="color:#fca5a5">❌ Fila '+(i+2)+': no se pudo crear/encontrar equipo ("'+localN+'" o "'+visN+'")</span>');skip++;continue;}
+        let fechaFinal;
+        if(fecha instanceof Date){fechaFinal=fecha.getUTCFullYear()+'-'+String(fecha.getUTCMonth()+1).padStart(2,'0')+'-'+String(fecha.getUTCDate()).padStart(2,'0');}
+        else{fechaFinal=fecha;if(fecha&&fecha.includes('/')){const[d,m,y]=fecha.split('/');fechaFinal=(y||'').padStart(4,'0')+'-'+(m||'').padStart(2,'0')+'-'+(d||'').padStart(2,'0');}}
+        let horaFinal;
+        if(hora instanceof Date){horaFinal=String(hora.getUTCHours()).padStart(2,'0')+':'+String(hora.getUTCMinutes()).padStart(2,'0');}
+        else{horaFinal=hora;}
+        const faseMapa={'ida':'Regular','vuelta':'Regular','grupos':'Regular','sf1':'Semifinales','sf2':'Semifinales','semifinal':'Semifinales','semifinales':'Semifinales','3°':'Tercer Lugar','3':'Tercer Lugar','tercerlugar':'Tercer Lugar','1°':'Final','1':'Final','final':'Final'};
+        const faseNorm=norm(faseRaw);
         const fasesOk=['Regular','Grupo A','Grupo B','Grupo C','Grupo D','Semifinales','Tercer Lugar','Final'];
-        const fase=fasesOk.includes(faseRaw)?faseRaw:'Regular';
+        const fase=fasesOk.includes(faseRaw)?faseRaw:(faseMapa[faseNorm]||'Regular');
         try{
-          const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'createMatch',adminPassword:adminPass,idLiga:liga.ID,jornada:numP,fecha:fechaFinal,hora,cancha,fase,idLocal:eqL.ID,idVisita:eqV.ID,youtubeUrl:''})});
+          const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'createMatch',adminPassword:adminPass,idLiga:liga.ID,jornada:numP,fecha:fechaFinal,hora:horaFinal,cancha,fase,idLocal:eqL.ID,idVisita:eqV.ID,youtubeUrl:''})});
           const json=JSON.parse(await res.text());
           if(json.success){ok++;lines.push('<span style="color:#86efac">✓ N°'+numP+': '+eqL.NombreEquipo+' vs '+eqV.NombreEquipo+' · '+fechaFinal+'</span>');}
           else{lines.push('<span style="color:#fca5a5">❌ '+json.message+'</span>');skip++;}
         }catch(err){lines.push('<span style="color:#fca5a5">❌ Red: '+err.message+'</span>');skip++;}
       }
-      log.innerHTML=lines.join('')+'<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);font-weight:700;color:#fff">✅ '+ok+' importado'+(ok!==1?'s':'')+' &nbsp;|&nbsp; ⚠ '+skip+' omitido'+(skip!==1?'s':'')+'</div>';
-      if(ok>0){await refreshData();renderAll();if(adminPass)renderAdmin();renderPartidosAdm();toast('✓ '+ok+' partido'+(ok!==1?'s':'')+' importados','ok');}
+      log.innerHTML=lines.join('')+'<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);font-weight:700;color:#fff">✅ '+ok+' importado'+(ok!==1?'s':'')+' &nbsp;|&nbsp; 🆕 '+creados+' equipo'+(creados!==1?'s':'')+' creado'+(creados!==1?'s':'')+' &nbsp;|&nbsp; ⚠ '+skip+' omitido'+(skip!==1?'s':'')+'</div>';
+      if(ok>0){await refreshData();renderAll();if(adminPass){renderAdmin();renderEquiposAdm();}renderPartidosAdm();toast('✓ '+ok+' partido'+(ok!==1?'s':'')+' importados'+(creados>0?' · '+creados+' equipo'+(creados!==1?'s':'')+' nuevo'+(creados!==1?'s':''):''),'ok');}
     }catch(err){log.innerHTML='<span style="color:#fca5a5">❌ Error: '+err.message+'</span>';console.error(err);}
     input.value='';
   };
