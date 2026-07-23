@@ -883,7 +883,9 @@ function calcStandings(ligaId){
 
 function renderAll(){populateReporteSelects();}
 function populateReporteSelects(){
-  const lo='<option value="">Todas las ligas</option>'+D.ligas.map(l=>`<option value="${l.ID}">${l.NombreFantasia}</option>`).join('');
+  const actR=temporadaActiva();
+  const ligasRep=D.ligas.filter(l=>!actR||l.id_temporada===actR.id||!l.id_temporada);
+  const lo='<option value="">Todas las ligas</option>'+ligasRep.map(l=>`<option value="${l.ID}">${l.NombreFantasia}</option>`).join('');
   ['rep-liga-fixture','rep-liga-res','rep-liga-pts'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=lo;});
   ['rep-eq-fixture','rep-eq-res'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">Todos los equipos</option>';});
 }
@@ -899,21 +901,23 @@ window.downloadPDF=function(tipo){
   const ligaEl=document.getElementById('rep-liga-'+suf);const eqEl=tipo==='puntaje'?null:document.getElementById('rep-eq-'+suf);
   const ligaId=ligaEl?.value||'';const eqId=eqEl?.value||'';
   const liga=ligaId?D.ligas.find(l=>l.ID===ligaId):null;const equipo=eqId?D.equipos.find(e=>e.ID===eqId):null;
+  const actRep=temporadaActiva();
+  const ligasActivasIds=new Set(D.ligas.filter(l=>!actRep||l.id_temporada===actRep.id||!l.id_temporada).map(l=>l.ID));
   const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
   const sub=[liga?.NombreFantasia,equipo?.NombreEquipo].filter(Boolean).join(' · ')||'Todas las categorías';
   if(tipo==='fixture'){
     pdfHeader(doc,'FIXTURE',sub);
-    let pts=D.partidos.filter(p=>p.Estado==='Programado');
+    let pts=D.partidos.filter(p=>p.Estado==='Programado'&&ligasActivasIds.has(p.ID_Liga));
     if(ligaId)pts=pts.filter(p=>p.ID_Liga===ligaId);if(eqId)pts=pts.filter(p=>p.ID_EquipoLocal===eqId||p.ID_EquipoVisita===eqId);
     doc.autoTable({startY:26,head:[['Fecha','Hora','Local','','Visita','Cancha','Fase']],body:pts.length?pts.map(p=>[fmtDate(p.Fecha),p.Hora||'—',teamName(p.ID_EquipoLocal),'vs',teamName(p.ID_EquipoVisita),p.Cancha||'—',p.Fase||'—']):[['Sin partidos','','','','','','']],styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[239,246,255]},columnStyles:{3:{halign:'center',fontStyle:'bold'}}});
   }else if(tipo==='resultados'){
     pdfHeader(doc,'RESULTADOS',sub);
-    let pts=D.partidos.filter(p=>p.Estado==='Finalizado');
+    let pts=D.partidos.filter(p=>p.Estado==='Finalizado'&&ligasActivasIds.has(p.ID_Liga));
     if(ligaId)pts=pts.filter(p=>p.ID_Liga===ligaId);if(eqId)pts=pts.filter(p=>p.ID_EquipoLocal===eqId||p.ID_EquipoVisita===eqId);
     doc.autoTable({startY:26,head:[['Fecha','Local','Pts','—','Pts','Visita','Fase']],body:pts.length?pts.map(p=>[fmtDate(p.Fecha),teamName(p.ID_EquipoLocal),String(p.GolesLocal??'—'),'-',String(p.GolesVisita??'—'),teamName(p.ID_EquipoVisita),p.Fase||'—']):[['Sin resultados','','','','','','']],styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[239,246,255]},columnStyles:{2:{halign:'right',fontStyle:'bold'},3:{halign:'center'},4:{halign:'left',fontStyle:'bold'}}});
   }else if(tipo==='puntaje'){
     pdfHeader(doc,'TABLA DE POSICIONES',sub);
-    const ligas=ligaId?D.ligas.filter(l=>l.ID===ligaId):D.ligas;let y=26;
+    const ligas=ligaId?D.ligas.filter(l=>l.ID===ligaId):D.ligas.filter(l=>ligasActivasIds.has(l.ID));let y=26;
     ligas.forEach(l=>{
       const st=calcStandings(l.ID);if(!st.length)return;
       doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(30,58,138);doc.text(l.NombreFantasia+' — '+l.Categoria,14,y+4);
@@ -1096,7 +1100,8 @@ window.openEditLiga=function(id){
 };
 window.openEditSancion=function(id){
   const s=D.sanciones.find(x=>x.ID===id);if(!s)return;
-  const lo=D.ligas.map(l=>`<option value="${l.ID}"${l.ID===s.ID_Liga?' selected':''}>${l.NombreFantasia}</option>`).join('');
+  const actS=temporadaActiva();
+  const lo=D.ligas.filter(l=>!actS||l.id_temporada===actS.id||!l.id_temporada||l.ID===s.ID_Liga).map(l=>`<option value="${l.ID}"${l.ID===s.ID_Liga?' selected':''}>${l.NombreFantasia}</option>`).join('');
   const eo=D.equipos.map(e=>`<option value="${e.ID}"${e.ID===s.ID_Equipo?' selected':''}>${e.NombreEquipo}</option>`).join('');
   document.getElementById('modal-title').textContent='Editar Sanción';
   document.getElementById('modal-body').innerHTML=`<label class="f-label">Liga</label><select class="f-select" id="ms-liga">${lo}</select><label class="f-label">Equipo</label><select class="f-select" id="ms-equipo">${eo}</select><label class="f-label">Jugador</label><input class="f-input" id="ms-jugador" type="text" value="${s.NombreJugador}"><label class="f-label">Tipo de falta</label><input class="f-input" id="ms-tipo" type="text" value="${s.TipoFalta||''}"><label class="f-label">Sanción</label><textarea class="f-input" id="ms-sancion" rows="2">${s.Sancion}</textarea><label class="f-label">Término</label><input class="f-input" id="ms-termino" type="text" value="${s.TerminoSancion||''}">`;
@@ -1105,7 +1110,8 @@ window.openEditSancion=function(id){
 };
 window.openEditPartido=function(id){
   const p=D.partidos.find(x=>x.ID===id);if(!p)return;
-  const lo=D.ligas.map(l=>`<option value="${l.ID}"${l.ID===p.ID_Liga?' selected':''}>${l.NombreFantasia}</option>`).join('');
+  const actP=temporadaActiva();
+  const lo=D.ligas.filter(l=>!actP||l.id_temporada===actP.id||!l.id_temporada||l.ID===p.ID_Liga).map(l=>`<option value="${l.ID}"${l.ID===p.ID_Liga?' selected':''}>${l.NombreFantasia}</option>`).join('');
   document.getElementById('modal-title').textContent='Editar Partido';
   document.getElementById('modal-body').innerHTML=`<label class="f-label">N° Partido</label><input class="f-input" id="ep-num" type="number" value="${p.Partidos||''}"><label class="f-label">Liga</label><select class="f-select" id="ep-liga">${lo}</select><label class="f-label">Fecha</label><input class="f-input" id="ep-fecha" type="date" value="${p.Fecha||''}"><label class="f-label">Hora</label><input class="f-input" id="ep-hora" type="time" value="${p.Hora||''}"><label class="f-label">Cancha</label><input class="f-input" id="ep-cancha" type="text" value="${p.Cancha||''}"><label class="f-label">Fase</label><select class="f-select" id="ep-fase"><option${p.Fase==='Regular'?' selected':''}>Regular</option><option${p.Fase==='Grupo A'?' selected':''}>Grupo A</option><option${p.Fase==='Grupo B'?' selected':''}>Grupo B</option><option${p.Fase==='Semifinales'?' selected':''}>Semifinales</option><option${p.Fase==='Tercer Lugar'?' selected':''}>Tercer Lugar</option><option${p.Fase==='Final'?' selected':''}>Final</option></select>`;
   document.getElementById('modal-overlay').classList.add('open');
@@ -1379,6 +1385,8 @@ window.importPartidosXLSX=async function(input){
         return{eq:null,creado:false};
       };
       const esPlaceholder=nom=>/^(\d+°?|GSF\d|PSF\d|\d+°?\s*Grupo\s*[A-D])$/i.test((nom||'').trim());
+      const actImport=temporadaActiva();
+      const ligasImport=D.ligas.filter(l=>!actImport||l.id_temporada===actImport.id||!l.id_temporada);
       let ok=0,skip=0,creados=0,pendientes=0;const lines=[];
       for(let i=0;i<rows.length;i++){
         const row=rows[i];
@@ -1388,8 +1396,8 @@ window.importPartidosXLSX=async function(input){
         const localN=getVal(row,['local','home','equipo1']);const visN=getVal(row,['visita','away','equipo2']);
         if(!localN&&!visN){lines.push('<span style="color:#fbbf24">⚠ Fila '+(i+2)+': fila vacía</span>');skip++;continue;}
         if(esPlaceholder(localN)||esPlaceholder(visN)){lines.push('<span style="color:#93c5fd">⏭ Fila '+(i+2)+': fase final pendiente ("'+localN+'" vs "'+visN+'") · agrégala manualmente cuando se conozcan los equipos</span>');pendientes++;continue;}
-        let liga=D.ligas.find(l=>ligaNom&&(norm(l.NombreFantasia).includes(norm(ligaNom))||norm(ligaNom).includes(norm(l.NombreFantasia))));
-        if(!liga&&D.ligas.length)liga=D.ligas[0];
+        let liga=ligasImport.find(l=>ligaNom&&norm(l.NombreFantasia)===norm(ligaNom))||ligasImport.find(l=>ligaNom&&(norm(l.NombreFantasia).includes(norm(ligaNom))||norm(ligaNom).includes(norm(l.NombreFantasia))));
+        if(!liga&&ligasImport.length)liga=ligasImport[0];
         if(!liga){lines.push('<span style="color:#fca5a5">❌ Sin ligas creadas</span>');skip++;continue;}
         const{eq:eqL,creado:creadoL}=await findOrCreateEq(localN,liga.ID);
         const{eq:eqV,creado:creadoV}=await findOrCreateEq(visN,liga.ID);
