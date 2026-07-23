@@ -1448,6 +1448,8 @@ window.importPartidosXLSX=async function(input){
         let liga=ligasImport.find(l=>ligaNom&&norm(l.NombreFantasia)===norm(ligaNom))||ligasImport.find(l=>ligaNom&&(norm(l.NombreFantasia).includes(norm(ligaNom))||norm(ligaNom).includes(norm(l.NombreFantasia))));
         if(!liga&&ligasImport.length)liga=ligasImport[0];
         if(!liga){lines.push('<span style="color:#fca5a5">❌ Sin ligas creadas</span>');skip++;continue;}
+        const yaExiste=D.partidos.some(x=>x.ID_Liga===liga.ID&&numP&&String(x.Partidos)===String(numP));
+        if(yaExiste){lines.push('<span style="color:rgba(255,255,255,.35)">↷ Fila '+(i+2)+': N°'+numP+' ya existe, omitido (evita duplicado)</span>');skip++;continue;}
         let fechaFinal;
         if(fecha instanceof Date){fechaFinal=fecha.getUTCFullYear()+'-'+String(fecha.getUTCMonth()+1).padStart(2,'0')+'-'+String(fecha.getUTCDate()).padStart(2,'0');}
         else{fechaFinal=fecha;if(fecha&&fecha.includes('/')){const[d,m,y]=fecha.split('/');fechaFinal=(y||'').padStart(4,'0')+'-'+(m||'').padStart(2,'0')+'-'+(d||'').padStart(2,'0');}}
