@@ -827,7 +827,7 @@ async function fetchAllData(){
   const norm={
     ligas:(rL.data||[]).map(r=>({ID:r.id,NombreDeporte:r.nombre_deporte,Categoria:r.categoria,NombreFantasia:r.nombre_fantasia,PuntosVictoria:r.puntos_victoria,PuntosEmpate:r.puntos_empate,PuntosDerrota:r.puntos_derrota,EstadoTorneo:r.estado_torneo,id_temporada:r.id_temporada})),
     equipos:(rE.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,NombreEquipo:r.nombre_equipo,ColorUniformeLocal:r.color_uniforme_local,ColorUniformeVisita:r.color_uniforme_visita})),
-    partidos:(rP.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,Partidos:r.partidos,Fecha:r.fecha,Hora:r.hora,Cancha:r.cancha,Fase:r.fase,ID_EquipoLocal:r.id_equipo_local,GolesLocal:r.goles_local!==null?r.goles_local:'',GolesVisita:r.goles_visita!==null?r.goles_visita:'',ID_EquipoVisita:r.id_equipo_visita,Estado:r.estado,YoutubeURL:r.youtube_url})),
+    partidos:(rP.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,Partidos:r.partidos,Fecha:r.fecha,Hora:r.hora,Cancha:r.cancha,Fase:r.fase,FaseCodigo:r.fase_codigo,ID_EquipoLocal:r.id_equipo_local,GolesLocal:r.goles_local!==null?r.goles_local:'',GolesVisita:r.goles_visita!==null?r.goles_visita:'',ID_EquipoVisita:r.id_equipo_visita,ReglaLocal:r.regla_local,ReglaVisita:r.regla_visita,Estado:r.estado,YoutubeURL:r.youtube_url})),
     sanciones:(rS.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,ID_Equipo:r.id_equipo,NombreJugador:r.nombre_jugador,TipoFalta:r.tipo_falta,Sancion:r.sancion,TerminoSancion:r.termino_sancion})),
     noticias:(rN.data||[]).map(r=>({ID:r.id,Fecha:r.fecha,Titulo:r.titulo,Descripcion:r.descripcion,ImagenURL:r.imagen_url,foto_url:r.foto_url,Enlace:r.enlace,me_gusta:r.me_gusta||0})),
     personas:(rPer.data||[]),stats:(rSt.data||[]),
@@ -1026,7 +1026,13 @@ function renderPartidosAdm(){
   const todos=[...D.partidos].sort((a,b)=>(parseInt(a.Partidos)||9999)-(parseInt(b.Partidos)||9999));
   if(!todos.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay partidos registrados.</div>';return;}
   const prog=todos.filter(p=>p.Estado!=='Finalizado'),fin=todos.filter(p=>p.Estado==='Finalizado');
-  const itemHtml=p=>{const liga=ligaObj(p.ID_Liga);return`<div class="adm-list-item"><div><div class="adm-list-name">${teamName(p.ID_EquipoLocal)} vs ${teamName(p.ID_EquipoVisita)}</div><div class="adm-list-sub">${fmtDate(p.Fecha)}${fmtTime(p.Hora)?' · '+fmtTime(p.Hora):''} · ${liga?liga.NombreFantasia:''}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditPartido('${p.ID}')">Editar</button><button class="del-btn" onclick="delPartido('${p.ID}')">Eliminar</button></div></div>`;};
+  const itemHtml=p=>{
+    const liga=ligaObj(p.ID_Liga);
+    const pendiente=!p.ID_EquipoLocal||!p.ID_EquipoVisita;
+    const nombreLocal=p.ID_EquipoLocal?teamName(p.ID_EquipoLocal):(p.ReglaLocal||'?');
+    const nombreVisita=p.ID_EquipoVisita?teamName(p.ID_EquipoVisita):(p.ReglaVisita||'?');
+    return `<div class="adm-list-item"><div><div class="adm-list-name">${nombreLocal} vs ${nombreVisita}${pendiente?' <span style="color:#f59e0b;font-size:10px;font-weight:700;margin-left:6px">⏳ PENDIENTE</span>':''}</div><div class="adm-list-sub">${fmtDate(p.Fecha)}${fmtTime(p.Hora)?' · '+fmtTime(p.Hora):''} · ${liga?liga.NombreFantasia:''}</div></div><div style="display:flex;gap:6px">${pendiente?`<button class="edit-btn" onclick="openResolverPartido('${p.ID}')">Asignar equipos</button>`:`<button class="edit-btn" onclick="openEditPartido('${p.ID}')">Editar</button>`}<button class="del-btn" onclick="delPartido('${p.ID}')">Eliminar</button></div></div>`;
+  };
   let html='';
   if(prog.length){
     html+='<div class="adm-sec-label" style="margin-top:0">Pendientes / En curso</div>';
@@ -1116,6 +1122,50 @@ window.openEditPartido=function(id){
   document.getElementById('modal-body').innerHTML=`<label class="f-label">N° Partido</label><input class="f-input" id="ep-num" type="number" value="${p.Partidos||''}"><label class="f-label">Liga</label><select class="f-select" id="ep-liga">${lo}</select><label class="f-label">Fecha</label><input class="f-input" id="ep-fecha" type="date" value="${p.Fecha||''}"><label class="f-label">Hora</label><input class="f-input" id="ep-hora" type="time" value="${p.Hora||''}"><label class="f-label">Cancha</label><input class="f-input" id="ep-cancha" type="text" value="${p.Cancha||''}"><label class="f-label">Fase</label><select class="f-select" id="ep-fase"><option${p.Fase==='Regular'?' selected':''}>Regular</option><option${p.Fase==='Grupo A'?' selected':''}>Grupo A</option><option${p.Fase==='Grupo B'?' selected':''}>Grupo B</option><option${p.Fase==='Semifinales'?' selected':''}>Semifinales</option><option${p.Fase==='Tercer Lugar'?' selected':''}>Tercer Lugar</option><option${p.Fase==='Final'?' selected':''}>Final</option></select>`;
   document.getElementById('modal-overlay').classList.add('open');
   modalSaveCb=()=>{gasCall('updateMatch',{matchId:id,partidos:document.getElementById('ep-num').value,idLiga:document.getElementById('ep-liga').value,fecha:document.getElementById('ep-fecha').value,hora:document.getElementById('ep-hora').value,cancha:document.getElementById('ep-cancha').value.trim(),fase:document.getElementById('ep-fase').value});document.getElementById('modal-overlay').classList.remove('open');};
+};
+function sugerirEquipoPorRegla(regla,ligaId,p,lado){
+  if(!regla)return null;
+  const r=regla.trim();
+  const mPos=r.match(/^(\d+)°?(?:\s*Grupo\s*([A-D]))?$/i);
+  if(mPos){
+    const n=parseInt(mPos[1]);
+    const st=calcStandings(ligaId);
+    return st[n-1]?.ID||null;
+  }
+  const mBracket=r.match(/^(GSF|PSF)(\d)$/i);
+  if(mBracket){
+    const tipo=mBracket[1].toUpperCase(),num=mBracket[2];
+    const semi=D.partidos.find(x=>x.ID_Liga===ligaId&&x.FaseCodigo&&x.FaseCodigo.trim().toUpperCase()==='SF'+num&&x.Estado==='Finalizado');
+    if(!semi)return null;
+    const gl=parseInt(semi.GolesLocal),gv=parseInt(semi.GolesVisita);
+    if(isNaN(gl)||isNaN(gv)||gl===gv)return null;
+    const ganador=gl>gv?semi.ID_EquipoLocal:semi.ID_EquipoVisita;
+    const perdedor=gl>gv?semi.ID_EquipoVisita:semi.ID_EquipoLocal;
+    return tipo==='GSF'?ganador:perdedor;
+  }
+  return null;
+}
+window.openResolverPartido=function(id){
+  const p=D.partidos.find(x=>x.ID===id);if(!p)return;
+  const liga=ligaObj(p.ID_Liga);
+  const eqs=D.equipos.filter(e=>e.ID_Liga===p.ID_Liga);
+  const sugL=p.ID_EquipoLocal||sugerirEquipoPorRegla(p.ReglaLocal,p.ID_Liga,p,'local');
+  const sugV=p.ID_EquipoVisita||sugerirEquipoPorRegla(p.ReglaVisita,p.ID_Liga,p,'visita');
+  const opts=(sel)=>'<option value="">— Selecciona equipo —</option>'+eqs.map(e=>`<option value="${e.ID}"${e.ID===sel?' selected':''}>${e.NombreEquipo}</option>`).join('');
+  document.getElementById('modal-title').textContent='Asignar equipos — Fase Final';
+  document.getElementById('modal-body').innerHTML=`
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">${liga?liga.NombreFantasia:''} · ${fmtDate(p.Fecha)}${fmtTime(p.Hora)?' · '+fmtTime(p.Hora):''}</div>
+    <label class="f-label">Local <span style="color:var(--muted);font-weight:400">(regla: ${p.ReglaLocal||'—'}${sugL?' · sugerido':' · sin sugerencia'})</span></label>
+    <select class="f-select" id="rp-local" style="margin-bottom:12px">${opts(sugL)}</select>
+    <label class="f-label">Visita <span style="color:var(--muted);font-weight:400">(regla: ${p.ReglaVisita||'—'}${sugV?' · sugerido':' · sin sugerencia'})</span></label>
+    <select class="f-select" id="rp-visita">${opts(sugV)}</select>`;
+  document.getElementById('modal-overlay').classList.add('open');
+  modalSaveCb=()=>{
+    const idLocal=document.getElementById('rp-local').value,idVisita=document.getElementById('rp-visita').value;
+    if(!idLocal||!idVisita)return toast('Selecciona ambos equipos','err');
+    gasCall('resolverPartido',{matchId:id,idLocal,idVisita});
+    document.getElementById('modal-overlay').classList.remove('open');
+  };
 };
 async function renderUsuariosAdm(){
   const el=document.getElementById('usuarios-list');if(!el)return;
@@ -1395,14 +1445,9 @@ window.importPartidosXLSX=async function(input){
         const cancha=getVal(row,['cancha','recinto','lugar']);const faseRaw=getVal(row,['fase','phase'])||'Regular';
         const localN=getVal(row,['local','home','equipo1']);const visN=getVal(row,['visita','away','equipo2']);
         if(!localN&&!visN){lines.push('<span style="color:#fbbf24">⚠ Fila '+(i+2)+': fila vacía</span>');skip++;continue;}
-        if(esPlaceholder(localN)||esPlaceholder(visN)){lines.push('<span style="color:#93c5fd">⏭ Fila '+(i+2)+': fase final pendiente ("'+localN+'" vs "'+visN+'") · agrégala manualmente cuando se conozcan los equipos</span>');pendientes++;continue;}
         let liga=ligasImport.find(l=>ligaNom&&norm(l.NombreFantasia)===norm(ligaNom))||ligasImport.find(l=>ligaNom&&(norm(l.NombreFantasia).includes(norm(ligaNom))||norm(ligaNom).includes(norm(l.NombreFantasia))));
         if(!liga&&ligasImport.length)liga=ligasImport[0];
         if(!liga){lines.push('<span style="color:#fca5a5">❌ Sin ligas creadas</span>');skip++;continue;}
-        const{eq:eqL,creado:creadoL}=await findOrCreateEq(localN,liga.ID);
-        const{eq:eqV,creado:creadoV}=await findOrCreateEq(visN,liga.ID);
-        if(creadoL)creados++;if(creadoV)creados++;
-        if(!eqL||!eqV){lines.push('<span style="color:#fca5a5">❌ Fila '+(i+2)+': no se pudo crear/encontrar equipo ("'+localN+'" o "'+visN+'")</span>');skip++;continue;}
         let fechaFinal;
         if(fecha instanceof Date){fechaFinal=fecha.getUTCFullYear()+'-'+String(fecha.getUTCMonth()+1).padStart(2,'0')+'-'+String(fecha.getUTCDate()).padStart(2,'0');}
         else{fechaFinal=fecha;if(fecha&&fecha.includes('/')){const[d,m,y]=fecha.split('/');fechaFinal=(y||'').padStart(4,'0')+'-'+(m||'').padStart(2,'0')+'-'+(d||'').padStart(2,'0');}}
@@ -1413,6 +1458,19 @@ window.importPartidosXLSX=async function(input){
         const faseNorm=norm(faseRaw);
         const fasesOk=['Regular','Grupo A','Grupo B','Grupo C','Grupo D','Semifinales','Tercer Lugar','Final'];
         const fase=fasesOk.includes(faseRaw)?faseRaw:(faseMapa[faseNorm]||'Regular');
+        if(esPlaceholder(localN)||esPlaceholder(visN)){
+          try{
+            const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'createMatch',adminPassword:adminPass,idLiga:liga.ID,jornada:numP,fecha:fechaFinal,hora:horaFinal,cancha,fase,faseCodigo:faseRaw,idLocal:null,idVisita:null,reglaLocal:localN,reglaVisita:visN,youtubeUrl:''})});
+            const json=JSON.parse(await res.text());
+            if(json.success){pendientes++;lines.push('<span style="color:#93c5fd">⏭ N°'+numP+': "'+localN+'" vs "'+visN+'" · '+fechaFinal+' · pendiente de definir equipos</span>');}
+            else{lines.push('<span style="color:#fca5a5">❌ '+json.message+'</span>');skip++;}
+          }catch(err){lines.push('<span style="color:#fca5a5">❌ Red: '+err.message+'</span>');skip++;}
+          continue;
+        }
+        const{eq:eqL,creado:creadoL}=await findOrCreateEq(localN,liga.ID);
+        const{eq:eqV,creado:creadoV}=await findOrCreateEq(visN,liga.ID);
+        if(creadoL)creados++;if(creadoV)creados++;
+        if(!eqL||!eqV){lines.push('<span style="color:#fca5a5">❌ Fila '+(i+2)+': no se pudo crear/encontrar equipo ("'+localN+'" o "'+visN+'")</span>');skip++;continue;}
         try{
           const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'createMatch',adminPassword:adminPass,idLiga:liga.ID,jornada:numP,fecha:fechaFinal,hora:horaFinal,cancha,fase,idLocal:eqL.ID,idVisita:eqV.ID,youtubeUrl:''})});
           const json=JSON.parse(await res.text());
@@ -1421,7 +1479,7 @@ window.importPartidosXLSX=async function(input){
         }catch(err){lines.push('<span style="color:#fca5a5">❌ Red: '+err.message+'</span>');skip++;}
       }
       log.innerHTML=lines.join('')+'<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);font-weight:700;color:#fff">✅ '+ok+' importado'+(ok!==1?'s':'')+' &nbsp;|&nbsp; 🆕 '+creados+' equipo'+(creados!==1?'s':'')+' creado'+(creados!==1?'s':'')+' &nbsp;|&nbsp; ⏭ '+pendientes+' fase final pendiente'+(pendientes!==1?'s':'')+' &nbsp;|&nbsp; ⚠ '+skip+' omitido'+(skip!==1?'s':'')+'</div>';
-      if(ok>0){await refreshData();renderAll();if(adminPass){renderAdmin();renderEquiposAdm();}renderPartidosAdm();toast('✓ '+ok+' partido'+(ok!==1?'s':'')+' importados'+(creados>0?' · '+creados+' equipo'+(creados!==1?'s':'')+' nuevo'+(creados!==1?'s':''):''),'ok');}
+      if(ok>0||pendientes>0){await refreshData();renderAll();if(adminPass){renderAdmin();renderEquiposAdm();}renderPartidosAdm();toast('✓ '+ok+' partido'+(ok!==1?'s':'')+' importados'+(creados>0?' · '+creados+' equipo'+(creados!==1?'s':'')+' nuevo'+(creados!==1?'s':''):''),'ok');}
     }catch(err){log.innerHTML='<span style="color:#fca5a5">❌ Error: '+err.message+'</span>';console.error(err);}
     input.value='';
   };
