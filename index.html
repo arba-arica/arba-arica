@@ -1378,7 +1378,8 @@ window.importPartidosXLSX=async function(input){
         }catch(err){}
         return{eq:null,creado:false};
       };
-      let ok=0,skip=0,creados=0;const lines=[];
+      const esPlaceholder=nom=>/^(\d+°?|GSF\d|PSF\d|\d+°?\s*Grupo\s*[A-D])$/i.test((nom||'').trim());
+      let ok=0,skip=0,creados=0,pendientes=0;const lines=[];
       for(let i=0;i<rows.length;i++){
         const row=rows[i];
         const numP=getVal(row,['partido','num','n']);const ligaNom=getVal(row,['liga','torneo']);
@@ -1386,6 +1387,7 @@ window.importPartidosXLSX=async function(input){
         const cancha=getVal(row,['cancha','recinto','lugar']);const faseRaw=getVal(row,['fase','phase'])||'Regular';
         const localN=getVal(row,['local','home','equipo1']);const visN=getVal(row,['visita','away','equipo2']);
         if(!localN&&!visN){lines.push('<span style="color:#fbbf24">⚠ Fila '+(i+2)+': fila vacía</span>');skip++;continue;}
+        if(esPlaceholder(localN)||esPlaceholder(visN)){lines.push('<span style="color:#93c5fd">⏭ Fila '+(i+2)+': fase final pendiente ("'+localN+'" vs "'+visN+'") · agrégala manualmente cuando se conozcan los equipos</span>');pendientes++;continue;}
         let liga=D.ligas.find(l=>ligaNom&&(norm(l.NombreFantasia).includes(norm(ligaNom))||norm(ligaNom).includes(norm(l.NombreFantasia))));
         if(!liga&&D.ligas.length)liga=D.ligas[0];
         if(!liga){lines.push('<span style="color:#fca5a5">❌ Sin ligas creadas</span>');skip++;continue;}
@@ -1410,7 +1412,7 @@ window.importPartidosXLSX=async function(input){
           else{lines.push('<span style="color:#fca5a5">❌ '+json.message+'</span>');skip++;}
         }catch(err){lines.push('<span style="color:#fca5a5">❌ Red: '+err.message+'</span>');skip++;}
       }
-      log.innerHTML=lines.join('')+'<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);font-weight:700;color:#fff">✅ '+ok+' importado'+(ok!==1?'s':'')+' &nbsp;|&nbsp; 🆕 '+creados+' equipo'+(creados!==1?'s':'')+' creado'+(creados!==1?'s':'')+' &nbsp;|&nbsp; ⚠ '+skip+' omitido'+(skip!==1?'s':'')+'</div>';
+      log.innerHTML=lines.join('')+'<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);font-weight:700;color:#fff">✅ '+ok+' importado'+(ok!==1?'s':'')+' &nbsp;|&nbsp; 🆕 '+creados+' equipo'+(creados!==1?'s':'')+' creado'+(creados!==1?'s':'')+' &nbsp;|&nbsp; ⏭ '+pendientes+' fase final pendiente'+(pendientes!==1?'s':'')+' &nbsp;|&nbsp; ⚠ '+skip+' omitido'+(skip!==1?'s':'')+'</div>';
       if(ok>0){await refreshData();renderAll();if(adminPass){renderAdmin();renderEquiposAdm();}renderPartidosAdm();toast('✓ '+ok+' partido'+(ok!==1?'s':'')+' importados'+(creados>0?' · '+creados+' equipo'+(creados!==1?'s':'')+' nuevo'+(creados!==1?'s':''):''),'ok');}
     }catch(err){log.innerHTML='<span style="color:#fca5a5">❌ Error: '+err.message+'</span>';console.error(err);}
     input.value='';
