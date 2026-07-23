@@ -16,6 +16,7 @@
  *     desde el modal del panel admin, sin tener que recrear la temporada.
  */
 const { createClient } = require('@supabase/supabase-js');
+const { randomUUID } = require('crypto');
 
 const db = createClient(
   process.env.SUPABASE_URL,
@@ -135,13 +136,15 @@ exports.handler = async (event) => {
 
       // ─── EQUIPOS ─────────────────────────────────────────────
       case 'createTeam': {
-        const { error } = await db.from('equipos').insert({
+        const nuevoEquipo = {
+          id:                    randomUUID(),
           id_liga:               data.idLiga,
           nombre_equipo:         data.nombreEquipo      || '',
           color_uniforme_local:  data.colorLocal        || '',
           color_uniforme_visita: data.colorVisita       || '',
-        });
-        result = error ? fail(error) : { success:true, message:'Equipo registrado' };
+        };
+        const { error } = await db.from('equipos').insert(nuevoEquipo);
+        result = error ? fail(error) : { success:true, message:'Equipo registrado', equipo: nuevoEquipo };
         break;
       }
       case 'updateTeam': {
