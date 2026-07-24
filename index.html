@@ -588,6 +588,8 @@ body.pub-themed #content .match-card{background:var(--pub-card);border-color:var
               <select class="f-select" id="eq-liga" onchange="renderEquiposAdm()"></select>
               <label class="f-label">Nombre del equipo</label>
               <input class="f-input" id="eq-nombre" type="text" placeholder="Nombre del club">
+              <label class="f-label">Grupo <span style="color:var(--muted);font-weight:400">(opcional, solo si la categoría juega en grupos)</span></label>
+              <input class="f-input" id="eq-grupo" type="text" placeholder="Ej: A, B, C..." maxlength="1" style="text-transform:uppercase">
               <div class="f-row">
                 <div><label class="f-label">Color local</label><input class="f-input" id="eq-cl" type="text" placeholder="Azul"></div>
                 <div><label class="f-label">Color visita</label><input class="f-input" id="eq-cv" type="text" placeholder="Blanco"></div>
@@ -826,7 +828,7 @@ async function fetchAllData(){
   ]);
   const norm={
     ligas:(rL.data||[]).map(r=>({ID:r.id,NombreDeporte:r.nombre_deporte,Categoria:r.categoria,NombreFantasia:r.nombre_fantasia,PuntosVictoria:r.puntos_victoria,PuntosEmpate:r.puntos_empate,PuntosDerrota:r.puntos_derrota,EstadoTorneo:r.estado_torneo,id_temporada:r.id_temporada})),
-    equipos:(rE.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,NombreEquipo:r.nombre_equipo,ColorUniformeLocal:r.color_uniforme_local,ColorUniformeVisita:r.color_uniforme_visita})),
+    equipos:(rE.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,NombreEquipo:r.nombre_equipo,ColorUniformeLocal:r.color_uniforme_local,ColorUniformeVisita:r.color_uniforme_visita,Grupo:r.grupo})),
     partidos:(rP.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,Partidos:r.partidos,Fecha:r.fecha,Hora:r.hora,Cancha:r.cancha,Fase:r.fase,FaseCodigo:r.fase_codigo,ID_EquipoLocal:r.id_equipo_local,GolesLocal:r.goles_local!==null?r.goles_local:'',GolesVisita:r.goles_visita!==null?r.goles_visita:'',ID_EquipoVisita:r.id_equipo_visita,ReglaLocal:r.regla_local,ReglaVisita:r.regla_visita,Estado:r.estado,YoutubeURL:r.youtube_url})),
     sanciones:(rS.data||[]).map(r=>({ID:r.id,ID_Liga:r.id_liga,ID_Equipo:r.id_equipo,NombreJugador:r.nombre_jugador,TipoFalta:r.tipo_falta,Sancion:r.sancion,TerminoSancion:r.termino_sancion})),
     noticias:(rN.data||[]).map(r=>({ID:r.id,Fecha:r.fecha,Titulo:r.titulo,Descripcion:r.descripcion,ImagenURL:r.imagen_url,foto_url:r.foto_url,Enlace:r.enlace,me_gusta:r.me_gusta||0})),
@@ -862,9 +864,9 @@ function showSectionDrawer(secId){document.querySelectorAll('.section').forEach(
 function closeNoticiaModal(){document.getElementById('noticia-modal-overlay').classList.remove('open');}
 function toggleLikeModal(){}
 
-function calcStandings(ligaId){
+function calcStandings(ligaId,grupo){
   const liga=ligaObj(ligaId);if(!liga)return[];
-  const equipos=D.equipos.filter(e=>e.ID_Liga===ligaId);
+  const equipos=D.equipos.filter(e=>e.ID_Liga===ligaId&&(grupo===undefined||grupo===null||(e.Grupo||'')===grupo));
   const partidos=D.partidos.filter(p=>p.ID_Liga===ligaId&&p.Estado==='Finalizado');
   const st={};
   equipos.forEach(t=>{st[t.ID]={ID:t.ID,NombreEquipo:t.NombreEquipo,PJ:0,PG:0,PE:0,PP:0,GF:0,GC:0,DG:0,Puntos:0};});
@@ -879,6 +881,12 @@ function calcStandings(ligaId){
     else{loc.PE++;loc.Puntos+=pE;vis.PE++;vis.Puntos+=pE;}
   });
   return Object.values(st).sort((a,b)=>b.Puntos-a.Puntos||b.DG-a.DG||b.GF-a.GF);
+}
+function gruposDeLiga(ligaId){
+  return[...new Set(D.equipos.filter(e=>e.ID_Liga===ligaId&&e.Grupo&&e.Grupo.trim()).map(e=>e.Grupo.trim().toUpperCase()))].sort();
+}
+function tablaPosicionesHTML(standings){
+  return`<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;margin-bottom:6px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:280px"><thead><tr style="border-bottom:0.5px solid rgba(255,255,255,.1)"><th style="padding:8px 10px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:left">#</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:left">Equipo</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">PJ</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">G</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">P</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">PF</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">PC</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">Dif</th><th style="padding:8px 10px;font-size:10px;color:#f97316;font-weight:700;text-align:center">Pts</th></tr></thead><tbody>${standings.map((s,i)=>{const dif=s.GF-s.GC;return`<tr style="border-bottom:0.5px solid rgba(255,255,255,.05)"><td style="padding:10px 10px;font-size:13px;font-weight:700;color:${i<2?'#f97316':'rgba(255,255,255,.35)'}">${i+1}</td><td style="padding:10px 6px;font-size:13px;font-weight:${i<2?'700':'400'};color:#fff">${s.NombreEquipo}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PJ}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PG}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PP}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.GF}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.GC}</td><td style="padding:10px 6px;font-size:12px;color:${dif>0?'#86efac':dif<0?'#fca5a5':'rgba(255,255,255,.5)'};text-align:center">${dif>0?'+':''}${dif}</td><td style="padding:10px 10px;font-size:14px;font-weight:700;color:#f97316;text-align:center">${s.Puntos}</td></tr>`;}).join('')}</tbody></table></div>`;
 }
 
 function renderAll(){populateReporteSelects();}
@@ -919,10 +927,14 @@ window.downloadPDF=function(tipo){
     pdfHeader(doc,'TABLA DE POSICIONES',sub);
     const ligas=ligaId?D.ligas.filter(l=>l.ID===ligaId):D.ligas.filter(l=>ligasActivasIds.has(l.ID));let y=26;
     ligas.forEach(l=>{
-      const st=calcStandings(l.ID);if(!st.length)return;
-      doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(30,58,138);doc.text(l.NombreFantasia+' — '+l.Categoria,14,y+4);
-      doc.autoTable({startY:y+7,head:[['Pos','Equipo','PJ','G','P','Pts','PF','PC','Dif']],body:st.map((s,i)=>[i+1,s.NombreEquipo,s.PJ,s.PG,s.PP,s.Puntos,s.GF,s.GC,(s.DG>0?'+':'')+s.DG]),styles:{fontSize:9,cellPadding:2.5},headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[239,246,255]},columnStyles:{0:{halign:'center',cellWidth:12},2:{halign:'center'},3:{halign:'center'},4:{halign:'center'},5:{halign:'center',fontStyle:'bold'},6:{halign:'center'},7:{halign:'center'},8:{halign:'center'}}});
-      y=doc.lastAutoTable.finalY+10;if(y>170){doc.addPage();y=14;}
+      const grupos=gruposDeLiga(l.ID);
+      const bloques=grupos.length>1?grupos.map(g=>({label:l.NombreFantasia+' — '+l.Categoria+' · Grupo '+g,st:calcStandings(l.ID,g)})):[{label:l.NombreFantasia+' — '+l.Categoria,st:calcStandings(l.ID)}];
+      bloques.forEach(({label,st})=>{
+        if(!st.length)return;
+        doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(30,58,138);doc.text(label,14,y+4);
+        doc.autoTable({startY:y+7,head:[['Pos','Equipo','PJ','G','P','Pts','PF','PC','Dif']],body:st.map((s,i)=>[i+1,s.NombreEquipo,s.PJ,s.PG,s.PP,s.Puntos,s.GF,s.GC,(s.DG>0?'+':'')+s.DG]),styles:{fontSize:9,cellPadding:2.5},headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[239,246,255]},columnStyles:{0:{halign:'center',cellWidth:12},2:{halign:'center'},3:{halign:'center'},4:{halign:'center'},5:{halign:'center',fontStyle:'bold'},6:{halign:'center'},7:{halign:'center'},8:{halign:'center'}}});
+        y=doc.lastAutoTable.finalY+10;if(y>170){doc.addPage();y=14;}
+      });
     });
   }
   doc.save('ARBA_'+tipo+'_'+new Date().toISOString().split('T')[0]+'.pdf');toast('✓ PDF descargado','ok');
@@ -1019,7 +1031,18 @@ function renderLigasAdm(){
   const ligas=act?D.ligas.filter(l=>l.id_temporada===act.id||!l.id_temporada):D.ligas;
   document.getElementById('ligas-adm-list').innerHTML=ligas.length?ligas.map(l=>`<div class="adm-list-item"><div><div class="adm-list-name">${l.NombreFantasia}</div><div class="adm-list-sub">${l.Categoria} · ${l.EstadoTorneo||'Activo'}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditLiga('${l.ID}')">Editar</button><button class="del-btn" onclick="delLiga('${l.ID}')">Eliminar</button></div></div>`).join(''):'<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay ligas creadas todavía en esta temporada.</div>';
 }
-function renderEquiposAdm(){const el=document.getElementById('equipos-adm-list');if(!el)return;const ligaId=document.getElementById('eq-liga').value;const eqs=ligaId?D.equipos.filter(e=>e.ID_Liga===ligaId):D.equipos;el.innerHTML=eqs.length?eqs.map(e=>{const liga=D.ligas.find(l=>l.ID===e.ID_Liga);return`<div class="adm-list-item"><div><div class="adm-list-name">${e.NombreEquipo}</div><div class="adm-list-sub">${liga?liga.NombreFantasia:''}</div></div><button class="del-btn" onclick="delItem('${e.ID}','Equipos')">Eliminar</button></div>`;}).join(''):'<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay equipos registrados.</div>';}
+function renderEquiposAdm(){const el=document.getElementById('equipos-adm-list');if(!el)return;const ligaId=document.getElementById('eq-liga').value;const eqs=ligaId?D.equipos.filter(e=>e.ID_Liga===ligaId):D.equipos;el.innerHTML=eqs.length?eqs.map(e=>{const liga=D.ligas.find(l=>l.ID===e.ID_Liga);return`<div class="adm-list-item"><div><div class="adm-list-name">${e.NombreEquipo}${e.Grupo?` <span style="color:#f97316;font-size:10px;font-weight:700">· GRUPO ${e.Grupo}</span>`:''}</div><div class="adm-list-sub">${liga?liga.NombreFantasia:''}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditEquipo('${e.ID}')">Editar</button><button class="del-btn" onclick="delItem('${e.ID}','Equipos')">Eliminar</button></div></div>`;}).join(''):'<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay equipos registrados.</div>';}
+window.openEditEquipo=function(id){
+  const e=D.equipos.find(x=>x.ID===id);if(!e)return;
+  document.getElementById('modal-title').textContent='Editar Equipo';
+  document.getElementById('modal-body').innerHTML=`<label class="f-label">Nombre del equipo</label><input class="f-input" id="ee-nombre" type="text" value="${e.NombreEquipo||''}"><label class="f-label">Grupo <span style="color:var(--muted);font-weight:400">(opcional)</span></label><input class="f-input" id="ee-grupo" type="text" value="${e.Grupo||''}" maxlength="1" style="text-transform:uppercase"><div class="f-row"><div><label class="f-label">Color local</label><input class="f-input" id="ee-cl" type="text" value="${e.ColorUniformeLocal||''}"></div><div><label class="f-label">Color visita</label><input class="f-input" id="ee-cv" type="text" value="${e.ColorUniformeVisita||''}"></div></div>`;
+  document.getElementById('modal-overlay').classList.add('open');
+  modalSaveCb=()=>{
+    const grupo=document.getElementById('ee-grupo').value.trim().toUpperCase();
+    gasCall('updateTeam',{teamId:id,nombreEquipo:document.getElementById('ee-nombre').value.trim(),grupo:grupo||null,colorLocal:document.getElementById('ee-cl').value,colorVisita:document.getElementById('ee-cv').value});
+    document.getElementById('modal-overlay').classList.remove('open');
+  };
+};
 function renderSancionesAdm(){document.getElementById('sanciones-adm-list').innerHTML=D.sanciones.length?D.sanciones.map(s=>{const eq=D.equipos.find(e=>e.ID===s.ID_Equipo);return`<div class="adm-list-item"><div><div class="adm-list-name">${s.NombreJugador}</div><div class="adm-list-sub">${eq?eq.NombreEquipo:''}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditSancion('${s.ID}')">Editar</button><button class="del-btn" onclick="delItem('${s.ID}','Sanciones')">Eliminar</button></div></div>`;}).join(''):'';}
 function renderPartidosAdm(){
   const el=document.getElementById('partidos-adm-list');if(!el)return;
@@ -1129,7 +1152,8 @@ function sugerirEquipoPorRegla(regla,ligaId,p,lado){
   const mPos=r.match(/^(\d+)°?(?:\s*Grupo\s*([A-D]))?$/i);
   if(mPos){
     const n=parseInt(mPos[1]);
-    const st=calcStandings(ligaId);
+    const grupo=mPos[2]?mPos[2].toUpperCase():undefined;
+    const st=calcStandings(ligaId,grupo);
     return st[n-1]?.ID||null;
   }
   const mBracket=r.match(/^(GSF|PSF)(\d)$/i);
@@ -1380,7 +1404,7 @@ window.createLiga=function(){
   if(!act)return toast('Crea una temporada activa antes de registrar ligas (pestaña Temporada)','err');
   showConfirmV3(`¿Crear liga "${nombre}"?`,'',async()=>{await gasCall('createLeague',{nombreDeporte:'Básquetbol',categoria:document.getElementById('lg-cat').value,nombreFantasia:nombre,estadoTorneo:document.getElementById('lg-estado').value,idTemporada:act.id});document.getElementById('lg-nombre').value='';},'ok');
 };
-window.createEquipo=function(){const nombre=document.getElementById('eq-nombre').value.trim();if(!nombre)return toast('El nombre es obligatorio','err');showConfirmV3(`¿Registrar equipo "${nombre}"?`,'',async()=>{await gasCall('createTeam',{idLiga:document.getElementById('eq-liga').value,nombreEquipo:nombre,colorLocal:document.getElementById('eq-cl').value,colorVisita:document.getElementById('eq-cv').value});document.getElementById('eq-nombre').value='';},'ok');};
+window.createEquipo=function(){const nombre=document.getElementById('eq-nombre').value.trim();if(!nombre)return toast('El nombre es obligatorio','err');const grupo=document.getElementById('eq-grupo').value.trim().toUpperCase();showConfirmV3(`¿Registrar equipo "${nombre}"?`,'',async()=>{await gasCall('createTeam',{idLiga:document.getElementById('eq-liga').value,nombreEquipo:nombre,grupo:grupo||null,colorLocal:document.getElementById('eq-cl').value,colorVisita:document.getElementById('eq-cv').value});document.getElementById('eq-nombre').value='';document.getElementById('eq-grupo').value='';},'ok');};
 window.createPartido=function(){const local=document.getElementById('pt-local').value,visita=document.getElementById('pt-visita').value;if(!local||!visita)return toast('Selecciona los equipos','err');showConfirmV3('¿Programar este partido?','',async()=>{await gasCall('createMatch',{idLiga:document.getElementById('pt-liga').value,jornada:document.getElementById('pt-jornada').value,fase:document.getElementById('pt-fase').value,fecha:document.getElementById('pt-fecha').value,hora:document.getElementById('pt-hora').value,cancha:document.getElementById('pt-cancha').value,idLocal:local,idVisita:visita,youtubeUrl:''});},'ok');};
 window.createSancion=function(){const jugador=document.getElementById('sa-jugador').value.trim();if(!jugador)return toast('El nombre del jugador es obligatorio','err');showConfirmV3(`¿Registrar sanción para ${jugador}?`,'',async()=>{await gasCall('createSanction',{idLiga:document.getElementById('sa-liga').value,idEquipo:document.getElementById('sa-equipo').value,nombreJugador:jugador,tipoFalta:document.getElementById('sa-tipo').value,sancion:document.getElementById('sa-sancion').value.trim(),termino:document.getElementById('sa-termino').value.trim()});document.getElementById('sa-jugador').value='';document.getElementById('sa-sancion').value='';},'ok');};
 window.delLiga=function(id){showConfirmV3('¿Eliminar esta liga?','Se eliminarán también los equipos y partidos asociados.',async()=>{await gasCall('deleteLeague',{leagueId:id});},'danger');};
@@ -1454,7 +1478,7 @@ window.importPartidosXLSX=async function(input){
         if(fecha instanceof Date){fechaFinal=fecha.getUTCFullYear()+'-'+String(fecha.getUTCMonth()+1).padStart(2,'0')+'-'+String(fecha.getUTCDate()).padStart(2,'0');}
         else{fechaFinal=fecha;if(fecha&&fecha.includes('/')){const[d,m,y]=fecha.split('/');fechaFinal=(y||'').padStart(4,'0')+'-'+(m||'').padStart(2,'0')+'-'+(d||'').padStart(2,'0');}}
         let horaFinal;
-        if(hora instanceof Date){horaFinal=String(hora.getUTCHours()).padStart(2,'0')+':'+String(hora.getUTCMinutes()).padStart(2,'0');}
+        if(hora instanceof Date){horaFinal=String(hora.getHours()).padStart(2,'0')+':'+String(hora.getMinutes()).padStart(2,'0');}
         else{horaFinal=hora;}
         const faseMapa={'ida':'Regular','vuelta':'Regular','grupos':'Regular','sf1':'Semifinales','sf2':'Semifinales','semifinal':'Semifinales','semifinales':'Semifinales','3°':'Tercer Lugar','3':'Tercer Lugar','tercerlugar':'Tercer Lugar','1°':'Final','1':'Final','final':'Final'};
         const faseNorm=norm(faseRaw);
@@ -1601,7 +1625,15 @@ function renderSplashContent(ligaId){
   }
   if(!todosModos&&standings.length){
     html+=secT('TABLA DE POSICIONES','14px');
-    html+=`<div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;margin-bottom:6px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:280px"><thead><tr style="border-bottom:0.5px solid rgba(255,255,255,.1)"><th style="padding:8px 10px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:left">#</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:left">Equipo</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">PJ</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">G</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">P</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">PF</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">PC</th><th style="padding:8px 6px;font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-align:center">Dif</th><th style="padding:8px 10px;font-size:10px;color:#f97316;font-weight:700;text-align:center">Pts</th></tr></thead><tbody>${standings.map((s,i)=>{const dif=s.GF-s.GC;return`<tr style="border-bottom:0.5px solid rgba(255,255,255,.05)"><td style="padding:10px 10px;font-size:13px;font-weight:700;color:${i<2?'#f97316':'rgba(255,255,255,.35)'}">${i+1}</td><td style="padding:10px 6px;font-size:13px;font-weight:${i<2?'700':'400'};color:#fff">${s.NombreEquipo}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PJ}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PG}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.PP}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.GF}</td><td style="padding:10px 6px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">${s.GC}</td><td style="padding:10px 6px;font-size:12px;color:${dif>0?'#86efac':dif<0?'#fca5a5':'rgba(255,255,255,.5)'};text-align:center">${dif>0?'+':''}${dif}</td><td style="padding:10px 10px;font-size:14px;font-weight:700;color:#f97316;text-align:center">${s.Puntos}</td></tr>`;}).join('')}</tbody></table></div>`;
+    const grupos=gruposDeLiga(ligaId);
+    if(grupos.length>1){
+      grupos.forEach(g=>{
+        html+=`<div style="font-size:11px;font-weight:700;color:#f97316;letter-spacing:1px;margin:10px 0 6px">GRUPO ${g}</div>`;
+        html+=tablaPosicionesHTML(calcStandings(ligaId,g));
+      });
+    }else{
+      html+=tablaPosicionesHTML(standings);
+    }
   }
   html+=secT('REPORTES','14px');
   html+=`<button onclick="splashPDF('fixture')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:#1e3a8a;border:none;border-radius:10px;cursor:pointer;margin-bottom:6px"><svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span style="font-size:13px;font-weight:700;color:#fff">Fixture PDF</span></button>
