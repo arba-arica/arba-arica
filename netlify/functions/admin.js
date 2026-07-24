@@ -142,6 +142,7 @@ exports.handler = async (event) => {
           nombre_equipo:         data.nombreEquipo      || '',
           color_uniforme_local:  data.colorLocal        || '',
           color_uniforme_visita: data.colorVisita       || '',
+          grupo:                 data.grupo             || null,
         };
         const { error } = await db.from('equipos').insert(nuevoEquipo);
         result = error ? fail(error) : { success:true, message:'Equipo registrado', equipo: nuevoEquipo };
@@ -152,6 +153,7 @@ exports.handler = async (event) => {
           nombre_equipo:         data.nombreEquipo      || '',
           color_uniforme_local:  data.colorLocal        || '',
           color_uniforme_visita: data.colorVisita       || '',
+          grupo:                 data.grupo             || null,
           updated_at:            new Date().toISOString(),
         }).eq('id', data.teamId);
         result = error ? fail(error) : { success:true, message:'Equipo actualizado' };
