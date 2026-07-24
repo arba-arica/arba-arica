@@ -1388,7 +1388,7 @@ function closeConfirmV3(){document.getElementById('confirm-v3-overlay').classLis
 async function executeConfirmV3(){const btn=document.getElementById('cv3-ok');btn.innerHTML='<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block"></div> Guardando...';btn.disabled=true;try{if(_cv3Cb)await _cv3Cb();}catch(e){toast('Error: '+e.message,'err');}finally{closeConfirmV3();}}
 
 async function gasCall(action,data){
-  try{const res=await callGAS(action,data);if(res&&res.success){await refreshData();renderAll();if(adminPass)renderAdmin();closeConfirmV3();toast(res.message||'✓ Guardado','ok');}else{toast(res?.message||'Error','err');closeConfirmV3();}return res;}
+  try{const res=await callGAS(action,data);if(res&&res.success){await refreshData();renderAll();if(adminPass){renderAdmin();renderPartidosAdm();renderResAdm();renderEquiposAdm();}if(typeof _splashLigaActual!=='undefined'&&_splashLigaActual)renderSplashContent(_splashLigaActual);closeConfirmV3();toast(res.message||'✓ Guardado','ok');}else{toast(res?.message||'Error','err');closeConfirmV3();}return res;}
   catch(e){toast('Error: '+e.message,'err');closeConfirmV3();}
 }
 window.saveResult=async function(id){
@@ -1588,6 +1588,7 @@ function renderSplashContent(ligaId){
   const proximos=partidosBase.filter(p=>p.Estado==='Programado').sort((a,b)=>new Date(a.Fecha)-new Date(b.Fecha));
   const resultados=partidosBase.filter(p=>p.Estado==='Finalizado').sort((a,b)=>new Date(b.Fecha)-new Date(a.Fecha));
   const fmtD=(f)=>{if(!f)return{dia:'—',mes:'—',dow:'—'};const d=new Date(f+'T12:00:00');const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return{dia:d.getDate(),mes:meses[d.getMonth()],dow:dias[d.getDay()]};};
+  const fmtDFull=(f)=>{if(!f)return'Fecha por confirmar';const d=new Date(f+'T12:00:00');const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];return dias[d.getDay()]+' '+d.getDate()+' de '+meses[d.getMonth()];};
   const card='background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;margin-bottom:8px';
   const secT=(txt,mt='0')=>`<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin:${mt} 0 8px">${txt}</div>`;
   let html='';
@@ -1598,10 +1599,12 @@ function renderSplashContent(ligaId){
     html+=proximos.map(p=>{
       const{dia,mes,dow}=fmtD(p.Fecha);const liga=D.ligas.find(l=>l.ID===p.ID_Liga);
       const txt='🏀 *ARBA Arica'+(liga?' - '+liga.NombreFantasia:'')+'*\n\n'+teamName(p.ID_EquipoLocal,p.ReglaLocal)+' vs '+teamName(p.ID_EquipoVisita,p.ReglaVisita)+'\n\n📅 '+dow+' '+dia+' '+mes+'\n⏰ '+(p.Hora||'—')+'\n📍 '+(p.Cancha||'—')+'\n\n🔗 arba-arica.cl';
-      return`<div style="${card}">
-        <div class="mc-row"><span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">N° ${p.Partidos||''}${todosModos&&liga?' · '+liga.NombreFantasia:''}</span><div style="display:flex;gap:6px;align-items:center"><a href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" style="display:flex;align-items:center;gap:4px;background:rgba(37,211,102,.15);color:#25d366;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;text-decoration:none">Compartir</a><span style="background:rgba(59,130,246,.2);color:#93c5fd;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px">Próximo</span></div></div>
+      return`<div style="${card};text-align:center">
+        <div class="mc-row"><span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">N° ${p.Partidos||''}</span><div style="display:flex;gap:6px;align-items:center"><a href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" style="display:flex;align-items:center;gap:4px;background:rgba(37,211,102,.15);color:#25d366;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;text-decoration:none">Compartir</a><span style="background:rgba(59,130,246,.2);color:#93c5fd;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px">Próximo</span></div></div>
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">${liga?liga.NombreFantasia:''}</div>
+        <div style="font-size:13px;font-weight:700;color:#f97316;margin-bottom:12px">${fmtDFull(p.Fecha)} · ${p.Hora||'Hora por confirmar'}</div>
         <div class="mc-teams"><div class="mc-team">${teamName(p.ID_EquipoLocal,p.ReglaLocal)}</div><div class="mc-vs">VS</div><div class="mc-team">${teamName(p.ID_EquipoVisita,p.ReglaVisita)}</div></div>
-        <div class="mc-meta">📍 ${p.Cancha||'Cancha por confirmar'} <span class="mc-sep">·</span> ${p.Fase||'Regular'} <span class="mc-sep">·</span> ${dow} ${dia} ${mes} <span class="mc-sep">·</span> ${p.Hora||'Hora por confirmar'}</div>
+        <div class="mc-meta">📍 Gimnasio: ${p.Cancha||'Por confirmar'} <span class="mc-sep">·</span> ${p.Fase||'Regular'}</div>
       </div>`;
     }).join('');
   }
