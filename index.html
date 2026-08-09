@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>Mesa Regional Básquetbol XV Región</title>
+<title>Programacion Torneo Clausura 2026 - Arica</title>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -640,13 +640,19 @@ body.pub-themed #content .match-card{background:var(--pub-card);border-color:var
               </div>
               <div id="import-log" style="display:none;margin-top:12px;padding:10px 12px;background:rgba(0,0,0,.3);border-radius:8px;font-size:11px;line-height:1.8;max-height:180px;overflow-y:auto"></div>
             </div>
-            <div class="adm-sec-label">Partidos programados</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+              <div class="adm-sec-label" style="margin:0">Partidos programados</div>
+              <select class="f-select" id="pt-filtro-liga" style="margin-bottom:0;width:auto;min-width:200px;font-size:12px;padding:7px 10px" onchange="onFiltroLigaPartidosChange(this.value)"></select>
+            </div>
             <div id="partidos-adm-list"></div>
           </div>
 
           <!-- TAB RESULTADOS — solo puntaje final, sin cuartos -->
           <div id="tab-res-adm" class="adm-panel-new" style="display:none">
-            <div class="adm-sec-label" style="margin-top:0">Cargar resultados</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+              <div class="adm-sec-label" style="margin:0">Cargar resultados</div>
+              <select class="f-select" id="res-filtro-liga" style="margin-bottom:0;width:auto;min-width:200px;font-size:12px;padding:7px 10px" onchange="onFiltroLigaResultadosChange(this.value)"></select>
+            </div>
             <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:#93c5fd;margin-bottom:14px">
               💡 Ingresa el puntaje final y selecciona <strong>Finalizado</strong> para confirmar el resultado.
             </div>
@@ -1044,21 +1050,34 @@ window.openEditEquipo=function(id){
   };
 };
 function renderSancionesAdm(){document.getElementById('sanciones-adm-list').innerHTML=D.sanciones.length?D.sanciones.map(s=>{const eq=D.equipos.find(e=>e.ID===s.ID_Equipo);return`<div class="adm-list-item"><div><div class="adm-list-name">${s.NombreJugador}</div><div class="adm-list-sub">${eq?eq.NombreEquipo:''}</div></div><div style="display:flex;gap:6px"><button class="edit-btn" onclick="openEditSancion('${s.ID}')">Editar</button><button class="del-btn" onclick="delItem('${s.ID}','Sanciones')">Eliminar</button></div></div>`;}).join(''):'';}
+
+var _filtroLigaPartidos='';
+function renderFiltroLigaPartidos(){
+  const sel=document.getElementById('pt-filtro-liga');if(!sel)return;
+  const act=temporadaActiva();
+  const ligasDisponibles=act?D.ligas.filter(l=>l.id_temporada===act.id||!l.id_temporada):D.ligas;
+  const valPrevio=_filtroLigaPartidos;
+  sel.innerHTML='<option value="">Todas las ligas</option>'+ligasDisponibles.map(l=>`<option value="${l.ID}">${l.NombreFantasia} (${l.Categoria})</option>`).join('');
+  sel.value=valPrevio;
+}
+function onFiltroLigaPartidosChange(v){_filtroLigaPartidos=v;renderPartidosAdm();}
 function renderPartidosAdm(){
   const el=document.getElementById('partidos-adm-list');if(!el)return;
-  const todos=[...D.partidos].sort((a,b)=>(parseInt(a.Partidos)||9999)-(parseInt(b.Partidos)||9999));
-  if(!todos.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay partidos registrados.</div>';return;}
+  renderFiltroLigaPartidos();
+  let todos=[...D.partidos].sort((a,b)=>(parseInt(a.Partidos)||9999)-(parseInt(b.Partidos)||9999));
+  if(_filtroLigaPartidos)todos=todos.filter(p=>p.ID_Liga===_filtroLigaPartidos);
+  if(!todos.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay partidos'+(_filtroLigaPartidos?' en esta liga.':' registrados.')+'</div>';return;}
   const prog=todos.filter(p=>p.Estado!=='Finalizado'),fin=todos.filter(p=>p.Estado==='Finalizado');
   const itemHtml=p=>{
     const liga=ligaObj(p.ID_Liga);
     const pendiente=!p.ID_EquipoLocal||!p.ID_EquipoVisita;
     const nombreLocal=p.ID_EquipoLocal?teamName(p.ID_EquipoLocal):(p.ReglaLocal||'?');
     const nombreVisita=p.ID_EquipoVisita?teamName(p.ID_EquipoVisita):(p.ReglaVisita||'?');
-    return `<div class="adm-list-item"><div><div class="adm-list-name">${nombreLocal} vs ${nombreVisita}${pendiente?' <span style="color:#f59e0b;font-size:10px;font-weight:700;margin-left:6px">⏳ PENDIENTE</span>':''}</div><div class="adm-list-sub">${fmtDate(p.Fecha)}${fmtTime(p.Hora)?' · '+fmtTime(p.Hora):''} · ${liga?liga.NombreFantasia:''}</div></div><div style="display:flex;gap:6px">${pendiente?`<button class="edit-btn" onclick="openResolverPartido('${p.ID}')">Asignar equipos</button>`:`<button class="edit-btn" onclick="openEditPartido('${p.ID}')">Editar</button>`}<button class="del-btn" onclick="delPartido('${p.ID}')">Eliminar</button></div></div>`;
+    return `<div class="adm-list-item"><div><div class="adm-list-name"><span style="color:#f97316">N° ${p.Partidos||'—'}</span> · ${nombreLocal} vs ${nombreVisita}${pendiente?' <span style="color:#f59e0b;font-size:10px;font-weight:700;margin-left:6px">⏳ PENDIENTE</span>':''}</div><div class="adm-list-sub">${liga?liga.NombreFantasia:'Sin liga'} · ${fmtDate(p.Fecha)}${fmtTime(p.Hora)?' · '+fmtTime(p.Hora):''}${p.Cancha?' · '+p.Cancha:''}</div></div><div style="display:flex;gap:6px">${pendiente?`<button class="edit-btn" onclick="openResolverPartido('${p.ID}')">Asignar equipos</button>`:`<button class="edit-btn" onclick="openEditPartido('${p.ID}')">Editar</button>`}<button class="del-btn" onclick="delPartido('${p.ID}')">Eliminar</button></div></div>`;
   };
   let html='';
   if(prog.length){
-    html+='<div class="adm-sec-label" style="margin-top:0">Pendientes / En curso</div>';
+    html+='<div class="adm-sec-label" style="margin-top:0">Pendientes / En curso ('+prog.length+')</div>';
     html+=prog.map(itemHtml).join('');
   }
   if(fin.length){
@@ -1066,22 +1085,35 @@ function renderPartidosAdm(){
     html+=fin.map(itemHtml).join('');
     html+='</div>';
   }
-  if(!prog.length&&!fin.length)html='<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay partidos registrados.</div>';
+  if(!prog.length&&!fin.length)html='<div style="font-size:13px;color:var(--muted);padding:8px 0">No hay partidos'+(_filtroLigaPartidos?' en esta liga.':' registrados.')+'</div>';
   el.innerHTML=html;
 }
 window.togglePartFinAdm=function(){const l=document.getElementById('part-fin-adm-list'),c=document.getElementById('part-fin-adm-chv');const o=l.style.display==='block';l.style.display=o?'none':'block';c.style.transform=o?'':'rotate(180deg)';};
+
+var _filtroLigaResultados='';
+function renderFiltroLigaResultados(){
+  const sel=document.getElementById('res-filtro-liga');if(!sel)return;
+  const act=temporadaActiva();
+  const ligasDisponibles=act?D.ligas.filter(l=>l.id_temporada===act.id||!l.id_temporada):D.ligas;
+  const valPrevio=_filtroLigaResultados;
+  sel.innerHTML='<option value="">Todas las ligas</option>'+ligasDisponibles.map(l=>`<option value="${l.ID}">${l.NombreFantasia} (${l.Categoria})</option>`).join('');
+  sel.value=valPrevio;
+}
+function onFiltroLigaResultadosChange(v){_filtroLigaResultados=v;renderResAdm();}
 function renderResAdm(){
   const el=document.getElementById('res-adm-list');if(!el)return;
-  const todos=[...D.partidos].sort((a,b)=>new Date((a.Fecha||'')+'T12:00:00')-new Date((b.Fecha||'')+'T12:00:00'));
-  if(!todos.length){el.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.4);padding:16px 0;text-align:center">Sin partidos cargados</div>';return;}
+  renderFiltroLigaResultados();
+  let todos=[...D.partidos].sort((a,b)=>new Date((a.Fecha||'')+'T12:00:00')-new Date((b.Fecha||'')+'T12:00:00'));
+  if(_filtroLigaResultados)todos=todos.filter(p=>p.ID_Liga===_filtroLigaResultados);
+  if(!todos.length){el.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.4);padding:16px 0;text-align:center">'+(_filtroLigaResultados?'Sin partidos en esta liga':'Sin partidos cargados')+'</div>';return;}
   const prog=todos.filter(p=>p.Estado!=='Finalizado'&&p.ID_EquipoLocal&&p.ID_EquipoVisita),fin=todos.filter(p=>p.Estado==='Finalizado');
   const cs='background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;margin-bottom:8px';
   let html='';
   if(prog.length){
-    html+='<div class="adm-sec-label" style="margin-top:0">Pendientes / En curso</div>';
+    html+='<div class="adm-sec-label" style="margin-top:0">Pendientes / En curso ('+prog.length+')</div>';
     html+=prog.map(p=>{const liga=ligaObj(p.ID_Liga);return`<div style="${cs}">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">N° ${p.Partidos||''} · ${liga?liga.NombreFantasia:''}</span>
+        <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">N° ${p.Partidos||'—'} · ${liga?liga.NombreFantasia:'Sin liga'}</span>
         <span style="font-size:10px;color:rgba(255,255,255,.35)">${fmtDate(p.Fecha)}</span>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px">
@@ -1105,9 +1137,10 @@ function renderResAdm(){
   }
   if(fin.length){
     html+=`<div style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:14px 0 8px" onclick="toggleFinAdm()"><div class="adm-sec-label" style="margin:0;border:none;padding:0">Finalizados (${fin.length})</div><svg id="fin-adm-chv" width="14" height="14" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2" viewBox="0 0 24 24" style="transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg></div><div id="fin-adm-list" style="display:none">`;
-    html+=fin.map(p=>{const liga=ligaObj(p.ID_Liga);return`<div style="${cs}"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:10px;color:rgba(255,255,255,.35)">N° ${p.Partidos||''} · ${liga?.NombreFantasia||''} · ${fmtDate(p.Fecha)}</span><div style="display:flex;gap:6px"><button onclick="openEditResultado('${p.ID}')" style="padding:5px 10px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">Editar</button><button onclick="delPartido('${p.ID}')" class="adm-btn-danger" style="padding:5px 10px">Eliminar</button></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:13px;font-weight:700;color:#fff;flex:1;text-align:right">${teamName(p.ID_EquipoLocal)}</span><span style="font-size:18px;font-weight:700;color:#f97316;background:rgba(249,115,22,.15);padding:4px 12px;border-radius:8px">${p.GolesLocal??'—'}–${p.GolesVisita??'—'}</span><span style="font-size:13px;font-weight:700;color:#fff;flex:1">${teamName(p.ID_EquipoVisita)}</span></div></div>`;}).join('');
+    html+=fin.map(p=>{const liga=ligaObj(p.ID_Liga);return`<div style="${cs}"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:10px;color:rgba(255,255,255,.35)">N° ${p.Partidos||'—'} · ${liga?.NombreFantasia||'Sin liga'} · ${fmtDate(p.Fecha)}</span><div style="display:flex;gap:6px"><button onclick="openEditResultado('${p.ID}')" style="padding:5px 10px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">Editar</button><button onclick="delPartido('${p.ID}')" class="adm-btn-danger" style="padding:5px 10px">Eliminar</button></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:13px;font-weight:700;color:#fff;flex:1;text-align:right">${teamName(p.ID_EquipoLocal)}</span><span style="font-size:18px;font-weight:700;color:#f97316;background:rgba(249,115,22,.15);padding:4px 12px;border-radius:8px">${p.GolesLocal??'—'}–${p.GolesVisita??'—'}</span><span style="font-size:13px;font-weight:700;color:#fff;flex:1">${teamName(p.ID_EquipoVisita)}</span></div></div>`;}).join('');
     html+='</div>';
   }
+  if(!prog.length&&!fin.length)html='<div style="font-size:13px;color:rgba(255,255,255,.4);padding:16px 0;text-align:center">Sin partidos en esta liga</div>';
   el.innerHTML=html;
 }
 window.toggleFinAdm=function(){const l=document.getElementById('fin-adm-list'),c=document.getElementById('fin-adm-chv');const o=l.style.display==='block';l.style.display=o?'none':'block';c.style.transform=o?'':'rotate(180deg)';};
