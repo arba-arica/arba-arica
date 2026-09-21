@@ -169,7 +169,7 @@ exports.handler = async (event) => {
       // ─── ENCUENTROS ──────────────────────────────────────────
       case 'createMatch': {
         const fasesOk = ['Regular','Grupo A','Grupo B','Grupo C','Grupo D','Semifinales','Tercer Lugar','Final'];
-        const { error } = await db.from('encuentros').insert({
+        const { data: nuevo, error } = await db.from('encuentros').insert({
           id_liga:          data.idLiga,
           partidos:         parseInt(data.jornada) || 0,
           fecha:            data.fecha || null,
@@ -185,8 +185,8 @@ exports.handler = async (event) => {
           goles_visita:     null,
           estado:           'Programado',
           youtube_url:      data.youtubeUrl || '',
-        });
-        result = error ? fail(error) : { success:true, message:'Partido programado' };
+        }).select().single();
+        result = error ? fail(error) : { success:true, message:'Partido programado', encuentro: nuevo };
         break;
       }
       case 'updateMatch': {
