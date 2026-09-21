@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>Mesa Regional Básquetbol XV Región</title>
+<title>aricabasket.cl</title>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -353,7 +353,7 @@ body.pub-themed #content .match-card{background:var(--pub-card);border-color:var
 <div id="drawer-overlay" onclick="closeDrawer()">
   <div id="drawer" onclick="event.stopPropagation()">
     <div class="drawer-top">
-      <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary)">ARBA</div>
+      <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--primary)">Aricabasket</div>
       <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);margin-top:1px">Arica · Temporada 2026</div>
     </div>
     <div class="drawer-nav">
@@ -452,7 +452,7 @@ body.pub-themed #content .match-card{background:var(--pub-card);border-color:var
   <div id="admin-login-screen" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">
     <div style="width:100%;max-width:360px;margin:20px;padding:36px 28px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:20px">
       <div style="text-align:center;margin-bottom:32px">
-        <div style="font-family:'Archivo Black',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.4);margin-bottom:8px">BASQUET XV REGIÓN</div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.4);margin-bottom:8px">ARICABASKET.CL</div>
         <div style="font-family:'Archivo Black',sans-serif;font-size:22px;letter-spacing:2px;color:#fff">Panel Admin</div>
         <div style="width:32px;height:2px;background:#f97316;border-radius:1px;margin:10px auto 0"></div>
       </div>
@@ -468,7 +468,7 @@ body.pub-themed #content .match-card{background:var(--pub-card);border-color:var
   <div id="admin-panel-full" style="display:none;width:100%;height:100%;flex-direction:column">
     <div style="background:#0f172a;border-bottom:1px solid rgba(255,255,255,.08);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10">
       <div style="display:flex;align-items:center;gap:12px">
-        <div style="font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:2px;color:#fff">ARBA</div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:2px;color:#fff">Aricabasket</div>
         <div id="adm-temporada-badge" style="font-size:10px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.08);padding:3px 10px;border-radius:100px;display:none"></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
@@ -625,7 +625,7 @@ body.pub-themed #content .match-card{background:var(--pub-card);border-color:var
             <!-- CARGA MASIVA XLSX -->
             <div style="background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;margin-bottom:16px">
               <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">📂 Carga masiva</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:12px">Columnas: <span style="color:#93c5fd;font-family:monospace">Partido · Liga · Fecha · Hora · Cancha · Fase · Local · Visita</span></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:12px">Columnas: <span style="color:#93c5fd;font-family:monospace">Partido · Liga · Fecha · Hora · Cancha · Fase · Local · Visita · Pts L · Pts V</span><br>Deja <b>Pts L</b> y <b>Pts V</b> vacías si el partido aún no se juega. Si les pones números, el partido se importa directo como <b>Finalizado</b> con ese resultado.</div>
               <div style="display:flex;gap:8px;flex-wrap:wrap">
                 <label style="display:inline-flex;align-items:center;gap:6px;padding:9px 14px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);border-radius:9px;cursor:pointer;font-size:12px;font-weight:700;color:#86efac">
                   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Importar XLSX
@@ -768,7 +768,7 @@ body.pub-themed #content .match-card{background:var(--pub-card);border-color:var
 <!-- FOOTER PÚBLICO: franja blanca full-bleed (banner auspiciadores) + archivo de temporadas cerradas -->
 <footer id="pub-footer">
   <div class="pf-banner-strip" id="pf-banner-strip">
-    <img src="https://lwsyntjhbcdfuhfjdjqf.supabase.co/storage/v1/object/public/imagenes/banner_auspiciadores.png" alt="Mesa Regional Basquetbol XV Región · ABA · ARBA Arica · Municipalidad de Arica · SEREMI del Deporte">
+    <img src="https://lwsyntjhbcdfuhfjdjqf.supabase.co/storage/v1/object/public/imagenes/banner_auspiciadores.png" alt="Aricabasket · Municipalidad de Arica · SEREMI del Deporte">
   </div>
   <div class="pf-archive">
     <div class="pf-archive-inner">
@@ -914,7 +914,7 @@ window.updateRepEquipos=function(tipo){
   if(!ligaEl||!eqEl)return;
   eqEl.innerHTML='<option value="">Todos los equipos</option>'+D.equipos.filter(e=>!ligaEl.value||e.ID_Liga===ligaEl.value).map(e=>`<option value="${e.ID}">${e.NombreEquipo}</option>`).join('');
 };
-function pdfHeader(doc,titulo,sub){doc.setFillColor(30,58,138);doc.rect(0,0,297,22,'F');doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');doc.text('ARBA ARICA',14,10);doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text('Asociación Regional de Básquetbol',14,15);doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text(titulo,148,10,{align:'center'});doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text(sub,148,16,{align:'center'});doc.text('Generado: '+new Date().toLocaleDateString('es-CL'),283,10,{align:'right'});doc.setTextColor(30,58,138);}
+function pdfHeader(doc,titulo,sub){doc.setFillColor(30,58,138);doc.rect(0,0,297,22,'F');doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');doc.text('ARICABASKET',14,10);doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text('aricabasket.cl',14,15);doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text(titulo,148,10,{align:'center'});doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text(sub,148,16,{align:'center'});doc.text('Generado: '+new Date().toLocaleDateString('es-CL'),283,10,{align:'right'});doc.setTextColor(30,58,138);}
 window.downloadPDF=function(tipo){
   const sufMap={fixture:'fixture',resultados:'res',puntaje:'pts'};const suf=sufMap[tipo]||tipo;
   const ligaEl=document.getElementById('rep-liga-'+suf);const eqEl=tipo==='puntaje'?null:document.getElementById('rep-eq-'+suf);
@@ -948,7 +948,7 @@ window.downloadPDF=function(tipo){
       });
     });
   }
-  doc.save('ARBA_'+tipo+'_'+new Date().toISOString().split('T')[0]+'.pdf');toast('✓ PDF descargado','ok');
+  doc.save('Aricabasket_'+tipo+'_'+new Date().toISOString().split('T')[0]+'.pdf');toast('✓ PDF descargado','ok');
 };
 
 function setupAdmin(){
@@ -1409,7 +1409,7 @@ window.savePeriodoModal=async function(){
 
 function generarReporteTemporada(tempId){
   const t=(D.temporadas||[]).find(x=>x.id===tempId);
-  const nombre=t?periodoLabel(t):'Temporada ARBA';
+  const nombre=t?periodoLabel(t):'Temporada Aricabasket';
   const ligasSel=D.ligas.filter(l=>l.id_temporada===tempId||!l.id_temporada);
   const ligasSelIds=ligasSel.map(l=>l.ID);
   if(!ligasSelIds.length)return toast('Sin ligas en esta temporada','err');
@@ -1421,7 +1421,7 @@ function generarReporteTemporada(tempId){
     const fecha=new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'});
     doc.setFillColor(30,58,138);doc.rect(0,0,210,80,'F');doc.setTextColor(255,255,255);
     doc.setFontSize(11);doc.setFont('helvetica','normal');doc.text('ASOCIACIÓN DEPORTIVA REGIONAL DE BÁSQUETBOL ARICA',105,20,{align:'center'});
-    doc.setFontSize(22);doc.setFont('helvetica','bold');doc.text('ARBA',105,32,{align:'center'});
+    doc.setFontSize(22);doc.setFont('helvetica','bold');doc.text('ARICABASKET',105,32,{align:'center'});
     doc.setFontSize(14);doc.setFont('helvetica','normal');doc.text('Reporte de Temporada',105,43,{align:'center'});
     doc.setFontSize(18);doc.setFont('helvetica','bold');doc.text(nombre,105,58,{align:'center'});
     doc.setFontSize(10);doc.setFont('helvetica','normal');doc.text('Generado: '+fecha,105,70,{align:'center'});
@@ -1437,8 +1437,8 @@ function generarReporteTemporada(tempId){
     ligasSel.forEach(l=>{const pts=D.partidos.filter(p=>p.ID_Liga===l.ID&&p.Estado==='Finalizado');if(!pts.length)return;doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(30,58,138);doc.text(l.NombreFantasia+' — '+l.Categoria,14,y+4);doc.autoTable({startY:y+7,head:[['Fecha','Local','Pts','—','Pts','Visita','Fase']],body:pts.map(p=>[fmtDate(p.Fecha),teamName(p.ID_EquipoLocal),String(p.GolesLocal??''),'-',String(p.GolesVisita??''),teamName(p.ID_EquipoVisita),p.Fase||'—']),styles:{fontSize:8.5,cellPadding:2},headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[239,246,255]},columnStyles:{2:{halign:'right',fontStyle:'bold'},3:{halign:'center'},4:{halign:'left',fontStyle:'bold'}}});y=doc.lastAutoTable.finalY+8;if(y>260){doc.addPage();y=14;}});
     const sancs=D.sanciones.filter(s=>ligasSelIds.includes(s.ID_Liga));
     if(sancs.length){doc.addPage();y=14;doc.setTextColor(30,58,138);doc.setFontSize(13);doc.setFont('helvetica','bold');doc.text('SANCIONES',14,y);y+=4;doc.setLineWidth(0.5);doc.line(14,y,196,y);y+=6;doc.autoTable({startY:y,head:[['Jugador','Equipo','Liga','Tipo','Sanción']],body:sancs.map(s=>{const eq=D.equipos.find(e=>e.ID===s.ID_Equipo);const lg=D.ligas.find(l=>l.ID===s.ID_Liga);return[s.NombreJugador,eq?.NombreEquipo||'—',lg?.NombreFantasia||'—',s.TipoFalta||'—',s.Sancion||'—'];}),styles:{fontSize:9,cellPadding:2.5},headStyles:{fillColor:[220,38,38],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[254,242,242]}});}
-    const tp=doc.getNumberOfPages();for(let i=1;i<=tp;i++){doc.setPage(i);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.text('ARBA Arica · '+nombre,14,290);doc.text('Pág. '+i+' / '+tp,196,290,{align:'right'});doc.setDrawColor(200,200,200);doc.setLineWidth(0.3);doc.line(14,287,196,287);}
-    doc.save('ARBA_Reporte_'+nombre.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'')+'.pdf');
+    const tp=doc.getNumberOfPages();for(let i=1;i<=tp;i++){doc.setPage(i);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);doc.text('Aricabasket · '+nombre,14,290);doc.text('Pág. '+i+' / '+tp,196,290,{align:'right'});doc.setDrawColor(200,200,200);doc.setLineWidth(0.3);doc.line(14,287,196,287);}
+    doc.save('Aricabasket_Reporte_'+nombre.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'')+'.pdf');
     toast('✓ Reporte descargado','ok');
   }catch(e){console.error('PDF error:',e);toast('Error al generar PDF: '+e.message,'err');}
   finally{if(btn){btn.disabled=false;if(btn.dataset.origTxt)btn.innerHTML=btn.dataset.origTxt;}}
@@ -1480,15 +1480,20 @@ window.exportPartidosXLSX=function(){
   [...D.partidos].sort((a,b)=>(parseInt(a.Partidos)||9999)-(parseInt(b.Partidos)||9999)).forEach(p=>{const liga=ligaObj(p.ID_Liga);rows.push([p.Partidos||'',liga?liga.NombreFantasia:p.ID_Liga,p.Fecha||'',p.Hora||'',p.Cancha||'',p.Fase||'Regular',teamName(p.ID_EquipoLocal,p.ReglaLocal),teamName(p.ID_EquipoVisita,p.ReglaVisita),p.ID_Liga||'',p.ID_EquipoLocal||'',p.ID_EquipoVisita||'',p.Estado||'Programado',p.GolesLocal!==''?p.GolesLocal:'',p.GolesVisita!==''?p.GolesVisita:'']);});
   const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:8},{wch:24},{wch:12},{wch:8},{wch:22},{wch:13},{wch:22},{wch:22},{wch:10},{wch:10},{wch:10},{wch:12},{wch:8},{wch:8}];
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Partidos');
-  XLSX.writeFile(wb,'ARBA_Fixture_'+new Date().toISOString().split('T')[0]+'.xlsx');toast('✓ Exportado','ok');
+  XLSX.writeFile(wb,'Aricabasket_Fixture_'+new Date().toISOString().split('T')[0]+'.xlsx');toast('✓ Exportado','ok');
 };
 window.descargarPlantillaXLSX=function(){
   if(!window.XLSX)return toast('SheetJS no disponible','err');
   const ligaNombre=D.ligas[0]?.NombreFantasia||'Liga Varones';
-  const rows=[['Partido','Liga','Fecha','Hora','Cancha','Fase','Local','Visita'],['1',ligaNombre,'2026-07-05','10:00','Gimnasio Municipal','Regular','Equipo A','Equipo B'],['2',ligaNombre,'2026-07-05','11:30','Gimnasio Municipal','Regular','Equipo C','Equipo D'],['','','','','','Fases: Regular|Grupo A|Grupo B|Semifinales|Tercer Lugar|Final','','']];
-  const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:8},{wch:24},{wch:12},{wch:8},{wch:22},{wch:45},{wch:22},{wch:22}];
+  const rows=[
+    ['Partido','Liga','Fecha','Hora','Cancha','Fase','Local','Visita','Pts L','Pts V'],
+    ['1',ligaNombre,'2026-07-05','10:00','Gimnasio Municipal','Regular','Equipo A','Equipo B','',''],
+    ['2',ligaNombre,'2026-06-20','11:30','Gimnasio Municipal','Regular','Equipo C','Equipo D','78','65'],
+    ['','','','','','Fases: Regular|Grupo A|Grupo B|Semifinales|Tercer Lugar|Final','','Deja Pts L/V vacías = Programado','Con números = Finalizado','']
+  ];
+  const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:8},{wch:24},{wch:12},{wch:8},{wch:22},{wch:45},{wch:22},{wch:22},{wch:8},{wch:8}];
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Partidos');
-  XLSX.writeFile(wb,'ARBA_Plantilla_Partidos.xlsx');toast('✓ Plantilla descargada','ok');
+  XLSX.writeFile(wb,'Aricabasket_Plantilla_Partidos.xlsx');toast('✓ Plantilla descargada','ok');
 };
 window.importPartidosXLSX=async function(input){
   if(!window.XLSX)return toast('SheetJS no disponible','err');
@@ -1523,19 +1528,34 @@ window.importPartidosXLSX=async function(input){
       const esPlaceholder=nom=>/^(\d+°?|GSF\d|PSF\d|\d+°?\s*Grupo\s*[A-D])$/i.test((nom||'').trim());
       const actImport=temporadaActiva();
       const ligasImport=D.ligas.filter(l=>!actImport||l.id_temporada===actImport.id||!l.id_temporada);
-      let ok=0,skip=0,creados=0,pendientes=0;const lines=[];
+      let ok=0,skip=0,creados=0,pendientes=0,actualizados=0;const lines=[];
       for(let i=0;i<rows.length;i++){
         const row=rows[i];
         const numP=getVal(row,['partido','num','n']);const ligaNom=getVal(row,['liga','torneo']);
         const fecha=getVal(row,['fecha','date']);const hora=getVal(row,['hora','hour','time']);
         const cancha=getVal(row,['cancha','recinto','lugar']);const faseRaw=getVal(row,['fase','phase'])||'Regular';
         const localN=getVal(row,['local','home','equipo1']);const visN=getVal(row,['visita','away','equipo2']);
+        const ptsL=getVal(row,['ptsl','puntoslocal','ptslocal','plocal']);
+        const ptsV=getVal(row,['ptsv','puntosvisita','ptsvisita','pvisita']);
+        const tieneResultado=ptsL!==''&&ptsV!==''&&!isNaN(parseInt(ptsL))&&!isNaN(parseInt(ptsV));
         if(!localN&&!visN){lines.push('<span style="color:#fbbf24">⚠ Fila '+(i+2)+': fila vacía</span>');skip++;continue;}
         let liga=ligasImport.find(l=>ligaNom&&norm(l.NombreFantasia)===norm(ligaNom))||ligasImport.find(l=>ligaNom&&(norm(l.NombreFantasia).includes(norm(ligaNom))||norm(ligaNom).includes(norm(l.NombreFantasia))));
         if(!liga&&ligasImport.length)liga=ligasImport[0];
         if(!liga){lines.push('<span style="color:#fca5a5">❌ Sin ligas creadas</span>');skip++;continue;}
-        const yaExiste=D.partidos.some(x=>x.ID_Liga===liga.ID&&numP&&String(x.Partidos)===String(numP));
-        if(yaExiste){lines.push('<span style="color:rgba(255,255,255,.35)">↷ Fila '+(i+2)+': N°'+numP+' ya existe, omitido (evita duplicado)</span>');skip++;continue;}
+        const existenteMatch=D.partidos.find(x=>x.ID_Liga===liga.ID&&numP&&String(x.Partidos)===String(numP));
+        if(existenteMatch){
+          if(tieneResultado){
+            try{
+              const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateMatchResult',adminPassword:adminPass,matchId:existenteMatch.ID,golesLocal:ptsL,golesVisita:ptsV,estado:'Finalizado'})});
+              const json=JSON.parse(await res.text());
+              if(json.success){actualizados++;lines.push('<span style="color:#93c5fd">↻ N°'+numP+': resultado actualizado ('+ptsL+'-'+ptsV+')</span>');}
+              else{lines.push('<span style="color:#fca5a5">❌ '+json.message+'</span>');skip++;}
+            }catch(err){lines.push('<span style="color:#fca5a5">❌ Red: '+err.message+'</span>');skip++;}
+          }else{
+            lines.push('<span style="color:rgba(255,255,255,.35)">↷ Fila '+(i+2)+': N°'+numP+' ya existe, sin cambios</span>');skip++;
+          }
+          continue;
+        }
         let fechaFinal;
         if(fecha instanceof Date){fechaFinal=fecha.getUTCFullYear()+'-'+String(fecha.getUTCMonth()+1).padStart(2,'0')+'-'+String(fecha.getUTCDate()).padStart(2,'0');}
         else{fechaFinal=fecha;if(fecha&&fecha.includes('/')){const[d,m,y]=fecha.split('/');fechaFinal=(y||'').padStart(4,'0')+'-'+(m||'').padStart(2,'0')+'-'+(d||'').padStart(2,'0');}}
@@ -1562,11 +1582,22 @@ window.importPartidosXLSX=async function(input){
         try{
           const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'createMatch',adminPassword:adminPass,idLiga:liga.ID,jornada:numP,fecha:fechaFinal,hora:horaFinal,cancha,fase,idLocal:eqL.ID,idVisita:eqV.ID,youtubeUrl:''})});
           const json=JSON.parse(await res.text());
-          if(json.success){ok++;lines.push('<span style="color:#86efac">✓ N°'+numP+': '+eqL.NombreEquipo+' vs '+eqV.NombreEquipo+' · '+fechaFinal+'</span>');}
+          if(json.success){
+            ok++;
+            let resultTxt='';
+            if(tieneResultado&&json.encuentro?.id){
+              try{
+                const res2=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateMatchResult',adminPassword:adminPass,matchId:json.encuentro.id,golesLocal:ptsL,golesVisita:ptsV,estado:'Finalizado'})});
+                const json2=JSON.parse(await res2.text());
+                if(json2.success){actualizados++;resultTxt=' · Finalizado '+ptsL+'-'+ptsV;}
+              }catch(err){}
+            }
+            lines.push('<span style="color:#86efac">✓ N°'+numP+': '+eqL.NombreEquipo+' vs '+eqV.NombreEquipo+' · '+fechaFinal+resultTxt+'</span>');
+          }
           else{lines.push('<span style="color:#fca5a5">❌ '+json.message+'</span>');skip++;}
         }catch(err){lines.push('<span style="color:#fca5a5">❌ Red: '+err.message+'</span>');skip++;}
       }
-      log.innerHTML=lines.join('')+'<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);font-weight:700;color:#fff">✅ '+ok+' importado'+(ok!==1?'s':'')+' &nbsp;|&nbsp; 🆕 '+creados+' equipo'+(creados!==1?'s':'')+' creado'+(creados!==1?'s':'')+' &nbsp;|&nbsp; ⏭ '+pendientes+' fase final pendiente'+(pendientes!==1?'s':'')+' &nbsp;|&nbsp; ⚠ '+skip+' omitido'+(skip!==1?'s':'')+'</div>';
+      log.innerHTML=lines.join('')+'<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);font-weight:700;color:#fff">✅ '+ok+' importado'+(ok!==1?'s':'')+' &nbsp;|&nbsp; 🏆 '+actualizados+' con resultado &nbsp;|&nbsp; 🆕 '+creados+' equipo'+(creados!==1?'s':'')+' creado'+(creados!==1?'s':'')+' &nbsp;|&nbsp; ⏭ '+pendientes+' fase final pendiente'+(pendientes!==1?'s':'')+' &nbsp;|&nbsp; ⚠ '+skip+' omitido'+(skip!==1?'s':'')+'</div>';
       if(ok>0||pendientes>0){await refreshData();renderAll();if(adminPass){renderAdmin();renderEquiposAdm();}renderPartidosAdm();toast('✓ '+ok+' partido'+(ok!==1?'s':'')+' importados'+(creados>0?' · '+creados+' equipo'+(creados!==1?'s':'')+' nuevo'+(creados!==1?'s':''):''),'ok');}
     }catch(err){log.innerHTML='<span style="color:#fca5a5">❌ Error: '+err.message+'</span>';console.error(err);}
     input.value='';
@@ -1660,7 +1691,7 @@ function renderSplashContent(ligaId){
     html+=secT('PRÓXIMOS PARTIDOS');
     html+=proximos.map(p=>{
       const{dia,mes,dow}=fmtD(p.Fecha);const liga=D.ligas.find(l=>l.ID===p.ID_Liga);
-      const txt='🏀 *ARBA Arica'+(liga?' - '+liga.NombreFantasia:'')+'*\n\n'+teamName(p.ID_EquipoLocal,p.ReglaLocal)+' vs '+teamName(p.ID_EquipoVisita,p.ReglaVisita)+'\n\n📅 '+dow+' '+dia+' '+mes+'\n⏰ '+(p.Hora||'—')+'\n📍 '+(p.Cancha||'—')+'\n\n🔗 arba-arica.cl';
+      const txt='🏀 *Aricabasket'+(liga?' - '+liga.NombreFantasia:'')+'*\n\n'+teamName(p.ID_EquipoLocal,p.ReglaLocal)+' vs '+teamName(p.ID_EquipoVisita,p.ReglaVisita)+'\n\n📅 '+dow+' '+dia+' '+mes+'\n⏰ '+(p.Hora||'—')+'\n📍 '+(p.Cancha||'—')+'\n\n🔗 arba-arica.cl';
       return`<div style="${card};text-align:center">
         <div class="mc-row"><span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35)">N° ${p.Partidos||''}</span><div style="display:flex;gap:6px;align-items:center"><a href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" style="display:flex;align-items:center;gap:4px;background:rgba(37,211,102,.15);color:#25d366;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;text-decoration:none">Compartir</a><span style="background:rgba(59,130,246,.2);color:#93c5fd;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px">Próximo</span></div></div>
         <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">${liga?liga.NombreFantasia:''}</div>
