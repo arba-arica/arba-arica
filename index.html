@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>Programacion Torneo Clausura 2026 - Arica</title>
+<title>Mesa Regional Básquetbol XV Región</title>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -644,6 +644,11 @@ body.pub-themed #content .match-card{background:var(--pub-card);border-color:var
               <div class="adm-sec-label" style="margin:0">Partidos programados</div>
               <select class="f-select" id="pt-filtro-liga" style="margin-bottom:0;width:auto;min-width:200px;font-size:12px;padding:7px 10px" onchange="onFiltroLigaPartidosChange(this.value)"></select>
             </div>
+            <div id="pt-borrar-todos-wrap" style="display:none;margin-bottom:12px">
+              <button onclick="deleteAllPartidosLiga()" style="width:100%;padding:10px 14px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:9px;color:#fca5a5;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px">
+                🗑 Eliminar TODOS los partidos de esta liga (<span id="pt-borrar-todos-count">0</span>)
+              </button>
+            </div>
             <div id="partidos-adm-list"></div>
           </div>
 
@@ -1059,8 +1064,32 @@ function renderFiltroLigaPartidos(){
   const valPrevio=_filtroLigaPartidos;
   sel.innerHTML='<option value="">Todas las ligas</option>'+ligasDisponibles.map(l=>`<option value="${l.ID}">${l.NombreFantasia} (${l.Categoria})</option>`).join('');
   sel.value=valPrevio;
+  const wrap=document.getElementById('pt-borrar-todos-wrap');
+  const cnt=document.getElementById('pt-borrar-todos-count');
+  if(_filtroLigaPartidos){
+    const total=D.partidos.filter(p=>p.ID_Liga===_filtroLigaPartidos).length;
+    if(cnt)cnt.textContent=total;
+    if(wrap)wrap.style.display=total>0?'block':'none';
+  }else{
+    if(wrap)wrap.style.display='none';
+  }
 }
 function onFiltroLigaPartidosChange(v){_filtroLigaPartidos=v;renderPartidosAdm();}
+window.deleteAllPartidosLiga=function(){
+  if(!_filtroLigaPartidos)return toast('Selecciona una liga primero','err');
+  const liga=ligaObj(_filtroLigaPartidos);
+  const total=D.partidos.filter(p=>p.ID_Liga===_filtroLigaPartidos).length;
+  if(!total)return toast('Esta liga no tiene partidos','err');
+  showConfirmV3(
+    `¿Eliminar los ${total} partidos de "${liga?liga.NombreFantasia:'esta liga'}"?`,
+    'Se borrarán TODOS: programados, en curso y finalizados. Esta acción no se puede deshacer. Úsalo antes de reimportar el fixture corregido.',
+    async()=>{
+      const res=await gasCall('deleteMatchesByLiga',{ligaId:_filtroLigaPartidos});
+      if(res?.success)renderPartidosAdm();
+    },
+    'danger'
+  );
+};
 function renderPartidosAdm(){
   const el=document.getElementById('partidos-adm-list');if(!el)return;
   renderFiltroLigaPartidos();
