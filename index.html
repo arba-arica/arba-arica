@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>aricabasket.cl</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='47' fill='%23f97316' stroke='%231a1a1a' stroke-width='4'/%3E%3Cpath d='M50 3 V97 M3 50 H97' stroke='%231a1a1a' stroke-width='4' fill='none'/%3E%3Cpath d='M14 14 C34 34 34 66 14 86 M86 14 C66 34 66 66 86 86' stroke='%231a1a1a' stroke-width='4' fill='none'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1521,6 +1522,9 @@ window.importPartidosXLSX=async function(input){
       const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
       if(!rows.length){log.innerHTML='<span style="color:#fca5a5">❌ Archivo vacío</span>';return;}
       const getVal=(row,names)=>{for(const k of Object.keys(row)){const kn=k.trim().toLowerCase().replace(/[^a-z]/g,'');if(names.some(n=>kn.includes(n)||n.includes(kn))){const v=row[k];return(v instanceof Date)?v:String(v).trim();}}return'';};
+      // Lectura estricta de puntaje: exige que el encabezado empiece con "pts" o "puntos" para no
+      // confundirse con las columnas "Local"/"Visita" (que también contienen esas palabras como substring).
+      const getPts=(row,side)=>{for(const k of Object.keys(row)){const kn=k.trim().toLowerCase().replace(/[^a-z]/g,'');if(!/^(pts|puntos)/.test(kn))continue;const esLocal=/local|^ptsl$|^pl$/.test(kn);const esVisita=/visita|^ptsv$|^pv$/.test(kn);if((side==='l'&&esLocal)||(side==='v'&&esVisita)){const v=row[k];return(v instanceof Date)?v:String(v).trim();}}return'';};
       const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
       const teamCache={}; // key: ligaId+'|'+norm(nombre) -> equipo ya existente o recién creado en este import
       const findOrCreateEq=async(nomRaw,ligaId)=>{
@@ -1550,8 +1554,8 @@ window.importPartidosXLSX=async function(input){
         const fecha=getVal(row,['fecha','date']);const hora=getVal(row,['hora','hour','time']);
         const cancha=getVal(row,['cancha','recinto','lugar']);const faseRaw=getVal(row,['fase','phase'])||'Regular';
         const localN=getVal(row,['local','home','equipo1']);const visN=getVal(row,['visita','away','equipo2']);
-        const ptsL=getVal(row,['ptsl','puntoslocal','ptslocal','plocal']);
-        const ptsV=getVal(row,['ptsv','puntosvisita','ptsvisita','pvisita']);
+        const ptsL=getPts(row,'l');
+        const ptsV=getPts(row,'v');
         const tieneResultado=ptsL!==''&&ptsV!==''&&!isNaN(parseInt(ptsL))&&!isNaN(parseInt(ptsV));
         if(!localN&&!visN){lines.push('<span style="color:#fbbf24">⚠ Fila '+(i+2)+': fila vacía</span>');skip++;continue;}
         let liga=ligasImport.find(l=>ligaNom&&norm(l.NombreFantasia)===norm(ligaNom))||ligasImport.find(l=>ligaNom&&(norm(l.NombreFantasia).includes(norm(ligaNom))||norm(ligaNom).includes(norm(l.NombreFantasia))));
