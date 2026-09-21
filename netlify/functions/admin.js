@@ -1,9 +1,16 @@
 /**
- * netlify/functions/admin.js — v3.2
+ * netlify/functions/admin.js — v3.3
  * Variables de entorno en Netlify:
  *   SUPABASE_URL        = https://lwsyntjhbcdfuhfjdjqf.supabase.co
  *   SUPABASE_SERVICE_KEY = eyJ...service_role...
  *   ADMIN_PASSWORD      = Arba26*XXL
+ *
+ * Cambios v3.3 (borrado masivo de partidos):
+ *   - nueva acción `deleteMatchesByLiga`: elimina TODOS los encuentros (programados,
+ *     en curso y finalizados) de una liga específica en una sola llamada. Pensada para
+ *     cuando hay que rehacer el fixture completo (choques de recintos, fechas, etc.)
+ *     y reimportar desde una planilla corregida, sin borrar partido por partido.
+ *     ⚠️ Irreversible: si hay resultados ya cargados y no están respaldados, se pierden.
  *
  * Cambios v3.2 (temporadas):
  *   - tabla `ligas` necesita columna  id_temporada uuid null (FK -> temporadas.id)
@@ -231,6 +238,19 @@ exports.handler = async (event) => {
       case 'deleteMatch': {
         const { error } = await db.from('encuentros').delete().eq('id', data.matchId);
         result = error ? fail(error) : { success:true, message:'Partido eliminado' };
+        break;
+      }
+
+      // ─── BORRADO MASIVO: todos los partidos de una liga ───────
+      // Elimina programados + en curso + finalizados de un solo golpe. Pensado para
+      // cuando hay que rehacer el fixture completo (choques de recintos, fechas, etc.)
+      // y reimportar desde una planilla corregida. Irreversible — se asume que el
+      // usuario ya respaldó resultados/fixture (ej. vía "Exportar fixture" en XLSX)
+      // antes de invocar esta acción.
+      case 'deleteMatchesByLiga': {
+        if (!data.ligaId) { result = { success:false, message:'Falta seleccionar la liga' }; break; }
+        const { error } = await db.from('encuentros').delete().eq('id_liga', data.ligaId);
+        result = error ? fail(error) : { success:true, message:'Todos los partidos de la liga fueron eliminados' };
         break;
       }
 
