@@ -14,7 +14,22 @@
 function enterApp(){const s=document.getElementById('splash-screen');s.style.transition='opacity .5s';s.style.opacity='0';setTimeout(()=>s.style.display='none',500);}
 function abrirReglamento(){closeDrawer();window.open('https://drive.google.com/drive/folders/1GwHlJ58jNB4UpcEXlSojAWbYQSh6u3CG?usp=drive_link','_blank');}
 function volverInicio(){document.getElementById('splash-screen').style.display='flex';}
-function forceRefresh(){const i=document.getElementById('refresh-icon');i.style.animation='spin .7s linear infinite';invalidateCache();fetchAllData().then(d=>{Object.assign(D,d);renderAll();if(typeof adminPass!=='undefined'&&adminPass)renderAdmin();i.style.animation='';toast('✓ Datos actualizados','ok');}).catch(()=>{i.style.animation='';toast('Error al actualizar','err');});}
+function forceRefresh(){
+  const icons=[document.getElementById('refresh-icon-pub'),document.getElementById('refresh-icon-adm')].filter(Boolean);
+  icons.forEach(i=>i.style.animation='spin .7s linear infinite');
+  invalidateCache();
+  fetchAllData().then(d=>{
+    Object.assign(D,d);
+    renderAll();
+    if(typeof adminPass!=='undefined'&&adminPass){renderAdmin();if(typeof renderPartidosAdm==='function')renderPartidosAdm();if(typeof renderResAdm==='function')renderResAdm();if(typeof renderEquiposAdm==='function')renderEquiposAdm();}
+    if(typeof _splashLigaActual!=='undefined'&&_splashLigaActual)renderSplashContent(_splashLigaActual);
+    icons.forEach(i=>i.style.animation='');
+    toast('✓ Datos actualizados','ok');
+  }).catch(()=>{
+    icons.forEach(i=>i.style.animation='');
+    toast('Error al actualizar','err');
+  });
+}
 </script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -1598,7 +1613,7 @@ window.importPartidosXLSX=async function(input){
         }catch(err){lines.push('<span style="color:#fca5a5">❌ Red: '+err.message+'</span>');skip++;}
       }
       log.innerHTML=lines.join('')+'<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);font-weight:700;color:#fff">✅ '+ok+' importado'+(ok!==1?'s':'')+' &nbsp;|&nbsp; 🏆 '+actualizados+' con resultado &nbsp;|&nbsp; 🆕 '+creados+' equipo'+(creados!==1?'s':'')+' creado'+(creados!==1?'s':'')+' &nbsp;|&nbsp; ⏭ '+pendientes+' fase final pendiente'+(pendientes!==1?'s':'')+' &nbsp;|&nbsp; ⚠ '+skip+' omitido'+(skip!==1?'s':'')+'</div>';
-      if(ok>0||pendientes>0){await refreshData();renderAll();if(adminPass){renderAdmin();renderEquiposAdm();}renderPartidosAdm();toast('✓ '+ok+' partido'+(ok!==1?'s':'')+' importados'+(creados>0?' · '+creados+' equipo'+(creados!==1?'s':'')+' nuevo'+(creados!==1?'s':''):''),'ok');}
+      if(ok>0||pendientes>0||actualizados>0){await refreshData();renderAll();if(adminPass){renderAdmin();renderEquiposAdm();renderResAdm();}renderPartidosAdm();toast('✓ '+ok+' nuevo'+(ok!==1?'s':'')+' · '+actualizados+' con resultado actualizado'+(actualizados!==1?'s':'')+(creados>0?' · '+creados+' equipo'+(creados!==1?'s':'')+' nuevo'+(creados!==1?'s':''):''),'ok');}
     }catch(err){log.innerHTML='<span style="color:#fca5a5">❌ Error: '+err.message+'</span>';console.error(err);}
     input.value='';
   };
