@@ -3,7 +3,14 @@
  * Variables de entorno en Netlify:
  *   SUPABASE_URL        = https://lwsyntjhbcdfuhfjdjqf.supabase.co
  *   SUPABASE_SERVICE_KEY = eyJ...service_role...
- *   ADMIN_PASSWORD      = Arba26*XXL
+ *   ADMIN_PASSWORD      = (clave del administrador principal; NUNCA escribirla en el código)
+ *   TOKEN_SECRET        = (texto largo al azar; firma las sesiones. Si falta se usa ADMIN_PASSWORD)
+ *
+ * Cambios v3.4 (seguridad):
+ *   - Las contraseñas de `usuarios` se guardan cifradas (scrypt). Las antiguas en texto plano
+ *     se convierten solas la primera vez que ese usuario inicia sesión.
+ *   - El login entrega una sesión firmada (12 h); el navegador ya no guarda ni reenvía la contraseña.
+ *   - Nueva acción `listUsuarios` (solo admin): el panel ya no lee `usuarios` directo desde Supabase.
  *
  * Cambios v3.3 (borrado masivo de partidos):
  *   - nueva acción `deleteMatchesByLiga`: elimina TODOS los encuentros (programados,
@@ -23,13 +30,44 @@
  *     desde el modal del panel admin, sin tener que recrear la temporada.
  */
 const { createClient } = require('@supabase/supabase-js');
-const { randomUUID } = require('crypto');
+const { randomUUID, scryptSync, randomBytes, timingSafeEqual, createHmac } = require('crypto');
 
 const db = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
-const ADMIN_PWD = process.env.ADMIN_PASSWORD || 'Arba26*XXL';
+const ADMIN_PWD = process.env.ADMIN_PASSWORD;
+const TOKEN_SECRET = process.env.TOKEN_SECRET || ADMIN_PWD;
+
+// ─── Contraseñas cifradas ────────────────────────────────────────────────────
+function hashPass(p) {
+  const salt = randomBytes(16).toString('hex');
+  return 'scrypt$' + salt + '$' + scryptSync(String(p), salt, 64).toString('hex');
+}
+function verifyPass(p, stored) {
+  if (!stored) return false;
+  if (stored.startsWith('scrypt$')) {
+    const [, salt, h] = stored.split('$');
+    const a = Buffer.from(h, 'hex'), b = scryptSync(String(p), salt, 64);
+    return a.length === b.length && timingSafeEqual(a, b);
+  }
+  return stored === p;           // formato antiguo (texto plano): se migra al iniciar sesión
+}
+
+// ─── Sesión firmada ──────────────────────────────────────────────────────────
+const b64 = s => Buffer.from(s).toString('base64url');
+function firmar(payload) {
+  const body = b64(JSON.stringify({ ...payload, exp: Date.now() + 12 * 3600 * 1000 }));
+  return body + '.' + createHmac('sha256', TOKEN_SECRET).update(body).digest('base64url');
+}
+function leerToken(tok) {
+  if (!tok || typeof tok !== 'string' || !tok.includes('.')) return null;
+  const [body, sig] = tok.split('.');
+  const ok = createHmac('sha256', TOKEN_SECRET).update(body).digest('base64url');
+  if (sig.length !== ok.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(ok))) return null;
+  const p = JSON.parse(Buffer.from(body, 'base64url').toString());
+  return p.exp > Date.now() ? p : null;
+}
 
 const HEADERS = {
   'Content-Type': 'application/json',
@@ -47,14 +85,10 @@ exports.handler = async (event) => {
     const PUBLIC_ACTIONS = ['checkPassword', 'likeNoticia', 'checkLogin'];
     const AUTH_ACTIONS = ['createPersona', 'getPersonasPendientes'];
 
-    const isAdmin = adminPassword === ADMIN_PWD;
-
-    let isDelegado = false;
-    if (!isAdmin && AUTH_ACTIONS.includes(action) && adminPassword) {
-      const { data: usr } = await db.from('usuarios')
-        .select('id,rol').eq('password_hash', adminPassword).eq('activo', true).maybeSingle();
-      isDelegado = !!(usr && usr.id);
-    }
+    if (!ADMIN_PWD) return ok({ success: false, message: 'Falta configurar ADMIN_PASSWORD en Netlify' });
+    const sesion = leerToken(adminPassword);
+    const isAdmin = (sesion && sesion.rol === 'admin') || (!!adminPassword && adminPassword === ADMIN_PWD);
+    const isDelegado = !isAdmin && !!sesion && AUTH_ACTIONS.includes(action);
 
     if (!PUBLIC_ACTIONS.includes(action) && !isAdmin && !isDelegado) {
       return ok({ success: false, message: 'Contraseña incorrecta' });
@@ -74,25 +108,27 @@ exports.handler = async (event) => {
       // ─── LOGIN CON EMAIL + CONTRASEÑA ────────────────────────
       case 'checkLogin': {
         if (data.email === 'arba.arica@gmail.com' && data.password === ADMIN_PWD) {
-          result = { success: true, usuario: { nombre: 'Admin ARBA', email: data.email, rol: 'admin' } };
+          result = { success: true, token: firmar({ id: 'admin', rol: 'admin' }), usuario: { nombre: 'Admin ARBA', email: data.email, rol: 'admin' } };
           break;
         }
         const { data: usuario, error: errU } = await db
           .from('usuarios')
           .select('*')
-          .eq('email', data.email.toLowerCase())
+          .eq('email', String(data.email || '').toLowerCase())
           .eq('activo', true)
           .maybeSingle();
         if (errU || !usuario) {
           result = { success: false, message: 'Email o contraseña incorrectos' };
           break;
         }
-        if (usuario.password_hash !== data.password) {
+        if (!verifyPass(data.password, usuario.password_hash)) {
           result = { success: false, message: 'Email o contraseña incorrectos' };
           break;
         }
-        await db.from('usuarios').update({ last_login: new Date().toISOString() }).eq('id', usuario.id);
-        result = { success: true, usuario: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, id_equipo: usuario.id_equipo, nombre_club: usuario.nombre_club || '', ligas_ids: usuario.ligas_ids || [], equipos_ids: usuario.equipos_ids || [] } };
+        const upd = { last_login: new Date().toISOString() };
+        if (!String(usuario.password_hash).startsWith('scrypt$')) upd.password_hash = hashPass(data.password);
+        await db.from('usuarios').update(upd).eq('id', usuario.id);
+        result = { success: true, token: firmar({ id: usuario.id, rol: usuario.rol }), usuario: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol, id_equipo: usuario.id_equipo, nombre_club: usuario.nombre_club || '', ligas_ids: usuario.ligas_ids || [], equipos_ids: usuario.equipos_ids || [] } };
         break;
       }
 
@@ -407,7 +443,7 @@ exports.handler = async (event) => {
         const { error } = await db.from('usuarios').insert({
           nombre:        data.nombre      || '',
           email:         (data.email || '').toLowerCase(),
-          password_hash: data.password    || '',
+          password_hash: hashPass(data.password || randomBytes(8).toString('hex')),
           rol:           ['admin','delegado','publico'].includes(data.rol) ? data.rol : 'delegado',
           id_equipo:     data.idEquipo    || null,
           nombre_club:   data.nombreClub  || '',
@@ -428,6 +464,11 @@ exports.handler = async (event) => {
           activo:      data.activo !== false,
         }).eq('id', data.usuarioId);
         result = error ? fail(error) : { success:true, message:'Usuario actualizado' };
+        break;
+      }
+      case 'listUsuarios': {
+        const { data: us, error } = await db.from('usuarios').select('*').order('created_at');
+        result = error ? fail(error) : { success: true, data: (us || []).map(({ password_hash, ...u }) => u) };
         break;
       }
       case 'deleteUsuario': {
