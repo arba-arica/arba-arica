@@ -1,4 +1,20 @@
-# ARBA Arica — App de Competencias · v3.2
+# ARBA Arica — App de Competencias · v3.4
+
+## v3.4 — Seguridad de datos (aplicar en este orden)
+1. **Netlify → Environment variables:** cambia `ADMIN_PASSWORD` por una clave nueva (la anterior estuvo escrita en el código) y agrega `TOKEN_SECRET` con un texto largo al azar.
+2. **Desplegar** `index.html` y `netlify/functions/admin.js` de esta versión.
+3. **Supabase → SQL Editor:** ejecutar `seguridad_datos.sql`.
+4. **Probar:** login admin, login de un delegado, lista de usuarios, crear jugador, sitio público.
+
+Qué corrige:
+- La tabla `usuarios` (correos y contraseñas) y la tabla `personas` (RUT y fecha de nacimiento) se podían leer con la clave pública del sitio. Ahora solo las usa `admin.js`.
+- Las contraseñas se guardan cifradas. Las existentes se cifran solas cuando cada usuario vuelve a iniciar sesión; no hay que recrearlas.
+- El navegador ya no guarda ni reenvía la contraseña: el login entrega una sesión firmada de 12 horas.
+- La escritura en todas las tablas queda solo para `admin.js`.
+
+---
+
+# Versión anterior · v3.2
 
 Este documento registra **qué se cambió, por qué, y los pasos exactos para desplegarlo**, además del **historial de prompts** usado para producir esta actualización. Sirve como referencia para futuras mejoras: copia y adapta los prompts de la sección final cuando quieras pedir un cambio similar.
 

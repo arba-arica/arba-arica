@@ -849,7 +849,7 @@ async function fetchAllData(){
     _supa.from('encuentros').select('*').order('partidos'),
     _supa.from('sanciones').select('*').order('created_at',{ascending:false}),
     _supa.from('noticias').select('*').order('fecha',{ascending:false}),
-    _supa.from('personas').select('*').order('nombre_completo'),
+    Promise.resolve({data:[]}), // personas: datos sensibles (RUT, nacimiento); el sitio público no los usa
     _supa.from('stats_carrera').select('*'),
     _supa.from('temporadas').select('*').order('created_at'),
   ]);
@@ -989,7 +989,7 @@ async function doLogin(){
     const res=await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'checkLogin',email,password:pass})});
     const json=JSON.parse(await res.text());
     if(json&&json.success){
-      adminPass=pass;_currentUser=json.usuario;
+      adminPass=json.token||'';_currentUser=json.usuario;
       document.getElementById('admin-login-screen').style.display='none';
       document.getElementById('admin-panel-full').style.display='flex';
       if(window.innerWidth<=640){
@@ -1271,7 +1271,7 @@ window.openResolverPartido=function(id){
 };
 async function renderUsuariosAdm(){
   const el=document.getElementById('usuarios-list');if(!el)return;
-  try{const{data}=await _supa.from('usuarios').select('*').order('created_at');const users=data||[];
+  try{const r=await callGAS('listUsuarios',{});if(!r||!r.success)throw new Error(r&&r.message);const users=r.data||[];
     if(!users.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin usuarios.</div>';return;}
     el.innerHTML=`<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:0 14px">`+users.map(u=>{const initials=u.nombre.split(' ').map(s=>s[0]||'').join('').toUpperCase().substring(0,2);const eq=u.id_equipo?D.equipos.find(e=>e.ID===u.id_equipo):null;return`<div class="usr-row"><div class="usr-av" style="background:${u.rol==='admin'?'var(--primary-light)':'#fdf4ff'};color:${u.rol==='admin'?'var(--primary)':'#9333ea'}">${initials}</div><div style="flex:1;min-width:0"><div class="usr-nombre">${u.nombre}</div><div class="usr-meta">${u.email}${eq?' · '+eq.NombreEquipo:''}</div></div><span class="usr-rol ${u.rol==='admin'?'rol-admin':'rol-delegado'}" style="margin-right:6px">${u.rol==='admin'?'Admin':'Delegado'}</span><div style="display:flex;gap:5px"><button class="btn-edit-sm" onclick="openEditUsuario('${u.id}')">✎</button><button class="btn-del-sm" onclick="delUsuario('${u.id}','${u.nombre}')">✕</button></div></div>`;}).join('')+'</div>';
   }catch(e){el.innerHTML='<div style="font-size:13px;color:var(--red);padding:8px 0">Error al cargar</div>';}
